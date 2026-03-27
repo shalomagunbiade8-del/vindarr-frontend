@@ -1,0 +1,4028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="./interfacelog.png" type="image/png">
+<title style="font-size: 15;">Vindarr</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script> 
+<script src="https://js.paystack.co/v1/inline.js"></script> 
+
+
+<style>
+.video-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:12px;
+}
+.video-card{
+  background:#000;
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+}
+.video-card video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.video-label{
+  position:absolute;
+  bottom:6px;
+  left:6px;
+  background:rgba(0,0,0,.6);
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:.8rem;
+}
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:15px;
+  flex-wrap:wrap;
+}
+
+.chat-message {
+  user-select: none;
+}
+
+.msg-options {
+  min-width: 120px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+#chatLog .msg {
+  padding: 6px 8px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  max-width: 85%;
+}
+
+.msg.you {
+  background:#dc3545;
+  margin-left:auto;
+  text-align:right;
+}
+
+.msg.them {
+  background:#2b2b2b;
+}
+
+.msg small {
+  opacity:.7;
+  font-size:11px;
+} 
+
+.chat-message { position: relative; }
+
+.msg-status {
+  font-size: 12px;
+  color: #fff; /* was muted #aaa */
+  margin-top: 4px;
+} 
+
+.reply-preview {
+  font-size: 12px;
+  opacity: 0.8;
+  border-left: 3px solid #dc3545;
+  padding-left: 6px;
+  margin-bottom: 4px;
+}
+
+#visaprep-root {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .vp-page { display:none; }
+  .vp-page.active { display:block; }
+
+  /* ---------------- SEARCH ---------------- */
+  .vp-search {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 20px;
+    border-radius:999px;
+    border:1px solid #eee;
+    box-shadow:0 6px 20px rgba(0,0,0,.08);
+  }
+  .vp-search input { border:none; outline:none; width:100%; }
+
+  /* ---------------- CATEGORIES ---------------- */
+  .vp-categories { display:flex; gap:14px; overflow-x:auto; }
+  .vp-pill {
+    padding:10px 18px;
+    border-radius:999px;
+    border:1px solid #eee;
+    background:#fff;
+    white-space:nowrap;
+    font-size:14px;
+  }
+  .vp-pill.active { font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.1); }
+
+  /* ---------------- JOURNEY CARDS ---------------- */
+  .vp-journey-row { display:flex; gap:18px; overflow-x:auto; }
+  .vp-journey-card {
+    min-width:280px; border-radius:20px; overflow:hidden;
+    background:#fff; box-shadow:0 10px 30px rgba(0,0,0,.12);
+    cursor:pointer;
+  }
+  .vp-journey-card img { width:100%; height:170px; object-fit:cover; }
+  .vp-journey-body { padding:14px 16px 16px; }
+  .vp-journey-badge {
+    position:absolute; top:12px; left:12px;
+    background:#fff; padding:5px 12px;
+    border-radius:999px; font-size:12px;
+  }
+
+  /* ---------------- HERO ---------------- */
+  .vp-journey-hero { position:relative; }
+  .vp-hero-img { width:100%; height:280px; object-fit:cover; }
+  .vp-hero-content {
+    position:absolute; bottom:20px; left:20px;
+    background:rgba(255,255,255,.95);
+    padding:16px 20px; border-radius:16px;
+    max-width:90%;
+  }
+
+  .vp-primary {
+    background:#e11d2e; color:#fff; border:none;
+    padding:10px 18px; border-radius:10px;
+  }
+  .vp-secondary {
+    background:#fff; border:1px solid #ddd;
+    padding:10px 18px; border-radius:10px;
+  }
+
+  /* ---------------- COACH ---------------- */
+  .vp-coach {
+    display:flex; gap:14px; padding:14px;
+    border-radius:18px; background:#fff;
+    box-shadow:0 6px 18px rgba(0,0,0,.1);
+  }
+  .vp-coach img { width:64px; height:64px; border-radius:50%; }
+
+  /* ---------------- STORIES ---------------- */
+  .vp-story-grid { display:grid; grid-template-columns:1fr; gap:14px; }
+
+  /* ---------------- MODAL ---------------- */
+  .vp-modal {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.5);
+    align-items:center; justify-content:center;
+    z-index:1000;
+  }
+  .vp-modal-content {
+    background:#fff; padding:20px; border-radius:16px;
+    width:100%; max-width:420px;
+  }
+
+  /* Learner dashboard sessions */
+  .session-card{
+  border:1px solid #ddd;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.coach-avatar{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+}
+
+:root{--black:#0d0d0d;--red:#d10000;--white:#ffffff;}
+body{background:var(--black);color:var(--white);}  
+.navbar,.nav-icons{background:#111;}  
+.card{background:#1a1a1a;color:#fff;border-radius:.75rem;}  
+.page{display:none;}  
+.page.active{display:block;}  
+.nav-icons{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;padding:.6rem 0;z-index:1000;}  
+.nav-icons i{font-size:1.6rem;color:#fff;cursor:pointer;}  
+.nav-icons i.active{color:var(--red);}  
+.video-meta{font-size:.85rem;color:#bbb;}  
+.video-context{font-size:.85rem;color:#ddd;margin-top:.25rem;}  
+.filter-chip{border:1px solid #333;border-radius:20px;padding:.25rem .75rem;font-size:.8rem;cursor:pointer;white-space:nowrap;}  
+.filter-chip.active{background:var(--red);border-color:var(--red);}  
+#filters{overflow-x:auto;display:flex;gap:.5rem;padding-bottom:.5rem;}  
+.modal-content{border-radius:1rem;}
+.timestamp{font-size:.7rem;color:#888;margin-left:.35rem;}
+.list-group-item.active{background:#1a1a1a;border-color:var(--red);}
+@media(min-width:768px){.nav-icons{display:none;} .navbar{display:flex;} body{padding-bottom:0;}}
+@media(max-width:767px){body{padding-bottom:70px;} .navbar{display:none;}}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark fixed-top px-3 d-flex justify-content-between">
+
+  <span class="d-flex align-items-center fw-bold text-danger title" style="cursor: pointer; font-size: 27px; " onclick="showPage('home')">
+    <img src="interfacelog.png" alt="Interface Logo" width="28" class="me-2">
+    Vindarr
+  </span>
+
+  <div style="position:relative; cursor:pointer;" onclick="toggleNotifications()">
+
+  <i class="bi bi-bell fs-4 text-light"></i>
+
+  <span id="notifBadge"
+        style="position:absolute; top:-5px; right:-5px;
+               background:red; color:white;
+               font-size:10px; padding:2px 6px;
+               border-radius:50%; display:none;">
+  </span>
+
+</div> 
+
+  <i class="bi bi-box-arrow-in-right fs-4" style="cursor:pointer" onclick="showPage('login')"></i>
+
+  <button onclick="logout()">Logout</button>
+</nav>
+
+<!-- Notification dropdown UI -->
+ <div id="notifDropdown"
+     style="display:none; position:fixed; top:60px; right:10px;
+            width:300px; max-height:400px; overflow-y:auto;
+            background:#111; color:white; border-radius:10px;
+            padding:10px; z-index:9999;">
+
+  <h6>Notifications</h6>
+  <div id="notifList"></div>
+
+</div>
+
+<!-- Home and Video Feed page -->
+<div id="home" class="page active container py-5">
+  <input class="form-control mb-3" placeholder="Search videos, topics…">
+  <div id="filters" class="mb-3"></div>
+  <div id="feed" class="row g-3"></div>
+
+  <button class="btn btn-outline-light mt-3"
+onclick="loadMoreVideos()">
+Load More
+</button>
+</div>
+
+<div id="upload" class="page container py-5" style="max-width:600px;">
+<h4>Share knowledge, experience, info, insights (Vin)</h4>
+
+<select id="postType" class="form-select mb-2">
+  <option value="video">Video</option>
+</select>
+
+<input id="uTitle" class="form-control mb-2" placeholder="Title">
+<select id="uCategory" class="form-select">
+
+  <option value="">Choose category</option>
+
+  <option value="Business">Business</option>
+  <option value="Interview">Interview</option>
+  <option value="Travel">Travel</option>
+  <option value="Tech">Tech</option>
+  <option value="Culture">Culture</option>
+  <option value="Education">Education</option>
+  <option value="Law">Law</option>
+  <option value="Politics">Politics</option>
+  <option value="Economy">Economy</option>
+  <option value="Health">Health</option>
+  <option value="Innovation">Innovation</option>
+  <option value="Society">Society</option>
+  <option value="Tourism">Tourism</option>
+  <option value="Fashion">Fashion</option>
+  <option value="Literature">Literature</option>
+  <option value="Diplomacy">Diplomacy</option>
+  <option value="Human Rights">Human Rights</option>
+  <option value="Documentaries">Documentaries</option>
+  <option value="History">History</option>
+  <option value="Vlogs">Vlogs</option>
+  <option value="Climate Change">Climate Change</option>
+   <option value="Science">Science</option>
+    <option value="Podcast">Podcast</option>
+     <option value="Art">Art</option>
+      <option value="Music">Music</option>
+      <option value="Language">Language</option>
+      <option value="Food">Food</option>
+      <option value="News">News</option>
+      <option value="Visa News & Gist">Visa News & Gist</option>
+      <option value="News">News</option>
+      <option value="Others">Others</option>
+      <option value="Jobs">Jobs & Internships</option>
+      <option value="Scholarship Alert">Scholarship Alert</option>
+      <option value="Entrepreneurship">Entrepreneurship</option>
+</select>
+<textarea id="uContext" class="form-control mb-2" placeholder="Explain the learning context"></textarea>
+
+<input type="file" id="uFile" class="form-control mb-2" accept="video/*">
+<button class="btn btn-danger w-100" onclick="publish()">Publish</button>
+</div>
+
+<!-- Profile testing -->
+
+<!-- PROFILE CARD -->
+  
+   <div id="profile" class="page container py-5">
+     <img id="profilePic"
+        src="https://via.placeholder.com/120"
+        class="rounded-circle mb-3"
+        width="120" height="120">
+   
+   <h5 id="profileName"></h5>
+   <p id="profileBio"
+   style="color:#ddd;font-size:.95rem;max-width:420px">
+</p>
+
+   
+   <p>Role: <strong id="roleLabel"></strong></p>
+   
+   <button class="btn btn-outline-primary btn-sm"
+           data-bs-toggle="modal"
+           data-bs-target="#editProfileModal">
+     Edit Profile
+   </button>
+   <p>
+  Understands: <strong id="creatorUnderstand"></strong>
+</p> 
+
+<hr>
+<button onclick="applyCoach()" class="btn btn-danger">
+Become a Coach
+</button>
+
+<div id="profileVideosUpload">Uploaded Videos</div>
+
+
+<!-- Learner booked sessions  -->
+ <h3>My Booked Sessions</h3>
+
+<div id="mySessions"></div>
+
+<!-- Pinned Boards -->
+<!-- <h6 class="mt-4">Pinned Boards</h6>
+<div id="profileBoards" class="row g-2"></div> -->
+
+</div>
+
+   
+   
+   <!-- EDIT PROFILE MODAL -->
+   <div class="modal fade" id="editProfileModal" tabindex="-1">
+     <div class="modal-dialog">
+       <div class="modal-content">
+   
+         <div class="modal-header">
+           <h5>Edit Profile</h5>
+           <button class="btn-close" data-bs-dismiss="modal"></button>
+         </div>
+   
+         <div class="modal-body">
+           <input id="editName" class="form-control mb-2">
+           <textarea id="editBio" class="form-control mt-2" rows="2" 
+           placeholder="Write a short bio about yourself">
+           </textarea>
+           <input type="file" id="editPhoto" class="form-control" accept="image/*">
+         </div>
+   
+         <div class="modal-footer">
+           <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+           <button class="btn btn-primary" onclick="saveProfile()" data-bs-dismiss="modal">
+             Save
+           </button>
+         </div>
+   
+       </div>
+     </div>
+   </div>
+
+   <!-- Profile view page -->
+
+   <div id="viewProfile" class="page container py-5">
+  <button class="btn btn-sm btn-outline-secondary mb-3"
+          onclick="showPage('home')">
+    ← Back
+  </button>
+
+  <div class="card p-4 text-center" style="max-width:400px;margin:auto;">
+    <img id="viewProfilePic"
+         src="https://via.placeholder.com/120"
+         class="rounded-circle mb-3"
+         width="120" height="120">
+
+    <h4 id="viewProfileName"></h4>
+    <p class="text-muted" id="viewProfileRole"></p>
+    <p id="viewProfileBio" class="text-muted"></p>
+    <button class="btn btn-danger" onclick="chatWithProfile()">
+  Chat
+</button>
+    <hr>
+    <h5 class="mt-4">Uploaded Videos</h5>
+    <div id="profileVideos" class="row g-3"></div>
+  </div>
+</div>
+
+
+<!-- ✅ MESSAGES -->
+<div id="messages" class="page container py-5">
+  <div id="inbox">
+    <h4>Inbox</h4>
+    <ul class="list-group">
+      <li class="list-group-item bg-dark text-light d-flex align-items-center gap-2 active">
+  
+  <!-- Avatar (profile click) -->
+  <img src="https://via.placeholder.com/32"
+       class="rounded-circle"
+       width="32" height="32"
+       style="cursor:pointer"
+       onclick="openProfileByUsername('Support')">
+
+  <!-- Name (chat click) -->
+  <span style="cursor:pointer; flex:1"
+        onclick="openChat('Support', this.parentElement)">
+    Support
+  </span>
+
+</li>
+
+    </ul>
+  </div>
+
+  <div id="chat" style="display:none;">
+
+  <!-- Back -->
+  <button class="btn btn-sm btn-secondary mb-2" onclick="backToInbox()">← Back</button>
+
+  <!-- Session / Coach Context (hidden by default) -->
+  <div id="chatContext"
+       class="alert alert-info py-1 px-2 mb-2"
+       style="display:none;font-size:13px;">
+  </div>
+
+  <!-- Chat messages -->
+  <div id="chatLog"
+       class="border rounded p-2 mb-2 bg-dark text-light"
+       style="min-height:300px;max-height:400px;overflow-y:auto;">
+  </div>
+
+  <!-- Reply preview -->
+  <!-- ADD THIS LINE -->
+  <div id="replyPreview" class="reply-preview d-none"></div>
+
+
+  <!-- Input row -->
+  <div class="d-flex gap-2">
+
+    <!-- Attachment -->
+    <label class="btn btn-sm btn-outline-light mb-0">
+      📎
+      <input type="file"
+             id="chatAttachment"
+             hidden
+             accept="image/*,.pdf"
+             onchange="attachFile(event)">
+    </label>
+
+    <!-- Text -->
+    <input id="chatInput"
+           class="form-control"
+           placeholder="Type message"
+           onkeydown="sendMsg(event)">
+  </div>
+</div> 
+
+</div>
+
+<!-- ===================== VISAPREP ===================== -->
+<div id="visaprep" class="page container py-5">
+  <section id="visaprep-root">
+
+
+  <!-- ================= HOME ================= -->
+
+  <div id="vp-home" class="vp-page active">
+
+
+<div class="vp-search mb-4">
+  <i class="bi bi-search"></i>
+  <input placeholder="Where are you applying to?" />
+</div>
+
+<div class="vp-categories mb-4">
+  <div class="vp-categories mb-4">
+  <!-- <button class="vp-pill active" onclick="showVPPage('home')">Visa journeys</button> -->
+  <button class="vp-pill" onclick="showVPPage('stories')">Stories</button>
+  <!-- <button class="vp-pill" onclick="showVPPage('wishes')">Wishes</button>
+  <button class="vp-pill" onclick="showVPPage('boards')">PinBoards</button> -->
+  <button class="vp-pill" onclick="showVPPage('coaches')">Coaches</button>
+</div>
+
+</div>
+
+<!-- <h5 class="fw-bold mb-3">Popular visa journeys</h5> -->
+
+<!-- <div class="vp-journey-row">
+  <div class="vp-journey-card" onclick="openJourney('US_STUDENT')">
+    <div style="position:relative">
+      <span class="vp-journey-badge">Most applied</span>
+      <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee">
+    </div>
+    <div class="vp-journey-body">
+      <strong>🇺🇸 US Student Visa</strong>
+      <div class="text-muted">F1 • Study in the USA</div>
+    </div>
+  </div>
+
+  <div class="vp-journey-card" onclick="openJourney('CANADA_STUDY')">
+    <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470">
+    <div class="vp-journey-body">
+      <strong>🇨🇦 Canada Study Permit</strong>
+      <div class="text-muted">Students & graduates</div>
+    </div>
+  </div>
+</div> -->
+
+<!-- <h5 class="fw-bold mt-5 mb-3">Verified visa coaches</h5>
+<div id="vpCoachPreview" class="d-flex flex-column gap-3"></div> -->
+
+  </div>
+
+  <!-- ================= COACHES ================= -->
+<div id="vp-coaches" class="vp-page">
+  <h5 class="fw-bold mb-3">Visa Coaches</h5>
+  <div id="vpCoachList" class="d-flex flex-column gap-3"></div>
+</div>
+
+<!-- Coaches profile page  -->
+ <div id="coachProfilePage" class="vp-page">
+  
+  <button class="btn btn-link mb-3"
+onclick="showVPPage('coaches')">
+← Back to Coaches
+</button> 
+
+  <img id="coachAvatar" class="rounded-circle mb-3"
+  width="120" height="120" 
+  src="https://via.placeholder.com/120">
+
+
+  <h2 id="coachName"></h2>
+
+  <p id="coachBio"></p>
+
+  <p>
+    <strong> Expertise:</strong>
+    <span id="coachExpertise"></span>
+  </p>
+
+  <p>
+    <strong> Rate:</strong>
+    <span id="coachRate"></span>
+  </p>
+
+
+  <button id="bookSessionBtn">Book Session</button>
+
+  <button id="chatCoachBtn">Chat with Coach</button>
+
+  <button id="openCoachDashboardBtn" style="display:none">
+Coach Dashboard
+</button> 
+
+  <h3>Coach Resources</h3>
+
+  <div id="coachResources"></div>
+
+</div> 
+
+
+<!-- Coach Dashboard -->
+ <div id="coachDashboardPage" class="vp-page">
+
+<h2>Coach Dashboard</h2>
+
+<button onclick="showVPPage('coaches')">Back</button>
+
+<h3>Edit Profile</h3>
+
+<input id="coachBioEdit" placeholder="Bio">
+
+<input id="coachExpertiseEdit" placeholder="Expertise">
+
+<input id="coachRateEdit" placeholder="Hourly Rate (number only)"> 
+
+<button onclick="updateCoachProfile()">Save</button>
+
+
+<h3>Upload Resource</h3>
+
+<input id="resTitle" placeholder="Resource title">
+
+<select id="resType">
+<option value="pdf">PDF</option>
+<option value="link">Link</option>
+<option value="video">Video</option>
+</select>
+
+<input id="resURL" placeholder="URL">
+
+<button onclick="uploadCoachResource()">Upload</button>
+
+
+<h3>Your Resources</h3>
+
+<div id="coachDashboardResources"></div>
+
+
+<h3>Your Bookings</h3>
+
+<div id="coachSessions"></div>
+
+</div> 
+
+
+  <!-- ================= JOURNEY DETAIL ================= -->
+
+  <!-- <div id="vp-journey-detail" class="vp-page">
+    <button class="btn btn-link mb-3" onclick="showVPPage('home')">← Back</button>
+
+
+<div class="vp-journey-hero">
+  <img class="vp-hero-img">
+  <div class="vp-hero-content">
+    <h3 id="journeyTitle"></h3>
+    <p id="journeySub"></p>
+    <button class="vp-primary" onclick="startMockFromJourney()">Prepare for this visa</button>
+    <button class="vp-secondary" onclick="openStoryModal()">Share story</button>
+  </div>
+</div>
+
+<h5 class="fw-bold mt-4">Real stories</h5>
+<div id="vp-story-list" class="vp-story-grid"></div>
+
+  </div> -->
+
+  <!-- ================= MOCK ================= -->
+
+  <!-- <div id="vp-mock" class="vp-page">
+    <button class="btn btn-link" onclick="showVPPage('home')">← Back</button>
+    <h4 class="fw-bold mb-3">AI Mock Interview</h4>
+    <select id="vpVisaType" class="form-select">
+      <option>Student Visa</option>
+      <option>Work Visa</option>
+      <option>Tourist Visa</option>
+    </select>
+    <button class="btn btn-danger w-100 mt-3" onclick="startVPInterview()">Start Interview</button>
+  </div> -->
+
+  <!-- ================= STORIES FEED ================= -->
+<div id="vp-stories" class="vp-page">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold">Travel Stories</h5>
+    <button class="vp-primary" onclick="openStoryModal()">
+  ＋ Upload
+</button>
+
+  </div>
+  <div class="row" id="vpStoryFeed"></div>
+
+  <div class="text-center mt-3">
+  <button id="loadMoreBtn" class="btn btn-outline-primary" onclick="loadMoreStories()">
+    Load More
+  </button>
+</div>
+
+</div>
+
+<!-- ================= WISHES ================= -->
+<!-- <div id="vp-wishes" class="vp-page">
+  <div class="d-flex justify-content-between mb-3">
+    <h5 class="fw-bold">Dream Places</h5>
+    <button class="vp-primary" onclick="openWishUpload()">＋ Upload</button>
+  </div>
+  <div id="vpWishGrid" class="row g-3"></div>
+</div>
+
+================= PIN BOARDS =================
+<div id="vp-boards" class="vp-page">
+  <div class="d-flex justify-content-between mb-3">
+    <h5 class="fw-bold">Your PinBoard</h5>
+    <button class="vp-primary" onclick="createSharedBoard()">
+      ＋ Create Board
+    </button>
+  </div>
+  <div id="vpBoardGrid" class="row g-3"></div>
+</div> -->
+
+<!-- ================= FULL BOARD VIEW ================= -->
+
+<!-- <div id="vp-board-view" class="vp-page">
+
+  <button class="btn btn-link mb-3"
+    onclick="showVPPage('boards')">
+    ← Back to Boards
+  </button>
+
+  <h4 id="vpBoardTitle" class="fw-bold"></h4>
+  <small id="vpBoardOwner" class="text-muted"></small>
+
+  <div class="mt-3 row g-3" id="vpBoardWishList"></div>
+
+  <button class="btn btn-danger mt-3"
+    onclick="launchBoardChat(currentBoardView)">
+    Chat with members
+  </button>
+
+</div> -->
+
+</section>
+
+<!-- ================= STORY MODAL ================= -->
+
+<div id="vp-story-modal" class="vp-modal">
+  <div class="vp-modal-content">
+    <h5>Share your travel story</h5>
+    <input id="story-title" class="form-control mb-2" placeholder="Story title">
+<input type="file" id="story-image" accept="image/*"> 
+<textarea id="story-content" class="form-control mb-2" placeholder="Your experience"></textarea>
+
+    <button class="vp-primary w-100 mb-2" onclick="uploadStory()">Post Story</button>
+    <button class="vp-secondary w-100" onclick="closeStoryModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- Wish upload modal
+ <div id="vp-wish-modal" class="vp-modal">
+  <div class="vp-modal-content">
+    <h5>Add Dream Destination</h5>
+    <input id="wish-title" class="form-control mb-2" placeholder="Destination name">
+    <input id="wish-image" type="file" class="form-control mb-2" accept="image/*">
+    <button class="vp-primary w-100 mb-2" onclick="submitWish()">Submit</button>
+    <button class="vp-secondary w-100" onclick="closeWishModal()">Cancel</button>
+  </div>
+</div> -->
+
+
+<!-- Book modal -->
+ <!-- ================= COACH BOOKING MODAL ================= -->
+<div id="vpBookModal" class="vp-modal">
+  <div class="vp-modal-content">
+    <h5 id="vpModalCoachName"></h5>
+<input type="hidden" id="vpModalCoachHidden">
+
+    <input type="date" id="vpModalDate" class="form-control mb-2">
+    <input type="time" id="vpModalTime" class="form-control mb-2">
+
+    <button class="vp-primary w-100 mb-2" onclick="confirmVPBooking()">
+      Confirm Booking
+    </button>
+
+    <button class="vp-secondary w-100" onclick="closeVPBookModal()">
+      Cancel
+    </button>
+  </div>
+</div>
+
+
+  <!-- </section> -->
+</div>
+
+
+
+<!-- This feature to be implemented and unlocked later -->
+<!-- Meetify Html  -->
+<!-- <div id="meetify" class="page container py-4">
+
+  <div class="card mb-3 p-3 text-center" style="background:#111;">
+    <h4 class="text-danger mb-1">Meetify</h4>
+    <small class="text-muted" id="meetifyContext">
+      Secure live session
+    </small>
+  </div>
+  <div id="meetifyUserList" class="mb-3"></div>
+
+  <div class="video-grid" id="videoGrid"></div> 
+
+  <div class="controls">
+    <button class="btn btn-outline-light" onclick="toggleMute()">Mute</button>
+    <button class="btn btn-outline-light" onclick="toggleCamera()">Camera</button>
+    <button class="btn btn-outline-danger" onclick="leaveMeetify()">Leave</button>
+  </div>
+
+</div> -->
+
+<div id="login" class="page container py-5" style="max-width:400px;">
+<h4>Central Login</h4>
+
+<!-- Login page -->
+
+<input id="email" class="form-control mb-2" placeholder="Email">
+<input id="password" type="password" class="form-control mb-2" placeholder="Password">
+<button class="btn btn-danger w-100" onclick="login()">Login</button>
+
+<!-- Register page -->
+<hr>
+<p>Don't have an account? Create one</p>
+
+<h5>Create Account</h5>
+
+<input id="reg-username" class="form-control mb-2" placeholder="Username">
+<input id="reg-email" class="form-control mb-2" placeholder="Email">
+<input id="reg-password" type="password" class="form-control mb-2" placeholder="Password">
+
+<select id="reg-role" class="form-control mb-2">
+  <option value="learner">Learner</option>
+  <option value="creator">Creator</option>
+  <option value="coach">Coach (VisaPrep)</option>
+</select>
+
+<button class="vp-primary w-100" onclick="register()">
+  Register
+</button>
+</div>
+
+
+
+<div class="nav-icons">
+<i class="bi bi-house active" onclick="showPage('home')"></i>
+<i class="bi bi-cloud-upload" onclick="auth('upload')"></i>
+<i class="bi bi-inbox" onclick="auth('messages')"></i>
+<i class="bi bi-passport" onclick="showPage('visaprep')"></i>
+<!-- <i class="bi bi-people" onclick="startMeetify('General Meetify Session')"></i> -->
+<i class="bi bi-person" onclick="auth('profile')"></i>
+</div>
+
+<!-- ✅ Timestamped Comment Modal -->
+<div class="modal fade" id="commentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-white p-3">
+      <h5>Comments <span id="currentTime" class="text-secondary"></span></h5>
+      <div id="commentList" style="max-height:300px;overflow-y:auto;" class="mb-2"></div>
+      <input id="commentInput" class="form-control mb-2" placeholder="Add comment" onkeydown="submitComment(event)">
+      <button class="btn btn-danger w-100" onclick="closeCommentModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Jitsi API script -->
+<!-- <script src="https://meet.jit.si/external_api.js"></script>  -->
+
+<script>
+  // ======== USER & AUTH ========
+// let currentUser = null; 
+// const token = localStorage.getItem("token");
+// if (token) {
+//   currentUser = parseJwt(token);
+// }
+
+let currentUser = null;
+
+async function initUser() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API}/profile/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const user = await res.json();
+
+    if (user && user.username) {
+      currentUser = user;
+      localStorage.setItem("user", JSON.stringify(user));
+      console.log("✅ currentUser initialized:", currentUser);
+    }
+
+  } catch (err) {
+    console.error("Init user failed", err);
+  }
+} 
+
+
+// Video feed API
+const API = "http://localhost:3000";
+let posts = []; 
+
+let activeChat=null;
+let activeVideo=null, videoComments={};
+let viewedProfile = null;
+
+// ================= CHAT STATE EXTENSIONS =================
+let chatStore = {};            // { username: [messages] }
+let replyToMessage = null;     // for reply feature
+let currentSessionContext = null; // coach / VisaPrep session info 
+let pendingAttachment = null; 
+
+// ===================== CHAT DATA STRUCTURE =====================
+let chats = {}; // stores messages per chat username
+let messageIdCounter = 0; // unique ID for each message 
+
+// The meetify conferencing system
+// let meetifySessions = [];
+
+// Wish system structure
+// let wishes = [];
+// let pinBoards = [];
+// let sharedBoards = [];
+// let pinnedImages = [];
+// let currentBoardView = null;
+
+// Notification system
+let notifications = [];
+let unreadCount = 0;
+
+// Stories system global state
+let currentPage = 1;
+let isLoadingStories = false;
+let hasMoreStories = true; 
+
+/* ================= SOCKET CONNECTION ================= */
+
+const socket = io("http://localhost:3000");
+
+socket.on("connect", () => {
+  console.log("Connected to realtime chat server");
+});
+
+
+/* ================= RECEIVE REALTIME MESSAGE ================= */
+
+socket.on("receiveMessage", (msg) => {
+
+  if(!chatStore[msg.senderUsername]){
+    chatStore[msg.senderUsername] = [];
+    addToInbox(msg.senderUsername, msg.senderAvatar || null);
+  }
+
+  // Notifications
+  if(msg.senderUsername !== activeChat){
+  addNotification(`New message from ${msg.senderUsername}`);
+}
+
+  chatStore[msg.senderUsername].push({
+    id: msg.id,
+    sender: msg.senderUsername,
+    text: msg.text,
+    time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+    status: 'unseen',
+    attachmentUrl: msg.attachmentUrl,
+    attachmentType: msg.attachmentType
+  });
+
+  updateInboxPreview(msg.senderUsername, {
+  text: msg.text,
+  time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+});
+
+  // Highlight unread in inbox
+  const li = document.querySelector(`#inbox li[data-user='${msg.senderUsername}']`);
+  if(li && msg.senderUsername !== activeChat){
+    li.classList.add('bg-warning','text-dark');
+  }
+
+  if(activeChat === msg.senderUsername){
+    renderChat();
+    // Mark as seen
+    chatStore[msg.senderUsername].forEach(m => m.status = 'Seen ✓✓');
+    if(li) li.classList.remove('bg-warning','text-dark');
+  }
+
+}); 
+
+
+function getUserAvatar(username){
+  if(currentUser && currentUser.username === username){
+    return currentUser.avatar || 'https://via.placeholder.com/32'; 
+  }
+  return 'https://via.placeholder.com/32';
+} 
+
+/* ===================== PAGE NAVIGATION ===================== */
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const page = document.getElementById(p);
+  if (!page) return;
+
+  page.classList.add('active');
+
+  // ✅ Ensure VisaPrep always shows home by default
+  if (p === 'visaprep') {
+    showVPPage('home');
+  }
+}
+
+
+
+// Auth function B-E
+function isAuthenticated() {
+  return !!localStorage.getItem("token");
+}
+
+function auth(p) {
+  if (!isAuthenticated()) {
+    return showPage('login');
+  }
+  showPage(p);
+} 
+
+
+// Login function
+async function login() {
+  const emailVal = email.value.trim();
+  const passwordVal = password.value.trim();
+
+  if (!emailVal || !passwordVal)
+    return alert("Email & password required");
+
+  try {
+    const res = await fetch("http://localhost:3000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: emailVal, password: passwordVal })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Login failed");
+
+    localStorage.setItem("token", data.access_token);
+
+    await loadCurrentUser();
+
+    localStorage.setItem("user", JSON.stringify(currentUser)); 
+
+    alert("Logged in successfully!");
+
+    await loadProfile();
+
+    await loadMyVideos();
+
+    await loadVideos();
+
+    await loadStories();
+
+  
+
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// Decode JWT to get user info locally (optional)
+function parseJwt(token) {
+  try {
+    const base64 = token.split('.')[1];
+    return JSON.parse(atob(base64));
+  } catch (err) {
+    return null;
+  }
+}
+
+renderVPCoaches();
+
+// Logout function
+function logout(){
+  currentUser = null;
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  showPage("login");
+} 
+
+// Register function
+async function register() {
+  const username = document.getElementById("reg-username").value;
+  const email = document.getElementById("reg-email").value;
+  const password = document.getElementById("reg-password").value;
+  const role = document.getElementById("reg-role").value;
+
+  try {
+    const res = await fetch("http://localhost:3000/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, password, role })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    alert("Registration successful. Please login.");
+
+  } catch (err) {
+    alert(err.message);
+  }
+} 
+
+// Notification system functions
+// Toggle notification
+function toggleNotifications(){
+
+  const box = document.getElementById("notifDropdown");
+
+  const isOpening = box.style.display === "none";
+
+  box.style.display = isOpening ? "block" : "none";
+
+  if(isOpening){
+    unreadCount = 0;
+    renderNotifications();
+  }
+} 
+
+// Add notification
+function addNotification(text){
+
+  const time = new Date().toLocaleTimeString([], {
+    hour:'2-digit',
+    minute:'2-digit'
+  });
+
+  notifications.unshift({ text, time });
+
+  unreadCount++;
+
+  renderNotifications();
+} 
+
+// Render notifications
+function renderNotifications(){
+
+  const list = document.getElementById("notifList");
+  const badge = document.getElementById("notifBadge");
+
+  list.innerHTML = notifications.map(n => `
+    <div style="border-bottom:1px solid #333; padding:6px 0;">
+      <div>${n.text}</div>
+      <small class="text-muted">${n.time}</small>
+    </div>
+  `).join('');
+
+  if(unreadCount > 0){
+    badge.style.display = "block";
+    badge.innerText = unreadCount;
+  }else{
+    badge.style.display = "none";
+  }
+}
+
+
+// Ensure coach users are marketplace-ready
+if (currentUser && currentUser.role === 'coach') {
+} 
+
+
+/* ===================== CHAT ===================== */
+
+function getTime(){
+  return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ---------- OPEN CHAT ---------- */
+async function openChat(username, el){
+  document.querySelectorAll('.list-group-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+
+  inbox.style.display='none';
+  chat.style.display='block';
+
+  activeChat = username;
+
+  if(!chatStore[username]) chatStore[username] = [];
+
+  await loadMessagesFromServer(username);
+
+renderChat();
+
+
+  // Mark messages as seen
+  chatStore[username].forEach(m => {
+    if(m.sender !== 'You') m.status = 'seen';
+  });
+}
+
+/* ---------- BACK ---------- */
+function backToInbox(){
+  chat.style.display='none';
+  inbox.style.display='block';
+}
+
+/* ---------- SEND MESSAGE ---------- */
+async function sendMsg(e){
+  if(e.key && e.key !== 'Enter') return;
+  e.preventDefault();
+
+  // 🚨 HARD GUARD
+  if(!currentUser || !currentUser.username){
+    alert("User not loaded. Please login again.");
+    return;
+  } 
+
+  if(!chatInput.value && !pendingAttachment) return;
+  if(!activeChat) return;
+
+  const msgData = {
+    senderUsername: currentUser?.username || "annonymous",
+    receiverUsername: activeChat,
+    text: chatInput.value,
+    attachmentUrl: null,
+    attachmentType: null,
+    attachment: pendingAttachment
+  };
+
+  // Upload attachment if exists
+  if(pendingAttachment){
+  const formData = new FormData();
+  formData.append("file", pendingAttachment);
+
+  const res = await fetch(`${API}/messages/upload`,{
+    method:"POST",
+    body:formData
+  });
+
+  const file = await res.json();
+
+  msgData.attachmentUrl = file.url;
+  msgData.attachmentType = file.type;
+} 
+
+  // Emit to socket
+  socket.emit("sendMessage", msgData);
+
+  // Save to backend
+  const saved = await fetch(`${API}/messages`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(msgData)
+  }).then(r=>r.json());
+
+  // Add to local chatStore
+  if(!chatStore[activeChat]) chatStore[activeChat] = [];
+  chatStore[activeChat].push({
+    id: saved.id,
+    sender: 'You',
+    text: saved.text,
+    time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+    status: 'Sent ✓',
+    attachmentUrl: saved.attachmentUrl,
+    attachmentType: saved.attachmentType
+  });
+
+  updateInboxPreview(activeChat, {
+  text: saved.text,
+  time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+}); 
+
+
+  // Reset input
+  chatInput.value = '';
+  pendingAttachment = null;
+  replyToMessage = null;
+  document.getElementById('replyPreview').classList.add('d-none');
+
+  renderChat();
+
+  console.log("SENDING:", msgData);
+}
+
+
+/* ---------- RENDER CHAT ---------- */
+function renderChat(){
+  chatLog.innerHTML = '';
+
+  // Session context banner
+  if(currentSessionContext){
+    chatLog.innerHTML += `
+      <div class="alert alert-info small">
+        VisaPrep Session · Coach ${currentSessionContext.coach} · ${currentSessionContext.time}
+      </div>
+    `;
+  }
+
+  chatStore[activeChat].forEach(msg => {
+  chatLog.innerHTML += `
+    <div class="msg ${msg.sender === 'You' ? 'you' : 'them'} mb-2"
+         data-id="${msg.id}"
+         oncontextmenu="replyMessage(${msg.id}); return false;"> 
+
+
+        <span class="badge ${msg.sender === 'You' ? 'bg-danger' : 'bg-secondary'}">
+          ${msg.sender}
+        </span>
+        <span class="timestamp">${msg.time}</span>
+
+        ${msg.replyTo ? `<div class="small text-muted">↩ ${msg.replyTo.text}</div>` : ''}
+
+        <div>${msg.text}</div>
+
+        ${msg.attachment || msg.attachmentUrl ? renderAttachment(
+  msg.attachment || {
+    data: "http://localhost:3000"+msg.attachmentUrl,
+    type: msg.attachmentType,
+    name: msg.text || 'Attachment'
+  }
+) : ''} 
+
+        ${msg.sender === 'You' ? `
+          <div class="small text-muted">${msg.status}</div>
+        ` : `
+          <button class="btn btn-sm btn-outline-light mt-1"
+                  onclick="reviewWithAI(${msg.id})">
+            🤖 Review this answer
+          </button>
+        `}
+      </div>
+    `;
+  });
+
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+/* ---------- REPLY ---------- */
+function replyMessage(msgId){
+  const msg = chatStore[activeChat].find(m => m.id === msgId);
+  replyToMessage = msg;
+  chatInput.placeholder = `Replying to: "${msg.text}"`;
+}
+
+/* ---------- ATTACHMENTS ---------- */
+function handleAttachment(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    chatStore[activeChat].push({
+      id: Date.now(),
+      sender: 'You',
+      text: '',
+      time: getTime(),
+      status: 'sent',
+      attachment: {
+        name: file.name,
+        type: file.type,
+        data: reader.result
+      }
+    });
+    renderChat();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderAttachment(att){
+  if(!att) return '';
+  if(att.type.startsWith('image')) {
+    return `<img src="${att.data}" class="img-fluid rounded mt-1">`;
+  } 
+  return `
+    <a href="${att.data}" target="_blank" class="d-block mt-1 text-info">
+      📄 ${att.name}
+    </a>
+  `;
+} 
+
+/* ---------- AI REVIEW ---------- */
+function reviewWithAI(msgId){
+  const msg = chatStore[activeChat].find(m => m.id === msgId);
+
+  chatStore[activeChat].push({
+    id: Date.now(),
+    sender: 'AI',
+    text: `Feedback: Improve clarity, structure your answer better, and include specific examples.`,
+    time: getTime(),
+    status: 'seen'
+  });
+
+  renderChat();
+} 
+
+
+// Set reply helper functions
+function setReply(messageId, text){
+  replyToMessage = chatStore[activeChat].find(m => m.id === messageId);
+
+  const box = document.getElementById('replyPreview');
+  box.innerHTML = `Replying to: "${text}" ❌`;
+  box.classList.remove('d-none');
+
+  box.onclick = () => {
+    replyToMessage = null;
+    box.classList.add('d-none');
+  };
+} 
+
+// Delete message function
+async function deleteMessage(btn){
+  if(!confirm("Delete this message?")) return;
+
+  const msgEl = btn.closest(".msg");
+  const msgId = msgEl.dataset.id;
+
+  await fetch(`${API}/messages/${msgId}`,{
+    method: "DELETE"
+  });
+
+  // Remove from chatStore
+  chatStore[activeChat] = chatStore[activeChat].filter(m => m.id != msgId);
+
+  msgEl.remove();
+}
+
+
+// AI Review Function
+function aiReview(text){
+  alert('AI Review coming soon 🚀\n\nMessage:\n' + text);
+} 
+
+
+    // Add chat launcher
+    function chatWithProfile(){
+  if(!viewedProfile) return;
+  addToInbox(viewedProfile.username, viewedProfile.avatar);
+  showPage('messages');
+  setTimeout(() => openChat(viewedProfile.username,
+    [...document.querySelectorAll('#inbox li')]
+      .find(li => li.dataset.user === viewedProfile.username)
+  ), 100);
+}
+
+// Add to inbox
+function addToInbox(username, avatar){
+
+  const list = document.querySelector('#inbox .list-group');
+
+  if([...list.children].some(li => li.dataset.user === username)) return;
+
+  const li = document.createElement('li');
+  li.className = 'list-group-item bg-dark text-light d-flex align-items-center gap-2';
+  li.dataset.user = username;
+
+  li.innerHTML = `
+    <img src="${avatar || 'https://via.placeholder.com/32'}"
+         class="rounded-circle"
+         width="32" height="32"
+         style="cursor:pointer"
+         onclick="openProfileByUsername('${username}')">
+
+    <div style="flex:1; cursor:pointer"
+         onclick="openChat('${username}', this.parentElement)">
+
+      <div class="d-flex justify-content-between">
+        <strong>${username}</strong>
+        <small class="msg-time text-muted"></small>
+      </div>
+
+      <div class="last-msg small text-muted">
+        No messages yet
+      </div>
+
+    </div>
+  `;
+
+  list.prepend(li); // NEW chats go top
+} 
+
+// Update inbox preview
+function updateInboxPreview(username, message){
+
+  const li = document.querySelector(`#inbox li[data-user='${username}']`);
+  if(!li) return;
+
+  const lastMsg = li.querySelector('.last-msg');
+  const time = li.querySelector('.msg-time');
+
+  lastMsg.innerText =
+    message.text
+      ? message.text.slice(0, 25)
+      : "📎 Attachment";
+
+  time.innerText = message.time;
+
+  // Move to top
+  li.parentElement.prepend(li);
+} 
+
+
+// LongPress Function and delete logic
+let pressTimer = null;
+
+function startPressTimer(e, msgEl){
+  pressTimer = setTimeout(() => {
+    showMsgOptions(e, msgEl);
+  }, 600); // long press duration
+}
+
+function clearPressTimer(){
+  clearTimeout(pressTimer);
+}
+
+function showMsgOptions(e, msgEl){
+  e.preventDefault();
+
+  // Remove existing menu
+  document.querySelectorAll('.msg-options').forEach(m => m.remove());
+
+  const menu = document.createElement('div');
+  menu.className = 'msg-options position-fixed bg-dark text-light rounded p-2';
+  menu.style.zIndex = 9999;
+  menu.style.top = e.clientY + 'px';
+  menu.style.left = e.clientX + 'px';
+
+  menu.innerHTML = `
+    <div style="cursor:pointer" onclick="deleteMessage(this)">🗑 Delete</div>
+  `;
+
+  menu.msgEl = msgEl;
+  document.body.appendChild(menu);
+
+  setTimeout(() => {
+    document.addEventListener('click', () => menu.remove(), { once:true });
+  }, 50);
+}
+
+ 
+
+// Attach file function
+async function attachFile(e){
+  const file = e.target.files[0];
+
+  if(!file) return;
+
+  // store REAL file (not object)
+  pendingAttachment = file;
+} 
+
+
+
+// Save Message to server
+async function saveMessageToServer(msg){
+
+  const token = localStorage.getItem("token");
+
+  try{
+
+    await fetch(`${API}/messages`,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${token}`
+      },
+
+      body:JSON.stringify({
+
+        senderUsername: currentUser.username,
+        receiverUsername: activeChat,
+        text: msg.text
+
+      })
+
+    });
+
+  }catch(err){
+
+    console.error("Message save failed",err);
+
+  }
+
+} 
+
+// Load messages from server
+async function loadMessagesFromServer(username){
+
+  const token = localStorage.getItem("token");
+
+  try{
+
+    const res = await fetch(
+      `${API}/messages/conversation/${currentUser.username}/${username}`,
+      {
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      }
+    );
+
+    const messages = await res.json();
+
+    chatStore[username] = messages.map(m => ({
+  id: m.id,
+  sender: m.senderUsername === currentUser.username ? "You" : username,
+  text: m.text || "",
+  time: m.createdAt
+    ? new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    : "",
+  status: "Seen ✓✓"
+}));
+
+  }catch(err){
+
+    console.error("Failed to load messages",err);
+
+  }
+
+} 
+
+
+/* ===================== CATEGORIES ===================== */
+const categories = [
+  "Business","Tech","Culture","Education","Law",
+  "Travel","Politics","Economy","Health","Innovation","Society", 
+  "Tourism", "Fashion", "Literature", "Diplomacy", "Human Rights", 
+  "Documentaries", "History", "Vlogs", "Climate Change", 
+  "Science", "Podcast", "Others",
+];
+categories.forEach(c=>{uCategory.innerHTML += `<option value="${c}">${c}</option>`});
+
+/* ===================== UPLOAD ===================== */
+async function publish(){
+
+  const file = uFile.files[0];
+
+  if(!file){
+    alert("Please select a video file");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append("video", file);
+  formData.append("title", uTitle.value);
+  formData.append("category", uCategory.value);
+  formData.append("context", uContext.value);
+
+  const res = await fetch("http://localhost:3000/videos",{
+
+    method:"POST",
+
+    headers:{
+      "Authorization":`Bearer ${localStorage.getItem("token")}`
+    },
+
+    body: formData
+
+  });
+
+  const data = await res.json();
+
+  console.log(data);
+
+  await loadVideos();
+await loadMyVideos();
+
+}
+
+// Load currentuser for video
+async function loadCurrentUser(){
+  const token = localStorage.getItem("token");
+  if(!token) return;
+
+  try{
+    const res = await fetch(`${API}/users/me`,{
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    });
+
+    if(!res.ok){
+      console.error("User fetch failed");
+      return;
+    }
+
+    const user = await res.json();
+
+    if(!user || !user.username){
+      console.error("Invalid user");
+      return;
+    }
+
+    // ✅ GUARANTEED STRUCTURE
+    currentUser = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      bio: user.bio,
+      avatar: user.avatar,
+      role: user.role,
+      totalUnderstand: user.totalUnderstand
+    };
+
+  }catch(err){
+    console.error("User load failed",err);
+  }
+} 
+
+
+// Load video feed
+let page = 1;
+
+async function loadVideos(){
+
+  try{
+
+    const res = await fetch(`${API}/videos?page=${page}&limit=10`);
+    
+    const result = await res.json();
+const videos = result.data || result;
+
+if(page === 1){
+  posts = videos;
+}else{
+  posts = [...posts, ...videos];
+} 
+
+    renderVideos();
+
+  }catch(err){
+
+    console.error("Video load failed", err);
+
+  }
+
+} 
+
+// Load more videos in feed
+function loadMoreVideos(){
+  page++;
+  loadVideos();
+} 
+
+
+/* ===================== RENDER VIDEO FEED ===================== */
+function renderVideos(){
+
+  const feed = document.getElementById("feed");
+
+  if(!posts || posts.length === 0){
+  feed.innerHTML = `
+    <div class="text-center text-muted py-5">
+      No videos yet. Be the first to post!
+    </div>
+  `;
+  return;
+} 
+
+const feedPosts = posts.map(v => {
+
+  if(currentUser && v.creatorId === currentUser.id){
+    return {...v, creatorAvatar: currentUser.avatar};
+  }
+
+  return v;
+
+}); 
+
+  let html = "";
+
+  feedPosts.forEach((v,i) => { 
+
+    html += `
+      <div class="col-md-6">
+        <div class="card p-2">
+
+          <video id="video${i}" controls class="w-100">
+            <source src="http://localhost:3000${v.videoUrl}" type="video/mp4">
+          </video>
+
+          <div class="d-flex justify-content-between align-items-center">
+
+  <div class="d-flex align-items-center gap-2">
+
+    <img class="avatar"
+      src="${v.creatorAvatar ? `http://localhost:3000${v.creatorAvatar}` : 'https://i.pravatar.cc/40'}" 
+      width="32"
+      height="32"
+      class="rounded-circle"
+      style="cursor:pointer"
+      onclick="openProfileByUsername('${v.creatorUsername}')"
+    >
+
+    <strong
+      style="cursor:pointer"
+      onclick="openProfileByUsername('${v.creatorUsername}')">
+      ${v.creatorUsername}
+    </strong>
+
+  </div>
+
+            ${
+              currentUser && v.creatorId === currentUser.id 
+              ? `<button class="btn btn-sm btn-outline-danger"
+                   onclick="deleteVideo(${v.id})">🗑️</button>`
+              : ''
+            }
+
+          </div>
+
+          <strong>${v.title}</strong>
+
+          <div class="video-meta">${v.category}</div>
+
+          <div class="video-context">${v.context}</div>
+
+          <button 
+            class="btn btn-sm btn-success mt-2"
+            onclick="pressUnderstand(${v.id})">
+
+            Understand 👍
+          </button>
+
+          <button class="btn btn-dark"
+onclick="openCommentModal(${i})">
+💬 Comments (${v.comments?.length || 0})
+</button>
+
+          <span id="understand-${v.id}">
+  ${v.understandCount || 0}
+</span> 
+
+
+        </div>
+      </div>
+    `;
+
+  });
+
+  feed.innerHTML = html; 
+
+} 
+
+
+// Delete Post from Feed
+async function deleteVideo(id){
+
+  const token = localStorage.getItem("token");
+
+  if(!confirm("Delete this video?")) return;
+
+  try{
+
+    const res = await fetch(`${API}/videos/${id}`,{
+      method:"DELETE",
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    });
+
+    await res.json();
+
+    loadVideos();
+
+  }catch(err){
+
+    console.error("Delete failed",err);
+
+  }
+
+} 
+
+
+// Open Profile from post
+function openProfileFromPost(index){
+  const post = posts[index];
+  if(!post || !post.creator) return;
+  openProfile(post.creator);
+}
+
+/* ===================== UNDERSTAND BUTTON ===================== */
+async function pressUnderstand(videoId) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch(`http://localhost:3000/videos/${videoId}/understand`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+
+    // ✅ UPDATE UI IMMEDIATELY
+    const el = document.getElementById(`understand-${videoId}`);
+    if (el) {
+      el.innerText = data.understandCount;
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+} 
+
+
+// Render creator understand
+function renderCreatorUnderstand() {
+  creatorUnderstand.innerText =
+    viewedProfile.totalUnderstand || 0;
+}
+
+/* ===================== TIMESTAMPED COMMENTS MODAL ===================== */
+async function openCommentModal(i){
+  activeVideo = i;
+
+  const video = document.getElementById(`video${i}`);
+  document.getElementById('currentTime').innerText =
+    `Time: ${formatTime(video.currentTime)}`;
+
+  const videoId = posts[i].id;
+
+  const res = await fetch(`http://localhost:3000/comments/${videoId}`);
+  const comments = await res.json();
+
+  posts[i].comments = comments.map(c => ({
+  id: c.id,
+  parentId: c.parentId,
+  author: {
+    name: c.author.username,
+    avatar: c.author.avatar
+  },
+  time: c.time,
+  text: c.text,
+  replies: []
+}));
+
+  updateCommentList();
+
+  new bootstrap.Modal(document.getElementById('commentModal')).show();
+}
+
+function closeCommentModal(){bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();}
+
+async function submitComment(e){
+
+  if(e.key !== 'Enter' || !commentInput.value) return;
+
+  const video = document.getElementById(`video${activeVideo}`);
+  const videoId = posts[activeVideo].id;
+
+  const token = localStorage.getItem('token');
+
+  const body = {
+    videoId: videoId,
+    text: commentInput.value,
+    time: Math.floor(video.currentTime)
+  };
+
+  const res = await fetch('http://localhost:3000/comments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  const savedComment = await res.json();
+
+  posts[activeVideo].comments.push({
+    author: {
+      name: savedComment.author.username,
+      avatar: savedComment.author.avatar
+    },
+    time: savedComment.time,
+    text: savedComment.text,
+    replies: []
+  });
+
+  commentInput.value='';
+  updateCommentList();
+} 
+
+
+function updateCommentList(){
+
+  const list = document.getElementById('commentList');
+  list.innerHTML='';
+
+  const comments = posts[activeVideo].comments;
+
+  const parents = comments.filter(c => !c.parentId);
+  const replies = comments.filter(c => c.parentId);
+
+  parents.forEach((c,idx)=>{
+
+    const div=document.createElement('div');
+    div.className='mb-2 p-2 border rounded';
+
+    div.innerHTML=`
+      <strong>${c.author.name}</strong>
+      <span style="cursor:pointer;color:#0dcaf0"
+      onclick="jumpToTime(${c.time})">
+      [${formatTime(c.time)}]
+      </span>: ${c.text}
+
+      <button class="btn btn-sm btn-light mt-1"
+      onclick="replyComment(${c.id})">Reply</button>
+
+      <div id="replies${c.id}" style="margin-left:15px;margin-top:5px;"></div>
+    `;
+
+    list.appendChild(div);
+
+    const rDiv = document.getElementById(`replies${c.id}`);
+
+    replies
+      .filter(r => r.parentId === c.id)
+      .forEach(r=>{
+        rDiv.innerHTML+=`
+          <div style="margin-top:4px;">
+            ↳ <strong>${r.author.name}</strong>: ${r.text}
+          </div>
+        `;
+      });
+
+  });
+
+} 
+
+
+// Jump to time
+function jumpToTime(time){
+  const video = document.getElementById(`video${activeVideo}`);
+  video.currentTime = time;
+  video.play();
+}
+
+async function replyComment(parentId){
+
+  const text = prompt("Reply:");
+  if(!text) return;
+
+  const video = document.getElementById(`video${activeVideo}`);
+  const videoId = posts[activeVideo].id;
+
+  const token = localStorage.getItem('token');
+
+  const body = {
+    videoId: videoId,
+    text: text,
+    time: Math.floor(video.currentTime),
+    parentId: parentId
+  };
+
+  const res = await fetch('http://localhost:3000/comments', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':`Bearer ${token}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  const savedReply = await res.json();
+
+  posts[activeVideo].comments.push({
+    id: savedReply.id,
+    parentId: savedReply.parentId,
+    author:{
+      name: savedReply.author.username,
+      avatar: savedReply.author.avatar
+    },
+    text: savedReply.text,
+    time: savedReply.time
+  });
+
+  updateCommentList();
+}
+
+function formatTime(seconds){
+  const m=Math.floor(seconds/60); const s=Math.floor(seconds%60);
+  return `${m}:${s<10?'0'+s:s}`;
+}
+
+render(posts);
+
+
+/* ===================== MEETIFY ===================== */
+
+/**
+ * Meetify state
+ * Fully tied to logged-in user
+ */
+// let meetifyStream = null;
+// let meetifyAudio = true;
+// let meetifyVideo = true;
+// let meetifyUser = null;
+
+// // Jitsi API
+// let jitsiApi = null;
+
+// // Render meetify directory
+// function renderMeetifyDirectory() {
+//   const container =
+//     document.getElementById('meetifyUserList');
+
+//   if (!container || !currentUser) return;
+
+//   const availableUsers =
+//     users.filter(u =>
+//       u.username !== currentUser.username
+//     );
+
+//   if (!availableUsers.length) {
+//     container.innerHTML =
+//       '<p class="text-muted">No users available</p>';
+//     return;
+//   }
+
+//   container.innerHTML =
+//     availableUsers.map(u => `
+//       <div class="card p-2 mb-2 d-flex
+//            flex-row justify-content-between
+//            align-items-center">
+//         <div>
+//           <strong>${u.username}</strong>
+//           <div class="small text-muted">
+//             ${u.role}
+//           </div>
+//         </div>
+
+//         <button class="btn btn-sm btn-danger"
+//           onclick="startDirectCall('${u.username}')">
+//           Call
+//         </button>
+//       </div>
+//     `).join('');
+// }
+
+// // Direct call function
+// function startDirectCall(username) {
+//   startMeetify(
+//     `General Meetify Call • ${username}`
+//   );
+// }
+
+
+// // Start meetify session
+// function startMeetify(contextText = "Secure live session", roomId = null) {
+
+//   console.log("Meetify (Jitsi): start requested");
+
+//   showPage('meetify');
+//   renderMeetifyDirectory();
+
+//   const contextEl = document.getElementById('meetifyContext');
+//   if (contextEl) {
+//     contextEl.innerText = contextText;
+//   }
+
+  // ✅ CHECK JITSI LOADED
+  // if (typeof JitsiMeetExternalAPI === "undefined") {
+  //   alert("Jitsi not loaded. Check script placement.");
+  //   return;
+  // }
+
+  // // ✅ GENERATE ROOM
+  // if (!roomId) {
+  //   roomId = "oraizon-session-" + Date.now();
+  // }
+
+  // const videoGrid = document.getElementById('videoGrid');
+
+  // if (!videoGrid) {
+  //   alert("videoGrid not found");
+  //   return;
+  // }
+
+  // ✅ CLEAR OLD CONTENT
+  // videoGrid.innerHTML = "";
+
+  // ✅ CREATE CONTAINER
+  // const jitsiContainer = document.createElement('div');
+  // jitsiContainer.style.width = "100%";
+  // jitsiContainer.style.height = "500px";
+
+  // videoGrid.appendChild(jitsiContainer);
+
+  // // ✅ DESTROY OLD SESSION
+  // if (jitsiApi) {
+  //   jitsiApi.dispose();
+  // }
+
+  // // ✅ START JITSI
+  // jitsiApi = new JitsiMeetExternalAPI("meet.jit.si", {
+  //   roomName: roomId,
+  //   parentNode: jitsiContainer,
+  //   width: "100%",
+  //   height: 500,
+  //   userInfo: {
+  //     displayName: currentUser?.username || "Guest"
+  //   }
+  // });
+
+//   console.log("Meetify (Jitsi): session started");
+// }
+
+// // Toggle mute
+// function toggleMute() {
+//   if (jitsiApi) {
+//     jitsiApi.executeCommand('toggleAudio');
+//   }
+// }
+
+// // Toggle camera
+// function toggleCamera() {
+//   if (jitsiApi) {
+//     jitsiApi.executeCommand('toggleVideo');
+//   }
+// } 
+
+
+// //  Leave Meetify Session
+// function leaveMeetify() {
+
+//   if (jitsiApi) {
+//     jitsiApi.dispose();
+//     jitsiApi = null;
+//   }
+
+//   showPage('visaprep');
+// }
+
+
+// Visa journey added globaly
+// let currentJourney = null;
+
+// const journeyData = {
+//   US_STUDENT: {
+//     title: "🇺🇸 US Student Visa",
+//     sub: "F1 • Study in the USA",
+//     image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+//   },
+//   CANADA_STUDY: {
+//     title: "🇨🇦 Canada Study Permit",
+//     sub: "Students & graduates",
+//     image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+//   }
+// };
+
+// Open journey function
+// function openJourney(journeyKey) {
+//   currentJourney = journeyKey;
+
+//   const data = journeyData[journeyKey];
+//   if (!data) return;
+
+//   document.getElementById('journeyTitle').innerText = data.title;
+//   document.getElementById('journeySub').innerText = data.sub;
+
+//   document.querySelector('.vp-hero-img').src = data.image;
+
+//   showVPPage('journey-detail');
+//   renderStories();
+// }
+
+
+
+/* ===================== VISAPREP MODULE ===================== */
+
+/* ---------- SYSTEM USERS (BACKEND READY MOCK) ---------- */
+users = users || [];
+
+
+
+/* Ensure logged-in user structure */
+function ensureUserVisaPrepData() {
+  if (!currentUser.sessions) currentUser.sessions = [];
+  if (!currentUser.role) currentUser.role = 'learner';
+}
+
+/* ---------- REGISTER AI SYSTEM USER ---------- */
+// if (!users.find(u => u.username === "AI Visa Interviewer")) {
+//   users.push({
+//     username: "AI Visa Interviewer",
+//     role: "system",
+//     avatar: "https://via.placeholder.com/32",
+//     bio: "Automated Visa Interview Assistant"
+//   });
+// }
+
+
+// Apply as coach
+async function applyCoach(){
+
+  if(!currentUser){
+    alert("Login first");
+    return;
+  }
+
+  const bio = prompt("Enter your coaching bio");
+  const expertise = prompt("Your visa expertise (US, UK, Canada)");
+
+  const res = await fetch("http://localhost:3000/coaches",{
+    method:"POST",
+    headers:{
+  "Content-Type":"application/json",
+  "Authorization": "Bearer " + localStorage.getItem("token")
+},
+    body: JSON.stringify({
+  bio: bio,
+  expertise: expertise,
+  hourlyRate: 50
+}) 
+  });
+
+  const data = await res.json();
+
+  alert("Coach application submitted. Await approval.");
+
+} 
+
+
+/* ---------- PAGE SWITCH ---------- */
+function showVPPage(id) {
+
+  document.querySelectorAll('#visaprep .vp-page')
+    .forEach(p => p.classList.remove('active'));
+
+  const page = document.getElementById('vp-' + id)
+    || document.getElementById(id);
+
+  if (page) page.classList.add('active');
+
+  if (id === 'coaches') renderVPCoaches();
+  if (id === 'stories') loadStories();
+  if (id === 'wishes') renderWishes();
+  if (id === 'boards') renderBoards();
+} 
+
+
+/* ===================== AI MOCK INTERVIEW ===================== */
+
+// function startVPInterview() {
+//   ensureUserVisaPrepData();
+
+//   showPage('messages');
+
+//   setTimeout(() => {
+//     addToInbox("AI Visa Interviewer");
+//     openChat(
+//       "AI Visa Interviewer",
+//       [...document.querySelectorAll('#inbox li')]
+//         .find(li => li.dataset.user === "AI Visa Interviewer")
+//     );
+//   }, 200);
+// }
+
+// Start mock from journey
+// function startMockFromJourney(){
+
+//   showVPPage('mock');
+
+//   const visaType =
+//     currentJourney === "US_STUDENT"
+//     ? "Student Visa"
+//     : "Student Visa";
+
+//   document.getElementById('vpVisaType').value = visaType;
+// }
+
+
+/* ===================== LIVE VISA INTERVIEW ===================== */
+
+function startVisaPrepLive() {
+  if (!currentUser) return showPage('login'); 
+
+  startMeetify(`VisaPrep Live Interview • ${currentUser.username}`);
+}
+
+/* ===================== COACH MARKETPLACE ===================== */
+// Render vp coaches
+/* ===================== LOAD COACHES FROM BACKEND ===================== */
+
+async function renderVPCoaches() {
+
+  const listContainer = document.getElementById('vpCoachList');
+
+  try {
+
+    const res = await fetch("http://localhost:3000/coaches");
+    const coaches = await res.json();
+
+    if (!coaches.length) {
+      listContainer.innerHTML =
+        `<p class="text-muted text-center">No coaches available</p>`;
+      return;
+    }
+
+    listContainer.innerHTML = coaches.map(coach => `
+
+      <div class="card p-3 d-flex flex-row align-items-center gap-3">
+
+        <img src="${coach.user?.avatar ? 'http://localhost:3000' + coach.user.avatar : 'https://i.pravatar.cc/64'}" 
+             class="rounded-circle"
+             width="64" height="64"
+             style="cursor:pointer"
+             onclick="openProfileByUsername('${coach.user?.username}')" 
+>
+
+        <div class="flex-grow-1">
+
+          <strong>${coach.user?.username || 'Coach #' + coach.id}</strong>
+
+          <div class="text-muted small">
+            ${coach.bio || ''}
+          </div>
+
+          <div class="d-flex gap-2 mt-2">
+
+            <button class="btn btn-sm btn-outline-danger" onclick="openCoachProfile(${coach.id})">
+              View Coach
+              </button>
+
+            <button class="btn btn-sm btn-outline-danger"
+              onclick="startCoachChat('${coach.user?.username}')" >
+              Chat
+            </button>
+
+            <button class="btn btn-sm btn-danger"
+              onclick="openVPBookModal(${coach.id})">
+              Book
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `).join('');
+
+  } catch (err) {
+
+    console.error("Coach load failed", err);
+
+    listContainer.innerHTML =
+      `<p class="text-danger text-center">Failed to load coaches</p>`;
+
+  }
+
+} 
+
+
+/* ===================== CHAT WITH COACH ===================== */
+function startCoachChat(username) {
+  if (!currentUser) return showPage('login');
+
+  const coach = users.find(u => u.username === username);
+  if (!coach) {
+    alert("Coach not found");
+    return;
+  }
+
+  // Add coach to inbox with avatar
+  addToInbox(coach.username, coach.avatar);
+
+  // Go to messages
+  showPage('messages');
+
+  // Open chat after inbox renders
+  setTimeout(() => {
+    const li = [...document.querySelectorAll('#inbox li')]
+      .find(li => li.dataset.user === coach.username);
+
+    if (li) {
+      openChat(coach.username, li);
+    }
+  }, 150);
+
+  chatStore[coach.username].push({
+  id: Date.now(),
+  sender: 'System',
+  text: 'You can start a Meetify session anytime.',
+  time: getTime(),
+  status: ''
+});
+
+} 
+
+/* ===================== OPEN BOOK SESSION MODAL ===================== */
+function openVPBookModal(coachId) {
+
+  if (!currentUser) {
+    alert("Login required");
+    return;
+  }
+
+  document.getElementById('vpModalCoachHidden').value = coachId;
+
+  document.getElementById('vpModalCoachName').innerText =
+    "Booking Session";
+
+  document.getElementById('vpBookModal').style.display = 'flex';
+
+} 
+
+
+/* ===================== CONFIRM BOOKING ===================== */
+async function confirmVPBooking() {
+  if (!currentUser) return;
+
+  const coachId = document.getElementById('vpModalCoachHidden').value;
+  const date = document.getElementById('vpModalDate').value;
+  const time = document.getElementById('vpModalTime').value;
+
+  if (!date || !time) {
+    alert("Please select date and time");
+    return;
+  }
+
+  try {
+    // Step 1: Create session
+    const sessionRes = await fetch(`${API}/sessions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ learnerId: currentUser.id, coachId, date, time })
+    });
+
+    if (!sessionRes.ok) throw new Error("Failed to create session");
+
+    const session = await sessionRes.json();
+
+    // Step 2: Initialize payment
+    const payRes = await fetch(`${API}/payments/initialize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: currentUser.email, amount: 5000, sessionId: session.id })
+    });
+
+    if (!payRes.ok) throw new Error("Payment initialization failed");
+
+    const payData = await payRes.json();
+
+    if (!payData.status) {
+  console.error(payData);
+  alert("Payment initialization failed");
+  return;
+}
+
+    // Step 3: Open Paystack
+    const handler = PaystackPop.setup({
+      key: "pk_test_898afbabc434c727ce990e60f8a188e712ea9427",
+      email: currentUser.email,
+      amount: 5000 * 100,
+
+
+      callback: function(response) {
+
+  (async () => {
+
+    await fetch(`${API}/payments/verify?reference=${response.reference}&sessionId=${session.id}`);
+
+    // 🔥 Launch video session immediately
+const roomName = `oraizon-session-${session.id}`; // FIX 5
+window.open(`https://meet.jit.si/${roomName}`, "_blank"); // FIX 6 
+
+
+    addNotification("Payment successful & session unlocked");
+
+    alert("Payment successful! Wait for coach approval to join session.");
+
+    loadLearnerSessions();
+    closeVPBookModal();
+
+  })();
+
+},
+
+      onClose: function() { alert("Payment cancelled"); }
+    });
+
+    handler.openIframe();
+
+  } catch (err) {
+    console.error(err);
+    alert("Payment error: " + err.message);
+    // Optionally: delete session if payment init fails
+    await fetch(`${API}/sessions/${session.id}`, { method: 'DELETE' });
+  }
+} 
+
+
+// Open coach profile function
+async function openCoachProfile(coachId){
+
+  const res = await fetch(`${API}/coaches/${coachId}`);
+  const coach = await res.json();
+
+  const user = coach.user;
+
+  document.getElementById("coachAvatar").src =
+    user?.avatar
+      ? `http://localhost:3000${user.avatar}`
+      : "https://via.placeholder.com/120";
+
+  document.getElementById("coachName").innerText =
+    user?.username || "Coach";
+
+  document.getElementById("coachBio").innerText =
+    coach.bio || "";
+
+  document.getElementById("coachExpertise").innerText =
+    coach.expertise || "";
+
+  document.getElementById("coachRate").innerText =
+    "$" + (coach.hourlyRate || 0) + " / session";
+
+    document.getElementById("chatCoachBtn").onclick = () => {
+  const username = coach.user?.username;
+
+  addToInbox(username);
+  showPage('messages');
+
+  setTimeout(() => {
+    const li = [...document.querySelectorAll('#inbox li')]
+      .find(li => li.dataset.user === username);
+
+    if(li) openChat(username, li);
+  }, 100);
+};
+
+  loadCoachResources(coach.id);
+  window.activeCoachId = coach.id; 
+
+  // Show dashboard button to coach when he himself views his profile
+  const dashBtn = document.getElementById("openCoachDashboardBtn");
+
+if(currentUser && currentUser.role === "coach" && user.id === currentUser.id){
+  dashBtn.style.display = "block";
+  dashBtn.onclick = openCoachDashboard;
+}else{
+  dashBtn.style.display = "none";
+} 
+
+  showVPPage("coachProfilePage"); 
+
+} 
+
+// Load coach resources function
+async function loadCoachResources(coachId){
+
+  const res = await fetch(`${API}/resources/${coachId}`);
+
+  const resources = await res.json();
+
+  let html = "";
+
+  resources.forEach(r => {
+
+    html += `
+      <div class="resource">
+
+        <a href="${r.url}" target="_blank">
+          ${r.title}
+        </a>
+
+      </div>
+    `;
+
+  });
+
+  const profileContainer =
+    document.getElementById("coachResources");
+
+  const dashboardContainer =
+    document.getElementById("coachDashboardResources");
+
+  if(profileContainer){
+    profileContainer.innerHTML = html;
+  }
+
+  if(dashboardContainer){
+    dashboardContainer.innerHTML = html;
+  }
+
+} 
+
+
+
+/* ===================== PROFILE INTEGRATION ===================== */
+
+function renderProfileSessions() {
+  const list = document.getElementById('profileSessions');
+  if (!list || !currentUser) return;
+
+  list.innerHTML = '';
+
+  const mySessions = meetifySessions.filter(
+    s => s.learner === currentUser.username ||
+         s.coach === currentUser.username
+  );
+
+  if (!mySessions.length) {
+    list.innerHTML =
+      '<li class="list-group-item">No sessions yet</li>';
+    return;
+  }
+
+  mySessions.forEach(s => {
+    list.innerHTML += `
+      <li class="list-group-item">
+        <strong>Visa Coaching</strong><br>
+        With: ${
+          s.learner === currentUser.username
+            ? s.coach
+            : s.learner
+        }<br>
+        ${s.date} • ${s.time}<br>
+
+        <button class="btn btn-sm btn-danger mt-2"
+          onclick="launchSession(${s.id})">
+          Start Session
+        </button>
+      </li>
+    `;
+  });
+}
+
+// Launch the session
+function launchSession(sessionId) {
+  const session = meetifySessions.find(s => s.id === sessionId);
+  if (!session) return;
+
+  const otherUser =
+  session.learner === currentUser.username
+    ? session.coach
+    : session.learner; 
+
+  startMeetify(
+    `Visa Coaching Session • ${otherUser}`
+  );
+}
+
+
+// Delete Coach Resources
+function deleteCoachResource(index) {
+  if (!currentUser || currentUser.role !== 'coach') return;
+
+  if (!confirm("Delete this resource?")) return;
+
+  currentUser.resources.splice(index, 1);
+  renderCoachResources();
+}
+
+
+// Load profile function
+
+async function loadProfile(){
+
+  if(!currentUser) return;
+
+  profileName.innerText = currentUser.username;
+  roleLabel.innerText = currentUser.role;
+  profileBio.innerText = currentUser.bio || "";
+
+  profilePic.src =
+    currentUser.avatar || "https://via.placeholder.com/120";
+
+  creatorUnderstand.innerText =
+    currentUser.totalUnderstand || 0;
+
+  editName.value = currentUser.username;
+  editBio.value = currentUser.bio || "";
+
+  await loadLearnerSessions(); 
+
+} 
+
+// Save profile
+async function saveProfile(){
+
+  const token = localStorage.getItem("token");
+  if(!token) return;
+
+  const username = editName.value.trim();
+  const bio = editBio.value.trim();
+
+  let avatar = currentUser?.avatar || "";
+
+  try{
+
+    // 1️⃣ Upload avatar if user selected one
+    if(editPhoto.files[0]){
+
+      const formData = new FormData();
+      formData.append("file", editPhoto.files[0]);
+
+      const uploadRes = await fetch(`${API}/upload/avatar`,{
+        method:"POST",
+        body:formData
+      });
+
+      const uploadData = await uploadRes.json();
+
+      avatar = uploadData.avatar;
+
+    }
+
+    // 2️⃣ Update profile
+    const res = await fetch(`${API}/profile`,{
+      method:"PATCH",
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${token}`
+      },
+      body:JSON.stringify({
+        username,
+        bio,
+        avatar
+      })
+    });
+
+    const updatedUser = await res.json();
+
+    currentUser = updatedUser;
+
+    await loadProfile();
+    await loadVideos();
+
+  }catch(err){
+
+    console.error("Profile update failed",err);
+
+  }
+
+} 
+
+
+// Upload avatar
+async function uploadAvatar(file){
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API}/upload/avatar`,{
+    method:"POST",
+    body:formData
+  });
+
+  const data = await res.json();
+
+  return data.avatar;
+
+} 
+
+
+// Profile open function
+function openProfile(profile){
+  viewedProfile = profile;
+
+  viewProfilePic.src =
+  profile.avatar
+  ? `http://localhost:3000${profile.avatar}`
+  : 'https://via.placeholder.com/120'; 
+
+  viewProfileName.innerText =
+    profile.username || profile.name || 'User';
+
+  viewProfileBio.innerText =
+    profile.bio || '';
+
+  viewProfileRole.innerText =
+    profile.role ? `Role: ${profile.role}` : '';
+
+  renderProfileVideos();   // ADD THIS
+  showPage('viewProfile');
+
+  // Show resource upload ONLY for logged-in coach viewing own profile
+if (
+  currentUser &&
+  viewedProfile &&
+  viewedProfile.role === 'coach' &&
+  viewedProfile.username === currentUser.username
+) {
+  document.getElementById('coachResourceUpload').style.display = 'block';
+} else {
+  document.getElementById('coachResourceUpload').style.display = 'none';
+} 
+
+renderCoachResources();
+}
+
+// Render Profile videos
+function renderProfileVideos() {
+
+  const container = document.getElementById('profileVideos');
+  container.innerHTML = '';
+
+  const creatorVideos = posts.filter(
+    p => p.creatorUsername === viewedProfile.username
+  );
+
+  if (!creatorVideos.length) {
+    container.innerHTML = '<p class="text-muted">No videos yet.</p>';
+    return;
+  }
+
+  creatorVideos.forEach(v => {
+
+    container.innerHTML += `
+      <div class="col-md-6">
+        <div class="card p-2">
+
+          <video controls class="w-100">
+            <source src="http://localhost:3000${v.videoUrl}" type="video/mp4">
+          </video>
+
+          <strong>${v.title}</strong>
+
+          <div class="text-muted small">
+            ${v.category}
+          </div>
+
+        </div>
+      </div>
+    `;
+
+  });
+
+}
+
+// Render user video in personal profile page
+async function renderProfileVideos(){
+
+  if(!viewedProfile) return;
+
+  try{
+
+    const res = await fetch(`${API}/videos/user/${viewedProfile.id}`);
+    const videos = await res.json();
+
+    const container = document.getElementById("profileVideos");
+
+    let html = "";
+
+    videos.forEach(v => {
+
+      html += `
+        <div class="col-md-6">
+          <video controls class="w-100">
+            <source src="http://localhost:3000${v.videoUrl}">
+          </video>
+        </div>
+      `;
+
+    });
+
+    container.innerHTML = html;
+
+  }catch(err){
+
+    console.error("Profile videos load failed", err);
+
+  }
+
+} 
+
+
+// Open profile by username
+function openProfileByUsername(username){
+  if(!username) return;
+
+  // ✅ If it's you
+  if(currentUser && currentUser.username === username){
+    openProfile(currentUser);
+    return;
+  }
+
+  // ✅ Fetch instead of relying on local array
+  fetch(`${API}/profile/username/${username}`)
+    .then(res => res.json())
+    .then(user => {
+      if(user && user.username){
+        openProfile(user);
+      } else {
+        console.warn("User not found");
+      }
+    })
+    .catch(err => console.error(err));
+}
+
+
+// Render profile correctly
+function renderViewProfile() {
+  viewProfilePic.src =
+    viewProfilePic.src =
+  viewedProfile.avatar
+    ? `http://localhost:3000${viewedProfile.avatar}`
+    : 'https://via.placeholder.com/120'; 
+    
+
+  viewProfileName.innerText = viewedProfile.username;
+  viewProfileBio.innerText = viewedProfile.bio || '';
+  viewProfileRole.innerText = viewedProfile.role || '';
+  creatorUnderstand.innerText = viewedProfile.totalUnderstand || 0; 
+
+
+  renderProfileVideos();
+  renderCreatorUnderstand();
+}
+
+// Load my videos in dashboard
+async function loadMyVideos(){
+
+  if(!currentUser) return;
+
+  const res = await fetch(`${API}/videos`);
+
+  const result = await res.json();
+
+  const videos = result.data || result;
+
+  const myVideos = videos.filter(v => v.creatorId === currentUser.id);
+
+  const container = document.getElementById("profileVideosUpload");
+
+  let html = "";
+
+  myVideos.forEach(v => {
+
+    html += `
+      <div class="card p-2 mb-2">
+
+        <video controls width="100%">
+          <source src="http://localhost:3000${v.videoUrl}">
+        </video>
+
+        <strong>${v.title}</strong>
+
+        <div>${v.category}</div>
+
+      </div>
+    `;
+
+  });
+
+  container.innerHTML = html;
+
+} 
+
+
+// Upload Coach Resources
+async function uploadCoachResource() {
+
+  if (!currentUser || currentUser.role !== 'coach') return;
+
+  const title = document.getElementById("resTitle").value;
+  const type = document.getElementById("resType").value;
+  const url = document.getElementById("resURL").value;
+
+  if (!title || !url) {
+    alert("Fill all fields");
+    return;
+  }
+
+  try {
+
+    const res = await fetch("http://localhost:3000/resources", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+  coachId: window.activeCoachId,
+  title: title,
+  type: type,
+  url: url
+}) 
+
+    });
+
+    const data = await res.json();
+
+    alert("Resource uploaded!");
+    loadCoachResources(window.activeCoachId); 
+
+  } catch (err) {
+
+    console.error("Upload failed", err);
+
+  }
+
+} 
+
+
+// Open coach dashboard
+function openCoachDashboard(){
+
+  if(!currentUser || currentUser.role !== "coach"){
+    alert("Only coaches can access dashboard");
+    return;
+  }
+
+  showVPPage("coachDashboardPage");
+
+  loadCoachResources(window.activeCoachId);
+  loadCoachSessions();
+
+} 
+
+// ================= GET MY COACH PROFILE =================
+async function getMyCoachProfile() {
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API}/coaches/user/${currentUser.id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!res.ok) {
+    console.log("User is not a coach");
+    return null;
+  }
+
+  return res.json();
+} 
+
+
+
+// Load coaches session
+async function loadCoachSessions(){
+
+  const token = localStorage.getItem("token");
+
+  // 🔥 Step 1: get coach profile
+  const coach = await getMyCoachProfile();
+
+  if(!coach){
+    console.log("Not a coach");
+    return;
+  }
+
+  // 🔥 Step 2: fetch sessions using coach.id (NOT user.id)
+  const res = await fetch(`${API}/sessions/coach/${coach.id}`,{ 
+    headers:{
+      Authorization:`Bearer ${token}`
+    }
+  });
+
+  const sessions = await res.json();
+
+  const container = document.getElementById("coachSessions");
+
+  let html = "";
+
+  sessions.forEach(s => {
+
+    html += `
+      <div class="session">
+        <strong>Learner:</strong> ${s.learner?.username || s.learnerId}
+        <br>
+        <strong>Date:</strong> ${s.date}
+        <br>
+        <strong>Time:</strong> ${s.time}
+        <br>
+        <strong>Status:</strong> ${s.status}
+        <br><br>
+
+        ${
+          s.status === 'pending'
+            ? `
+            <button onclick="updateSessionStatus(${s.id}, 'accepted')" class="btn btn-success btn-sm">
+              Accept
+            </button>
+
+            <button onclick="updateSessionStatus(${s.id}, 'rejected')" class="btn btn-danger btn-sm">
+              Reject
+            </button>
+            `
+            : ''
+        }
+
+        ${
+          s.status === 'accepted'
+            ? `
+            <button onclick="joinSession('${s.meetingLink}')" class="btn btn-primary btn-sm">
+              Start Session
+            </button>
+            `
+            : ''
+        }
+
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+} 
+
+
+// Load learner sessions
+async function loadLearnerSessions(){
+
+  const token = localStorage.getItem("token");
+  if(!token) return;
+
+  const res = await fetch(`${API}/sessions/learner/${currentUser.id}`);
+  const sessions = await res.json();
+
+  const container = document.getElementById("mySessions");
+  container.innerHTML = "";
+
+  sessions.forEach(session => {
+
+    const card = document.createElement("div");
+    card.className = "session-card";
+
+    card.innerHTML = `
+      <img class="coach-avatar"
+      src="http://localhost:3000${session.coach?.user?.avatar || '/uploads/default.png'}">
+
+      <h4 class="coach-name">
+        ${session.coach?.user?.username || "Coach"}
+      </h4>
+
+      <p class="session-date">
+        ${session.date} - ${session.time}
+      </p>
+
+      ${
+  session.status === 'paid'
+    ? `<button onclick="joinSession('${session.meetingLink}')">
+         Join Session
+       </button>`
+    : session.status === 'accepted'
+    ? `<button disabled>
+         Awaiting Payment
+       </button>`
+    : `<button disabled>
+         Awaiting Approval
+       </button>`
+} 
+    `;
+
+    container.appendChild(card);
+
+  });
+
+} 
+
+// Join session function
+function joinSession(meetingLink){
+
+  if(!meetingLink){
+    alert("Session not ready yet");
+    return;
+  }
+
+  window.open(meetingLink, "_blank");
+}
+
+// Update sessions status
+async function updateSessionStatus(sessionId, status){
+
+  const token = localStorage.getItem("token");
+
+  await fetch(`${API}/sessions/${sessionId}`,{
+    method:"PATCH",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${token}`
+    },
+    body: JSON.stringify({ status })
+  });
+
+  alert("Session updated");
+  addNotification(`Session ${status}`);
+
+  loadCoachSessions();
+} 
+
+// Update coach profile
+async function updateCoachProfile(){
+
+  const token = localStorage.getItem("token");
+
+  const bio = document.getElementById("coachBioEdit").value;
+  const expertise = document.getElementById("coachExpertiseEdit").value;
+  const rate =
+parseInt(document.getElementById("coachRateEdit").value);
+
+  await fetch(`${API}/coaches/${window.activeCoachId}`,{
+    method:"PATCH",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${token}`
+    },
+    body:JSON.stringify({
+      bio,
+      expertise,
+      hourlyRate:rate
+    })
+  });
+
+  alert("Profile updated");
+
+} 
+
+
+// Complete stories system
+
+// Story opening modal
+function openStoryModal(){
+  if (!currentUser){
+    alert("Login to share your story");
+    showPage('login');
+    return;
+  }
+
+  document.getElementById('vp-story-modal').style.display = 'flex';
+}
+
+function closeStoryModal(){
+  document.getElementById('vp-story-modal').style.display = 'none';
+}
+
+// Backed Render users story
+// Fetch stories for feed
+async function loadStories(page = 1, append = false) {
+  if (isLoadingStories) return;
+
+  currentUser = JSON.parse(localStorage.getItem("user"));
+
+  isLoadingStories = true;
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`http://localhost:3000/stories?page=${page}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const result = await res.json();
+
+    console.log("Stories response:", result);
+
+    if (!result.data) {
+      console.error("Invalid response format");
+      return;
+    }
+
+    if (!append) {
+      document.getElementById("vpStoryFeed").innerHTML = "";
+    }
+
+    renderStories(result.data, append);
+
+    // Pagination logic
+    const totalLoaded = document.querySelectorAll("#vpStoryFeed .col-md-4").length;
+    hasMoreStories = totalLoaded < result.total;
+
+    currentPage = page;
+
+    toggleLoadMoreButton();
+
+  } catch (err) {
+    console.error("Failed to load stories:", err);
+  } finally {
+    isLoadingStories = false;
+  }
+} 
+ 
+
+// Render stories in the UI
+function renderStories(stories, append = false) {
+  const container = document.getElementById("vpStoryFeed");
+  if (!container) return;
+
+  stories.forEach(story => {
+
+    const div = document.createElement("div");
+    div.className = "col-md-4 mb-4";
+
+    div.innerHTML = `
+      <div class="card shadow-sm h-100 border-0">
+
+        <div class="card-body">
+
+          <div class="d-flex align-items-center mb-3">
+            <img 
+  src="${
+  story.avatar && story.avatar.startsWith('/uploads')
+    ? `http://localhost:3000${story.avatar}`
+    : story.avatar || 'https://i.pravatar.cc/150'
+}" 
+
+onclick="openProfileByUsername('${story.username}')" 
+  class="rounded-circle me-2"
+  style="width:45px;height:45px;object-fit:cover;cursor:pointer;"
+/> 
+
+            <strong>${story.author}</strong>
+          </div>
+
+          <h5>${story.title}</h5>
+
+          <small class="text-muted">
+            ${new Date(story.createdAt).toLocaleString()}
+          </small>
+
+          ${story.imageUrl ? `
+            <img 
+  src="${story.imageUrl ? `http://localhost:3000${story.imageUrl}` : ''}" 
+  class="img-fluid rounded my-2"
+/> 
+
+          ` : ""}
+
+          <p id="content-${story.id}">
+            ${story.content.length > 150
+              ? story.content.substring(0,150) + "..."
+              : story.content}
+          </p>
+
+          ${story.content.length > 150 ? `
+            <button onclick="toggleReadMore(${story.id}, \`${story.content.replace(/`/g, "'")}\`)">
+              Read more
+            </button>
+          ` : ""}
+
+        </div>
+
+        <div class="card-footer d-flex justify-content-between">
+          <div>❤️ ${story.likesCount}</div>
+
+          <div>
+            <button onclick="toggleLike(${story.id})">
+              ${story.isLiked ? "Unlike" : "Like"}
+            </button>
+
+            ${currentUser && Number(currentUser.id) === Number(story.userId) ? ` 
+  <button onclick="deleteStory(${story.id})">Delete</button>
+` : ""} 
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    console.log("CURRENT USER:", currentUser);
+console.log("STORY USER:", story.userId);
+
+    container.appendChild(div);
+  });
+} 
+
+// Load more stories function
+function loadMoreStories() {
+  if (!hasMoreStories) return;
+
+  loadStories(currentPage + 1, true);
+}
+
+function toggleLoadMoreButton() {
+  const btn = document.getElementById("loadMoreBtn");
+
+  if (!btn) return;
+
+  btn.style.display = hasMoreStories ? "block" : "none";
+} 
+
+
+// Read more stories function
+function toggleReadMore(id, fullText) {
+  const el = document.getElementById(`content-${id}`);
+
+  if (el.innerText.includes("...")) {
+    el.innerText = fullText;
+  } else {
+    el.innerText = fullText.substring(0, 150) + "...";
+  }
+} 
+
+// Upload new story
+async function uploadStory() {
+
+  if (!currentUser) return alert("Login required");
+
+  const titleVal = document.getElementById("story-title").value.trim();
+  const contentVal = document.getElementById("story-content").value.trim();
+  
+  if (!titleVal || !contentVal)
+    return alert("Title and content are required");
+
+  const token = localStorage.getItem("token");
+  if (!token) return alert("Session expired");
+
+  try {
+
+
+    const fileInput = document.getElementById("story-image");
+const file = fileInput.files[0];
+
+const formData = new FormData();
+formData.append("title", titleVal);
+formData.append("content", contentVal);
+
+if (file) {
+  formData.append("image", file);
+}
+
+const res = await fetch("http://localhost:3000/stories", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${token}`
+  },
+  body: formData
+}); 
+
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    alert("Story uploaded successfully!");
+
+closeStoryModal();
+
+currentPage = 1;
+loadStories(1); 
+
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+
+// Delete story (only owner)
+async function deleteStory(id) {
+  const token = localStorage.getItem("token");
+
+  console.log("Deleting story:", id);
+
+  if (!confirm("Delete this story?")) return;
+
+  try {
+    const res = await fetch(`http://localhost:3000/stories/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+    console.log(data);
+
+    if (!res.ok) {
+      throw new Error(data.message || "Delete failed");
+    }
+
+    alert("Story deleted");
+
+    // 🔥 refresh feed
+    document.getElementById("vpStoryFeed").innerHTML = "";
+    loadStories(1);
+
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+} 
+
+
+// Like/unlike story
+async function toggleLike(storyId) {
+  try {
+    await fetch(
+      `http://localhost:3000/stories/${storyId}/like`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      }
+    );
+
+    loadStories(currentPage);
+
+  } catch (err) {
+    console.error(err);
+  }
+}  
+
+
+// Wishes and Pin system
+// Pin board image
+// function pinImage(img){
+//   if(!pinnedImages.includes(img)){
+//     pinnedImages.push(img);
+//     renderBoards();
+//   }
+// }
+
+/* ===================== STORY & WISH MODALS ===================== */
+
+// Submit wish
+// function submitWish(){
+
+//   if(!currentUser){
+//   alert("Login required");
+//   return;
+// } 
+
+
+//   const title = document.getElementById('wish-title').value.trim();
+//   const fileInput = document.getElementById('wish-image');
+
+//   if(!title || !fileInput.files.length){
+//     alert("Add a title and an image");
+//     return;
+//   }
+
+//   const file = fileInput.files[0];
+//   const reader = new FileReader();
+
+//   reader.onload = function(e){
+
+//     wishes.unshift({
+//       id: Date.now(),
+//       title,
+//       image: e.target.result,
+//       author: currentUser.username,
+//       avatar: currentUser.profilePic || "https://i.pravatar.cc/150"
+//     });
+
+//     closeWishModal();
+//     renderWishes();
+//     renderProfileBoards();
+
+//     document.getElementById('wish-title').value = '';
+//     document.getElementById('wish-image').value = '';
+//   };
+
+//   reader.readAsDataURL(file);
+// }
+
+// Render wishes
+// function renderWishes(){
+
+//   const grid = document.getElementById('vpWishGrid');
+//   if(!grid) return;
+
+//   grid.innerHTML = wishes.map(w => `
+//     <div class="col-md-4">
+//       <div class="card p-2">
+
+//         <img src="${w.image}" class="w-100 rounded mb-2">
+
+//         <div class="d-flex align-items-center mb-2">
+
+//           <img src="${w.avatar}"
+//             width="32"
+//             height="32"
+//             class="rounded-circle me-2"
+//             style="cursor:pointer"
+//             onclick="openProfileByUsername('${w.author}')">
+
+//           <strong
+//             style="cursor:pointer"
+//             onclick="openProfileByUsername('${w.author}')">
+//             ${w.author}
+//           </strong>
+
+//         </div>
+
+//         <small>${w.title}</small>
+
+//         <button class="btn btn-sm btn-outline-danger mt-2"
+//           onclick="pinWish(${w.id})">
+//           Pin
+//         </button>
+
+//       </div>
+//     </div>
+//   `).join('');
+// }
+
+
+// Create shared board
+// function createSharedBoard(){
+
+//   if(!currentUser){
+//   alert("Login required");
+//   return;
+// } 
+
+//   const name = prompt("Board name");
+//   if(!name) return;
+
+//   sharedBoards.push({
+//     id: Date.now(),
+//     name,
+//     owner: currentUser.username,
+//     members: [currentUser.username] ,
+//     wishes: []
+//   });
+
+//   renderBoards();
+
+//   alert("Board created successfully!");
+
+//   showVPPage('boards'); // 👈 VERY IMPORTANT
+// }
+
+
+// Auto scyn pin wish
+// function pinWish(wishId){
+
+//   if(!currentUser){
+//     alert("Login required");
+//     showPage('login');
+//     return;
+//   }
+
+//   const board = sharedBoards.find(
+//     b => b.members.includes(currentUser.username)
+//   );
+
+//   if(!board){
+//     alert("Join or create a shared board first");
+//     return;
+//   }
+
+//   const wish = wishes.find(w => w.id === wishId);
+//   if(!wish) return;
+
+//   if(!board.wishes.some(w => w.id === wishId)){
+//     board.wishes.push(wish);
+//   }
+
+//   renderBoards();
+//   showVPPage('boards');
+// } 
+
+// Invite other users for wishes
+// function inviteToBoard(boardId){
+
+//   const username = prompt("Invite username");
+
+//   const board = sharedBoards.find(
+//     b => b.id === boardId
+//   );
+
+//   if(board && !board.members.includes(username)){
+//     board.members.push(username);
+//   }
+// }
+
+// Group chat from wishes page
+// function launchBoardChat(boardId){
+
+//   if(!currentUser){
+//     alert("Login required");
+//     return;
+//   }
+
+//   const board = sharedBoards.find(
+//     b => b.id === boardId
+//   );
+
+//   if(!board) return;
+
+//   board.members.forEach(member => {
+
+//     if(member !== currentUser.username){
+//       addToInbox(member);
+//     }
+
+//   });
+
+//   showPage('messages');
+// } 
+
+// RenderBoards function
+// function renderBoards(){
+
+//   const grid = document.getElementById('vpBoardGrid');
+//   if(!grid) return;
+
+//   grid.innerHTML = sharedBoards.map(b => `
+//     <div class="card p-2"
+//  style="cursor:pointer"
+//  onclick="openBoard(${b.id})"> 
+
+//         <strong>${b.name}</strong>
+
+//         <div class="d-flex flex-wrap gap-2 mt-2">
+
+//           ${
+//             b.wishes.length
+//             ? b.wishes.map(w => `
+//                 <img src="${w.image}"
+//                      width="70"
+//                      height="70"
+//                      class="rounded"
+//                      style="object-fit:cover; cursor:pointer"
+//                      onclick="openProfileByUsername('${w.author}')">
+//               `).join('')
+//             :
+//             `<small class="text-muted">No pinned wishes yet</small>`
+//           }
+
+//         </div>
+
+//         <button class="btn btn-sm btn-outline-light mt-2"
+//           onclick="event.stopPropagation(); inviteToBoard(${b.id})" >
+//           Invite
+//         </button>
+
+//         <button class="btn btn-sm btn-danger mt-2"
+//           onclick="event.stopPropagation(); launchBoardChat(${b.id})" >
+//           Chat
+//         </button>
+
+//       </div>
+//     </div>
+//   `).join('');
+// }
+
+
+// Pin story to board
+// function pinStory(i){
+
+//   if(!currentUser){
+//     alert("Login required");
+//     return;
+//   }
+
+//   const story = travelStories[i];
+//   if(!story) return;
+
+//   pinnedImages.unshift({
+//     ...story,
+//     pinnedBy: currentUser.username
+//   });
+
+//   renderProfileBoards();
+// } 
+
+// Open full board function
+// function openBoard(boardId){
+
+//   const board = sharedBoards.find(
+//     b => b.id === boardId
+//   );
+
+//   if(!board) return;
+
+//   currentBoardView = boardId;
+
+//   document.getElementById('vpBoardTitle').innerText = board.name;
+//   document.getElementById('vpBoardOwner').innerText =
+//     "Created by " + board.owner;
+
+//   const grid = document.getElementById('vpBoardWishList');
+
+//   grid.innerHTML = board.wishes.map(w => `
+//     <div class="col-md-4">
+
+//       <div class="card p-2">
+
+//         <img src="${w.image}"
+//              class="w-100 rounded mb-2">
+
+//         <div class="d-flex align-items-center mb-2">
+
+//           <img src="${w.avatar}"
+//                width="30"
+//                height="30"
+//                class="rounded-circle me-2"
+//                style="cursor:pointer"
+//                onclick="openProfileByUsername('${w.author}')">
+
+//           <strong
+//             style="cursor:pointer"
+//             onclick="openProfileByUsername('${w.author}')">
+//             ${w.author}
+//           </strong>
+
+//         </div>
+
+//         <small>${w.title}</small>
+
+//         ${
+//           board.owner === currentUser.username
+//           ? `
+//             <button class="btn btn-sm btn-outline-danger mt-2"
+//               onclick="removeWishFromBoard(${board.id},${w.id})">
+//               Remove
+//             </button>
+//           `
+//           : ''
+//         }
+
+//       </div>
+
+//     </div>
+//   `).join('');
+
+//   showVPPage('board-view');
+// }
+
+// Remove wish from board
+// function removeWishFromBoard(boardId, wishId){
+
+//   const board = sharedBoards.find(
+//     b => b.id === boardId
+//   );
+
+//   if(!board) return;
+
+//   board.wishes =
+//     board.wishes.filter(w => w.id !== wishId);
+
+//   openBoard(boardId);
+// }
+
+// CloseVpCoach modal
+function closeVPBookModal(){
+  document.getElementById('vpBookModal').style.display = 'none';
+}
+
+
+// Open wish upload
+// function openWishUpload(){
+
+//   if(!currentUser){
+//     alert("Login required");
+//     showPage('login');
+//     return;
+//   }
+
+//   document.getElementById('vp-wish-modal').style.display = 'flex';
+// }
+
+//  Close wish modal
+// function closeWishModal(){
+//   document.getElementById('vp-wish-modal').style.display='none';
+// }
+
+// Render pin boards in profile page
+// function renderProfileBoards(){
+
+//   if(!currentUser) return;
+
+//   const el = document.getElementById('profileBoards');
+//   if(!el) return;
+
+//   el.innerHTML = '';
+
+//   pinnedImages
+//     .filter(p => p.pinnedBy === currentUser.username)
+//     .forEach(p => {
+//       el.innerHTML += `
+//         <div class="col-6">
+//           <div class="card p-2">
+//             <small>${p.title}</small>
+//           </div>
+//         </div>
+//       `;
+//     });
+// } 
+
+// Story feed page load initializer
+document.addEventListener("DOMContentLoaded", function(){
+  renderVPCoaches();
+  renderWishes();
+  renderBoards();
+  loadStories(1);
+}); 
+
+// Video page load initializer
+document.addEventListener("DOMContentLoaded", async () => {
+
+  await loadCurrentUser();
+
+  if(currentUser){
+    await loadProfile();
+    await loadVideos();
+    await loadMyVideos();
+  }
+
+});
+
+// Coaches load page initializer
+document.addEventListener("DOMContentLoaded", () => {
+  renderVPCoaches();
+});
+
+// new gobal data arrays
+const container =
+  document.getElementById('vpCoachList') ||
+  document.getElementById('vpCoachPreview');
+
+
+</script>
+
+</body>
+</html>
