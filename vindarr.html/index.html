@@ -873,12 +873,6 @@ Coach Dashboard
 <!-- <script src="https://meet.jit.si/external_api.js"></script>  -->
 
 <script>
-  // ======== USER & AUTH ========
-// let currentUser = null; 
-// const token = localStorage.getItem("token");
-// if (token) {
-//   currentUser = parseJwt(token);
-// }
 
 let currentUser = null;
 
@@ -887,7 +881,7 @@ async function initUser() {
   if (!token) return;
 
   try {
-    const res = await fetch(`${API}/profile/me`, {
+    const res = await fetch(`${API_BASE_URL}/profile/me`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -907,8 +901,8 @@ async function initUser() {
 } 
 
 
-// Video feed API
-const API = "http://localhost:3000";
+// Backend render API
+const API_BASE_URL = "https://vindarr-backend.onrender.com";
 let posts = []; 
 
 let activeChat=null;
@@ -946,7 +940,7 @@ let hasMoreStories = true;
 
 /* ================= SOCKET CONNECTION ================= */
 
-const socket = io("http://localhost:3000");
+const socket = io("https://vindarr-backend.onrender.com");
 
 socket.on("connect", () => {
   console.log("Connected to realtime chat server");
@@ -1020,7 +1014,6 @@ function showPage(p){
 }
 
 
-
 // Auth function B-E
 function isAuthenticated() {
   return !!localStorage.getItem("token");
@@ -1043,7 +1036,7 @@ async function login() {
     return alert("Email & password required");
 
   try {
-    const res = await fetch("http://localhost:3000/auth/login", {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: emailVal, password: passwordVal })
@@ -1103,7 +1096,7 @@ async function register() {
   const role = document.getElementById("reg-role").value;
 
   try {
-    const res = await fetch("http://localhost:3000/auth/register", {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password, role })
@@ -1240,7 +1233,7 @@ async function sendMsg(e){
   const formData = new FormData();
   formData.append("file", pendingAttachment);
 
-  const res = await fetch(`${API}/messages/upload`,{
+  const res = await fetch(`${API_BASE_URL}/messages/upload`,{
     method:"POST",
     body:formData
   });
@@ -1255,7 +1248,7 @@ async function sendMsg(e){
   socket.emit("sendMessage", msgData);
 
   // Save to backend
-  const saved = await fetch(`${API}/messages`,{
+  const saved = await fetch(`${API_BASE_URL}/messages`,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify(msgData)
@@ -1322,7 +1315,7 @@ function renderChat(){
 
         ${msg.attachment || msg.attachmentUrl ? renderAttachment(
   msg.attachment || {
-    data: "http://localhost:3000"+msg.attachmentUrl,
+    data: API_BASE_URL + msg.attachmentUrl,
     type: msg.attachmentType,
     name: msg.text || 'Attachment'
   }
@@ -1420,7 +1413,7 @@ async function deleteMessage(btn){
   const msgEl = btn.closest(".msg");
   const msgId = msgEl.dataset.id;
 
-  await fetch(`${API}/messages/${msgId}`,{
+  await fetch(`${API_BASE_URL}/messages/${msgId}`,{
     method: "DELETE"
   });
 
@@ -1563,7 +1556,7 @@ async function saveMessageToServer(msg){
 
   try{
 
-    await fetch(`${API}/messages`,{
+    await fetch(`${API_BASE_URL}/messages`,{
 
       method:"POST",
 
@@ -1598,7 +1591,7 @@ async function loadMessagesFromServer(username){
   try{
 
     const res = await fetch(
-      `${API}/messages/conversation/${currentUser.username}/${username}`,
+      `${API_BASE_URL}/messages/conversation/${currentUser.username}/${username}`,
       {
         headers:{
           Authorization:`Bearer ${token}`
@@ -1654,7 +1647,7 @@ async function publish(){
   formData.append("category", uCategory.value);
   formData.append("context", uContext.value);
 
-  const res = await fetch("http://localhost:3000/videos",{
+  const res = await fetch(`${API_BASE_URL}/videos`,{
 
     method:"POST",
 
@@ -1681,7 +1674,7 @@ async function loadCurrentUser(){
   if(!token) return;
 
   try{
-    const res = await fetch(`${API}/users/me`,{
+    const res = await fetch(`${API_BASE_URL}/users/me`,{
       headers:{
         Authorization:`Bearer ${token}`
       }
@@ -1723,7 +1716,7 @@ async function loadVideos(){
 
   try{
 
-    const res = await fetch(`${API}/videos?page=${page}&limit=10`);
+    const res = await fetch(`${API_BASE_URL}/videos?page=${page}&limit=10`);
     
     const result = await res.json();
 const videos = result.data || result;
@@ -1784,7 +1777,7 @@ const feedPosts = posts.map(v => {
         <div class="card p-2">
 
           <video id="video${i}" controls class="w-100">
-            <source src="http://localhost:3000${v.videoUrl}" type="video/mp4">
+            <source src="${API_BASE_URL}${v.videoUrl}" type="video/mp4">
           </video>
 
           <div class="d-flex justify-content-between align-items-center">
@@ -1792,7 +1785,7 @@ const feedPosts = posts.map(v => {
   <div class="d-flex align-items-center gap-2">
 
     <img class="avatar"
-      src="${v.creatorAvatar ? `http://localhost:3000${v.creatorAvatar}` : 'https://i.pravatar.cc/40'}" 
+      src="${v.creatorAvatar ? `${API_BASE_URL}${v.creatorAvatar}` : 'https://i.pravatar.cc/40'}" 
       width="32"
       height="32"
       class="rounded-circle"
@@ -1860,7 +1853,7 @@ async function deleteVideo(id){
 
   try{
 
-    const res = await fetch(`${API}/videos/${id}`,{
+    const res = await fetch(`${API_BASE_URL}/videos/${id}`,{
       method:"DELETE",
       headers:{
         Authorization:`Bearer ${token}`
@@ -1893,7 +1886,7 @@ async function pressUnderstand(videoId) {
   if (!token) return;
 
   try {
-    const res = await fetch(`http://localhost:3000/videos/${videoId}/understand`, {
+    const res = await fetch(`${API_BASE_URL}/videos/${videoId}/understand`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`
@@ -1930,7 +1923,7 @@ async function openCommentModal(i){
 
   const videoId = posts[i].id;
 
-  const res = await fetch(`http://localhost:3000/comments/${videoId}`);
+  const res = await fetch(`${API_BASE_URL}/comments/${videoId}`);
   const comments = await res.json();
 
   posts[i].comments = comments.map(c => ({
@@ -1952,6 +1945,7 @@ async function openCommentModal(i){
 
 function closeCommentModal(){bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();}
 
+
 async function submitComment(e){
 
   if(e.key !== 'Enter' || !commentInput.value) return;
@@ -1967,7 +1961,7 @@ async function submitComment(e){
     time: Math.floor(video.currentTime)
   };
 
-  const res = await fetch('http://localhost:3000/comments', {
+  const res = await fetch(`${API_BASE_URL}/comments`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -2064,7 +2058,7 @@ async function replyComment(parentId){
     parentId: parentId
   };
 
-  const res = await fetch('http://localhost:3000/comments', {
+  const res = await fetch(`${API_BASE_URL}/comments`, {
     method:'POST',
     headers:{
       'Content-Type':'application/json',
@@ -2313,7 +2307,7 @@ async function applyCoach(){
   const bio = prompt("Enter your coaching bio");
   const expertise = prompt("Your visa expertise (US, UK, Canada)");
 
-  const res = await fetch("http://localhost:3000/coaches",{
+  const res = await fetch(`${API_BASE_URL}/coaches`,{
     method:"POST",
     headers:{
   "Content-Type":"application/json",
@@ -2400,7 +2394,7 @@ async function renderVPCoaches() {
 
   try {
 
-    const res = await fetch("http://localhost:3000/coaches");
+    const res = await fetch(`${API_BASE_URL}/coaches`);
     const coaches = await res.json();
 
     if (!coaches.length) {
@@ -2413,7 +2407,7 @@ async function renderVPCoaches() {
 
       <div class="card p-3 d-flex flex-row align-items-center gap-3">
 
-        <img src="${coach.user?.avatar ? 'http://localhost:3000' + coach.user.avatar : 'https://i.pravatar.cc/64'}" 
+        <img src="${coach.user?.avatar ? `${API_BASE_URL}${coach.user.avatar}` : 'https://i.pravatar.cc/64'}" 
              class="rounded-circle"
              width="64" height="64"
              style="cursor:pointer"
@@ -2533,7 +2527,7 @@ async function confirmVPBooking() {
 
   try {
     // Step 1: Create session
-    const sessionRes = await fetch(`${API}/sessions`, {
+    const sessionRes = await fetch(`${API_BASE_URL}/sessions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ learnerId: currentUser.id, coachId, date, time })
@@ -2544,7 +2538,7 @@ async function confirmVPBooking() {
     const session = await sessionRes.json();
 
     // Step 2: Initialize payment
-    const payRes = await fetch(`${API}/payments/initialize`, {
+    const payRes = await fetch(`${API_BASE_URL}/payments/initialize`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: currentUser.email, amount: 5000, sessionId: session.id })
@@ -2571,7 +2565,7 @@ async function confirmVPBooking() {
 
   (async () => {
 
-    await fetch(`${API}/payments/verify?reference=${response.reference}&sessionId=${session.id}`);
+    await fetch(`${API_BASE_URL}/payments/verify?reference=${response.reference}&sessionId=${session.id}`);
 
     // 🔥 Launch video session immediately
 const roomName = `oraizon-session-${session.id}`; // FIX 5
@@ -2598,7 +2592,7 @@ window.open(`https://meet.jit.si/${roomName}`, "_blank"); // FIX 6
     console.error(err);
     alert("Payment error: " + err.message);
     // Optionally: delete session if payment init fails
-    await fetch(`${API}/sessions/${session.id}`, { method: 'DELETE' });
+    await fetch(`${API_BASE_URL}/sessions/${session.id}`, { method: 'DELETE' });
   }
 } 
 
@@ -2606,14 +2600,14 @@ window.open(`https://meet.jit.si/${roomName}`, "_blank"); // FIX 6
 // Open coach profile function
 async function openCoachProfile(coachId){
 
-  const res = await fetch(`${API}/coaches/${coachId}`);
+  const res = await fetch(`${API_BASE_URL}/coaches/${coachId}`);
   const coach = await res.json();
 
   const user = coach.user;
 
   document.getElementById("coachAvatar").src =
     user?.avatar
-      ? `http://localhost:3000${user.avatar}`
+      ? `${API_BASE_URL}${user.avatar}`
       : "https://via.placeholder.com/120";
 
   document.getElementById("coachName").innerText =
@@ -2662,7 +2656,7 @@ if(currentUser && currentUser.role === "coach" && user.id === currentUser.id){
 // Load coach resources function
 async function loadCoachResources(coachId){
 
-  const res = await fetch(`${API}/resources/${coachId}`);
+  const res = await fetch(`${API_BASE_URL}/resources/${coachId}`);
 
   const resources = await res.json();
 
@@ -2808,7 +2802,7 @@ async function saveProfile(){
       const formData = new FormData();
       formData.append("file", editPhoto.files[0]);
 
-      const uploadRes = await fetch(`${API}/upload/avatar`,{
+      const uploadRes = await fetch(`${API_BASE_URL}/upload/avatar`,{
         method:"POST",
         body:formData
       });
@@ -2820,7 +2814,7 @@ async function saveProfile(){
     }
 
     // 2️⃣ Update profile
-    const res = await fetch(`${API}/profile`,{
+    const res = await fetch(`${API_BASE_URL}/profile`,{
       method:"PATCH",
       headers:{
         "Content-Type":"application/json",
@@ -2855,7 +2849,7 @@ async function uploadAvatar(file){
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API}/upload/avatar`,{
+  const res = await fetch(`${API_BASE_URL}/upload/avatar`,{
     method:"POST",
     body:formData
   });
@@ -2873,7 +2867,7 @@ function openProfile(profile){
 
   viewProfilePic.src =
   profile.avatar
-  ? `http://localhost:3000${profile.avatar}`
+  ? `${API_BASE_URL}${profile.avatar}`
   : 'https://via.placeholder.com/120'; 
 
   viewProfileName.innerText =
@@ -2903,44 +2897,6 @@ if (
 renderCoachResources();
 }
 
-// Render Profile videos
-function renderProfileVideos() {
-
-  const container = document.getElementById('profileVideos');
-  container.innerHTML = '';
-
-  const creatorVideos = posts.filter(
-    p => p.creatorUsername === viewedProfile.username
-  );
-
-  if (!creatorVideos.length) {
-    container.innerHTML = '<p class="text-muted">No videos yet.</p>';
-    return;
-  }
-
-  creatorVideos.forEach(v => {
-
-    container.innerHTML += `
-      <div class="col-md-6">
-        <div class="card p-2">
-
-          <video controls class="w-100">
-            <source src="http://localhost:3000${v.videoUrl}" type="video/mp4">
-          </video>
-
-          <strong>${v.title}</strong>
-
-          <div class="text-muted small">
-            ${v.category}
-          </div>
-
-        </div>
-      </div>
-    `;
-
-  });
-
-}
 
 // Render user video in personal profile page
 async function renderProfileVideos(){
@@ -2949,7 +2905,7 @@ async function renderProfileVideos(){
 
   try{
 
-    const res = await fetch(`${API}/videos/user/${viewedProfile.id}`);
+    const res = await fetch(`${API_BASE_URL}/videos/user/${viewedProfile.id}`);
     const videos = await res.json();
 
     const container = document.getElementById("profileVideos");
@@ -2961,7 +2917,7 @@ async function renderProfileVideos(){
       html += `
         <div class="col-md-6">
           <video controls class="w-100">
-            <source src="http://localhost:3000${v.videoUrl}">
+            <source src="${API_BASE_URL}${v.videoUrl}">
           </video>
         </div>
       `;
@@ -2990,7 +2946,7 @@ function openProfileByUsername(username){
   }
 
   // ✅ Fetch instead of relying on local array
-  fetch(`${API}/profile/username/${username}`)
+  fetch(`${API_BASE_URL}/profile/username/${username}`)
     .then(res => res.json())
     .then(user => {
       if(user && user.username){
@@ -3006,9 +2962,8 @@ function openProfileByUsername(username){
 // Render profile correctly
 function renderViewProfile() {
   viewProfilePic.src =
-    viewProfilePic.src =
   viewedProfile.avatar
-    ? `http://localhost:3000${viewedProfile.avatar}`
+    ? `${API_BASE_URL}${viewedProfile.avatar}`
     : 'https://via.placeholder.com/120'; 
     
 
@@ -3027,7 +2982,7 @@ async function loadMyVideos(){
 
   if(!currentUser) return;
 
-  const res = await fetch(`${API}/videos`);
+  const res = await fetch(`${API_BASE_URL}/videos`);
 
   const result = await res.json();
 
@@ -3045,7 +3000,7 @@ async function loadMyVideos(){
       <div class="card p-2 mb-2">
 
         <video controls width="100%">
-          <source src="http://localhost:3000${v.videoUrl}">
+          <source src="${API_BASE_URL}${v.videoUrl}">
         </video>
 
         <strong>${v.title}</strong>
@@ -3078,7 +3033,7 @@ async function uploadCoachResource() {
 
   try {
 
-    const res = await fetch("http://localhost:3000/resources", {
+    const res = await fetch(`${API_BASE_URL}/resources`, {
 
       method: "POST",
 
@@ -3129,7 +3084,7 @@ async function getMyCoachProfile() {
 
   const token = localStorage.getItem("token");
 
-  const res = await fetch(`${API}/coaches/user/${currentUser.id}`, {
+  const res = await fetch(`${API_BASE_URL}/coaches/user/${currentUser.id}`, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -3159,7 +3114,7 @@ async function loadCoachSessions(){
   }
 
   // 🔥 Step 2: fetch sessions using coach.id (NOT user.id)
-  const res = await fetch(`${API}/sessions/coach/${coach.id}`,{ 
+  const res = await fetch(`${API_BASE_URL}/sessions/coach/${coach.id}`,{ 
     headers:{
       Authorization:`Bearer ${token}`
     }
@@ -3222,7 +3177,7 @@ async function loadLearnerSessions(){
   const token = localStorage.getItem("token");
   if(!token) return;
 
-  const res = await fetch(`${API}/sessions/learner/${currentUser.id}`);
+  const res = await fetch(`${API_BASE_URL}/sessions/learner/${currentUser.id}`);
   const sessions = await res.json();
 
   const container = document.getElementById("mySessions");
@@ -3235,7 +3190,7 @@ async function loadLearnerSessions(){
 
     card.innerHTML = `
       <img class="coach-avatar"
-      src="http://localhost:3000${session.coach?.user?.avatar || '/uploads/default.png'}">
+      src="${API_BASE_URL}${session.coach?.user?.avatar}" || '/uploads/default.png'}">
 
       <h4 class="coach-name">
         ${session.coach?.user?.username || "Coach"}
@@ -3282,7 +3237,7 @@ async function updateSessionStatus(sessionId, status){
 
   const token = localStorage.getItem("token");
 
-  await fetch(`${API}/sessions/${sessionId}`,{
+  await fetch(`${API_BASE_URL}/sessions/${sessionId}`,{
     method:"PATCH",
     headers:{
       "Content-Type":"application/json",
@@ -3307,7 +3262,7 @@ async function updateCoachProfile(){
   const rate =
 parseInt(document.getElementById("coachRateEdit").value);
 
-  await fetch(`${API}/coaches/${window.activeCoachId}`,{
+  await fetch(`${API_BASE_URL}/coaches/${window.activeCoachId}`,{
     method:"PATCH",
     headers:{
       "Content-Type":"application/json",
@@ -3354,7 +3309,7 @@ async function loadStories(page = 1, append = false) {
   try {
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:3000/stories?page=${page}`, {
+    const res = await fetch(`${API_BASE_URL}/stories?page=${page}`, {
       headers: {
         "Authorization": `Bearer ${token}`
       }
@@ -3410,7 +3365,7 @@ function renderStories(stories, append = false) {
             <img 
   src="${
   story.avatar && story.avatar.startsWith('/uploads')
-    ? `http://localhost:3000${story.avatar}`
+    ? `${API_BASE_URL}${story.avatar}`
     : story.avatar || 'https://i.pravatar.cc/150'
 }" 
 
@@ -3430,7 +3385,7 @@ onclick="openProfileByUsername('${story.username}')"
 
           ${story.imageUrl ? `
             <img 
-  src="${story.imageUrl ? `http://localhost:3000${story.imageUrl}` : ''}" 
+  src="${story.imageUrl ? `${API_BASE_URL}${story.imageUrl}` : ''}" 
   class="img-fluid rounded my-2"
 /> 
 
@@ -3529,7 +3484,7 @@ if (file) {
   formData.append("image", file);
 }
 
-const res = await fetch("http://localhost:3000/stories", {
+const res = await fetch(`${API_BASE_URL}/stories`, {
   method: "POST",
   headers: {
     "Authorization": `Bearer ${token}`
@@ -3563,7 +3518,7 @@ async function deleteStory(id) {
   if (!confirm("Delete this story?")) return;
 
   try {
-    const res = await fetch(`http://localhost:3000/stories/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/stories/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`
@@ -3593,8 +3548,7 @@ async function deleteStory(id) {
 // Like/unlike story
 async function toggleLike(storyId) {
   try {
-    await fetch(
-      `http://localhost:3000/stories/${storyId}/like`,
+    await fetch(`${API_BASE_URL}/stories/${storyId}/like`,
       {
         method: "POST",
         headers: {
