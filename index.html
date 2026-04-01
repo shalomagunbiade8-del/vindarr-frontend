@@ -1647,26 +1647,38 @@ async function publish(){
   formData.append("category", uCategory.value);
   formData.append("context", uContext.value);
 
-  const res = await fetch(`${API_BASE_URL}/videos`,{
+  try{
 
-    method:"POST",
+    const res = await fetch(`${API_BASE_URL}/videos`,{
+      method:"POST",
+      headers:{
+        "Authorization":`Bearer ${localStorage.getItem("token")}`
+      },
+      body: formData
+    });
 
-    headers:{
-      "Authorization":`Bearer ${localStorage.getItem("token")}`
-    },
+    if(!res.ok){
+      const errorText = await res.text();
+      console.error("Upload failed:", errorText);
+      alert("Upload failed. Open console.");
+      return;
+    }
 
-    body: formData
+    const data = await res.json();
+    console.log("UPLOAD SUCCESS:", data);
 
-  });
+    alert("Video uploaded successfully!");
 
-  const data = await res.json();
+    await loadVideos();
+    await loadMyVideos();
 
-  console.log(data);
+  }catch(err){
+    console.error("Upload error:", err);
+    alert("Something went wrong");
+  }
 
-  await loadVideos();
-await loadMyVideos();
+} 
 
-}
 
 // Load currentuser for video
 async function loadCurrentUser(){
