@@ -1641,13 +1641,14 @@ async function publish(){
   }
 
   const formData = new FormData();
-
   formData.append("video", file);
   formData.append("title", uTitle.value);
   formData.append("category", uCategory.value);
   formData.append("context", uContext.value);
 
-  try{
+  try {
+
+    console.log("🚀 Sending request...");
 
     const res = await fetch(`${API_BASE_URL}/videos`,{
       method:"POST",
@@ -1657,24 +1658,35 @@ async function publish(){
       body: formData
     });
 
+    console.log("📡 Response received:", res);
+
+    const text = await res.text();
+    console.log("📦 Raw response:", text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+
+    console.log("✅ Parsed data:", data);
+
     if(!res.ok){
-      const errorText = await res.text();
-      console.error("Upload failed:", errorText);
-      alert("Upload failed. Open console.");
+      alert("Upload failed: " + text);
       return;
     }
 
-    const data = await res.json();
-    console.log("UPLOAD SUCCESS:", data);
-
-    alert("Video uploaded successfully!");
+    alert("Upload success!");
 
     await loadVideos();
     await loadMyVideos();
 
-  }catch(err){
-    console.error("Upload error:", err);
-    alert("Something went wrong");
+  } catch (err) {
+
+    console.error("❌ FETCH ERROR:", err);
+    alert("Network error: " + err.message);
+
   }
 
 } 
