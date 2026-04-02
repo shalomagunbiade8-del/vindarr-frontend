@@ -414,8 +414,8 @@ Become a Coach
          width="120" height="120">
 
     <h4 id="viewProfileName"></h4>
-    <p class="text-muted" id="viewProfileRole"></p>
-    <p id="viewProfileBio" class="text-muted"></p>
+    <p class="text-white" id="viewProfileRole"></p>
+    <p id="viewProfileBio" class="text-white"></p>
     <button class="btn btn-danger" onclick="chatWithProfile()">
   Chat
 </button>
@@ -836,7 +836,7 @@ Coach Dashboard
 <select id="reg-role" class="form-control mb-2">
   <option value="learner">Learner</option>
   <option value="creator">Creator</option>
-  <option value="coach">Coach (VisaPrep)</option>
+  <option value="coach">Coach</option>
 </select>
 
 <button class="vp-primary w-100" onclick="register()">
@@ -2442,7 +2442,7 @@ async function renderVPCoaches() {
 
           <strong>${coach.user?.username || 'Coach #' + coach.id}</strong>
 
-          <div class="text-muted small">
+          <div class="text-white small">
             ${coach.bio || ''}
           </div>
 
@@ -2891,8 +2891,7 @@ function openProfile(profile){
 
   viewProfilePic.src =
   profile.avatar
-  ? `${API_BASE_URL}${profile.avatar}`
-  : 'https://via.placeholder.com/120'; 
+   'https://via.placeholder.com/120'; 
 
   viewProfileName.innerText =
     profile.username || profile.name || 'User';
@@ -2941,7 +2940,7 @@ async function renderProfileVideos(){
       html += `
         <div class="col-md-6">
           <video controls class="w-100">
-            <source src="${API_BASE_URL}${v.videoUrl}">
+            <source src="${v.videoUrl}">
           </video>
         </div>
       `;
@@ -3024,7 +3023,7 @@ async function loadMyVideos(){
       <div class="card p-2 mb-2">
 
         <video controls width="100%">
-          <source src="${API_BASE_URL}${v.videoUrl}">
+          <source src="${v.videoUrl}">
         </video>
 
         <strong>${v.title}</strong>
@@ -3387,11 +3386,7 @@ function renderStories(stories, append = false) {
 
           <div class="d-flex align-items-center mb-3">
             <img 
-  src="${
-  story.avatar && story.avatar.startsWith('/uploads')
-    ? `${API_BASE_URL}${story.avatar}`
-    : story.avatar || 'https://i.pravatar.cc/150'
-}" 
+  src="${story.avatar || 'https://i.pravatar.cc/150'}"
 
 onclick="openProfileByUsername('${story.username}')" 
   class="rounded-circle me-2"
@@ -3403,13 +3398,13 @@ onclick="openProfileByUsername('${story.username}')"
 
           <h5>${story.title}</h5>
 
-          <small class="text-muted">
+          <small class="text-white">
             ${new Date(story.createdAt).toLocaleString()}
           </small>
 
           ${story.imageUrl ? `
             <img 
-  src="${story.imageUrl ? `${API_BASE_URL}${story.imageUrl}` : ''}" 
+  src="${story.imageUrl}" 
   class="img-fluid rounded my-2"
 /> 
 
