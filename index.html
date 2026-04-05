@@ -518,6 +518,8 @@ Become a Coach
   <!-- <button class="vp-pill" onclick="showVPPage('wishes')">Wishes</button>
   <button class="vp-pill" onclick="showVPPage('boards')">PinBoards</button> -->
   <button class="vp-pill" onclick="showVPPage('coaches')">Coaches</button>
+  <button id="adminBtn" class="vp-pill" onclick="showVPPage('adminPanel')" style="display: none;">Admin Panel</button>
+
 </div>
 
 </div>
@@ -552,7 +554,7 @@ Become a Coach
 
   <!-- ================= COACHES ================= -->
 <div id="vp-coaches" class="vp-page">
-  <h5 class="fw-bold mb-3">Visa Coaches</h5>
+  <h5 class="fw-bold mb-3">Vindarr Travel Coaches</h5>
   <div id="vpCoachList" class="d-flex flex-column gap-3"></div>
 </div>
 
@@ -643,6 +645,11 @@ Coach Dashboard
 
 </div> 
 
+<!-- Admin Panel -->
+ <div id="adminPanel" style="display:none;">
+  <h3>Pending Coach Applications</h3>
+  <div id="pendingCoaches"></div>
+</div> 
 
   <!-- ================= JOURNEY DETAIL ================= -->
 
@@ -1727,6 +1734,15 @@ async function loadCurrentUser(){
       totalUnderstand: user.totalUnderstand
     };
 
+    // admin trigger
+    if (currentUser?.role === "admin") {
+  const adminBtn = document.getElementById("adminBtn");
+  if (adminBtn) adminBtn.style.display = "inline-block";
+
+  // Optional: auto-load admin data
+  loadPendingCoaches();
+} 
+
   }catch(err){
     console.error("User load failed",err);
   }
@@ -2423,7 +2439,7 @@ async function renderVPCoaches() {
 
     if (!coaches.length) {
       listContainer.innerHTML =
-        `<p class="text-muted text-center">No coaches available</p>`;
+        `<p class="text-white text-center">No coaches available</p>`;
       return;
     }
 
@@ -2589,7 +2605,7 @@ async function confirmVPBooking() {
 
   (async () => {
 
-    await fetch(`${API_BASE_URL}/payments/verify?reference=${response.reference}&sessionId=${session.id}`);
+    await fetch(`${API_BASE_URL}/sessions/verify-payment?reference=${response.reference}`); 
 
     // 🔥 Launch video session immediately
 const roomName = `oraizon-session-${session.id}`; // FIX 5
@@ -3213,7 +3229,11 @@ async function loadLearnerSessions(){
 
     card.innerHTML = `
       <img class="coach-avatar"
-      src="${API_BASE_URL}${session.coach?.user?.avatar}" || '/uploads/default.png'}">
+src="${
+  session.coach?.user?.avatar
+    ? API_BASE_URL + session.coach.user.avatar
+    : 'https://i.pravatar.cc/40'
+}"> 
 
       <h4 class="coach-name">
         ${session.coach?.user?.username || "Coach"}
@@ -3229,19 +3249,24 @@ async function loadLearnerSessions(){
          Join Session
        </button>`
     : session.status === 'accepted'
-    ? `<button disabled>
-         Awaiting Payment
+    ? `<button onclick="payForSession(${session.id})">
+         Pay Now
        </button>`
-    : `<button disabled>
+    : `<span class="text-muted">
          Awaiting Approval
-       </button>`
-} 
+       </span>`
+}      
     `;
 
     container.appendChild(card);
 
   });
 
+} 
+
+// Pay for session function
+function payForSession(sessionId){
+  alert("Please rebook and complete payment from booking flow");
 } 
 
 // Join session function
@@ -3300,6 +3325,43 @@ parseInt(document.getElementById("coachRateEdit").value);
 
   alert("Profile updated");
 
+} 
+
+// Load pending coaches
+async function loadPendingCoaches() {
+
+  const res = await fetch(`${API_BASE_URL}/coaches/pending`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+
+  const coaches = await res.json();
+
+  document.getElementById('pendingCoaches').innerHTML =
+    coaches.map(coach => `
+      <div class="mb-2">
+        <strong>${coach.user.username}</strong>
+        <button onclick="approveCoach(${coach.id})">
+          Approve
+        </button>
+      </div>
+    `).join('');
+} 
+
+// Approve coach button
+async function approveCoach(id) {
+
+  await fetch(`${API_BASE_URL}/coaches/${id}/verify`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+
+  alert("Coach approved");
+
+  loadPendingCoaches();
 } 
 
 
