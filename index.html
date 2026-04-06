@@ -1699,7 +1699,7 @@ async function publish(){
 } 
 
 
-// Load currentuser for video
+// Load currentuser 
 async function loadCurrentUser(){
   const token = localStorage.getItem("token");
   if(!token) return;
@@ -1735,13 +1735,16 @@ async function loadCurrentUser(){
     };
 
     // admin trigger
-    if (currentUser?.role === "admin") {
-  const adminBtn = document.getElementById("adminBtn");
-  if (adminBtn) adminBtn.style.display = "inline-block";
+    const adminBtn = document.getElementById("adminBtn");
 
-  // Optional: auto-load admin data
-  loadPendingCoaches();
+// 🔥 ALWAYS HIDE FIRST
+if (adminBtn) adminBtn.style.display = "none";
+
+// ✅ SHOW ONLY IF ADMIN
+if (currentUser?.role === "admin") {
+  if (adminBtn) adminBtn.style.display = "inline-block";
 } 
+
 
   }catch(err){
     console.error("User load failed",err);
@@ -2370,6 +2373,12 @@ async function applyCoach(){
 /* ---------- PAGE SWITCH ---------- */
 function showVPPage(id) {
 
+  // 🚨 BLOCK NON-ADMINS FROM ADMIN PANEL
+  if (id === 'adminPanel' && currentUser?.role !== 'admin') {
+    alert("Access denied");
+    return;
+  }
+
   document.querySelectorAll('#visaprep .vp-page')
     .forEach(p => p.classList.remove('active'));
 
@@ -2382,7 +2391,16 @@ function showVPPage(id) {
   if (id === 'stories') loadStories();
   if (id === 'wishes') renderWishes();
   if (id === 'boards') renderBoards();
-} 
+
+  // 🔥 ADD THIS BLOCK
+if (id === 'adminPanel') {
+  if (currentUser?.role === "admin") {
+    loadPendingCoaches();
+  } else {
+    alert("Access denied");
+  }
+}
+}
 
 
 /* ===================== AI MOCK INTERVIEW ===================== */
@@ -3330,24 +3348,52 @@ parseInt(document.getElementById("coachRateEdit").value);
 // Load pending coaches
 async function loadPendingCoaches() {
 
-  const res = await fetch(`${API_BASE_URL}/coaches/pending`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    console.error("No token");
+    return;
+  }
+
+  try {
+    console.log("Fetching pending coaches...");
+
+    const res = await fetch(`${API_BASE_URL}/coaches/pending`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      console.error("Error:", await res.text());
+      return;
     }
-  });
 
-  const coaches = await res.json();
+    const coaches = await res.json();
 
-  document.getElementById('pendingCoaches').innerHTML =
-    coaches.map(coach => `
-      <div class="mb-2">
-        <strong>${coach.user.username}</strong>
-        <button onclick="approveCoach(${coach.id})">
-          Approve
-        </button>
-      </div>
-    `).join('');
-} 
+    console.log("Pending coaches:", coaches);
+
+    if (!coaches.length) {
+      document.getElementById('pendingCoaches').innerHTML =
+        "<p>No pending applications</p>";
+      return;
+    }
+
+    document.getElementById('pendingCoaches').innerHTML =
+      coaches.map(coach => `
+        <div class="mb-2">
+          <strong>${coach.user?.username || 'Unknown'}</strong>
+          <button onclick="approveCoach(${coach.id})">
+            Approve
+          </button>
+        </div>
+      `).join('');
+
+  } catch (err) {
+    console.error("Failed:", err);
+  }
+}
+
 
 // Approve coach button
 async function approveCoach(id) {
