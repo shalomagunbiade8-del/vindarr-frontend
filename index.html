@@ -2921,14 +2921,19 @@ async function uploadAvatar(file){
 
 // Profile open function
 function openProfile(profile){
+
+  if(!profile) return;
+
   viewedProfile = profile;
 
+  // ✅ FIXED avatar logic
   viewProfilePic.src =
-  profile.avatar
-   'https://via.placeholder.com/120'; 
+    profile.avatar
+      ? `${API_BASE_URL}${profile.avatar}`
+      : 'https://via.placeholder.com/120';
 
   viewProfileName.innerText =
-    profile.username || profile.name || 'User';
+    profile.username || 'User';
 
   viewProfileBio.innerText =
     profile.bio || '';
@@ -2936,23 +2941,26 @@ function openProfile(profile){
   viewProfileRole.innerText =
     profile.role ? `Role: ${profile.role}` : '';
 
-  renderProfileVideos();   // ADD THIS
+  // ✅ Load their videos
+  renderProfileVideos();
+
+  // ✅ SWITCH PAGE (VERY IMPORTANT)
   showPage('viewProfile');
 
-  // Show resource upload ONLY for logged-in coach viewing own profile
-if (
-  currentUser &&
-  viewedProfile &&
-  viewedProfile.role === 'coach' &&
-  viewedProfile.username === currentUser.username
-) {
-  document.getElementById('coachResourceUpload').style.display = 'block';
-} else {
-  document.getElementById('coachResourceUpload').style.display = 'none';
-} 
+  // ✅ Coach resource visibility
+  if (
+    currentUser &&
+    viewedProfile &&
+    viewedProfile.role === 'coach' &&
+    viewedProfile.username === currentUser.username
+  ) {
+    document.getElementById('coachResourceUpload').style.display = 'block';
+  } else {
+    document.getElementById('coachResourceUpload').style.display = 'none';
+  }
 
-renderCoachResources();
-}
+  renderCoachResources();
+} 
 
 
 // Render user video in personal profile page
@@ -2994,6 +3002,7 @@ async function renderProfileVideos(){
 
 // Open profile by username
 function openProfileByUsername(username){
+
   if(!username) return;
 
   // ✅ If it's you
@@ -3002,19 +3011,18 @@ function openProfileByUsername(username){
     return;
   }
 
-  // ✅ Fetch instead of relying on local array
-  fetch(`${API_BASE_URL}/profile/username/${username}`)
+  // ✅ Correct endpoint
+  fetch(`${API_BASE_URL}/profile/${username}`)
     .then(res => res.json())
     .then(user => {
       if(user && user.username){
         openProfile(user);
       } else {
-        console.warn("User not found");
+        alert("User not found");
       }
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error("Profile fetch error:", err));
 }
-
 
 // Render profile correctly
 function renderViewProfile() {
