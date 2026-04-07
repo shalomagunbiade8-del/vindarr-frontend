@@ -606,7 +606,7 @@ Coach Dashboard
 
 <h2>Coach Dashboard</h2>
 
-<button onclick="showVPPage('coaches')">Back</button>
+<button onclick="showVPPage('coachProfilePage')">Back</button> 
 
 <h3>Edit Profile</h3>
 
@@ -2663,6 +2663,9 @@ async function openCoachProfile(coachId){
 
   const user = coach.user;
 
+  console.log("Current user:", currentUser);
+console.log("Coach user:", user); 
+
   document.getElementById("coachAvatar").src =
     user?.avatar
       ? `${API_BASE_URL}${user.avatar}`
@@ -2700,7 +2703,11 @@ async function openCoachProfile(coachId){
   // Show dashboard button to coach when he himself views his profile
   const dashBtn = document.getElementById("openCoachDashboardBtn");
 
-if(currentUser && currentUser.role === "coach" && user.id === currentUser.id){
+if(
+  currentUser &&
+  currentUser.role === "coach" &&
+  Number(user.id) === Number(currentUser.id)
+){
   dashBtn.style.display = "block";
   dashBtn.onclick = openCoachDashboard;
 }else{
@@ -3137,11 +3144,16 @@ function openCoachDashboard(){
     return;
   }
 
+  if(!window.activeCoachId){
+    alert("Coach profile not loaded properly");
+    return;
+  }
+
   showVPPage("coachDashboardPage");
 
+  // ✅ Safe calls
   loadCoachResources(window.activeCoachId);
   loadCoachSessions();
-
 } 
 
 // ================= GET MY COACH PROFILE =================
