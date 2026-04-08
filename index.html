@@ -2623,11 +2623,7 @@ async function confirmVPBooking() {
 
   (async () => {
 
-    await fetch(`${API_BASE_URL}/sessions/verify-payment?reference=${response.reference}`); 
-
-    // 🔥 Launch video session immediately
-const roomName = `oraizon-session-${session.id}`; // FIX 5
-window.open(`https://meet.jit.si/${roomName}`, "_blank"); // FIX 6 
+    await fetch(`${API_BASE_URL}/payments/verify?reference=${response.reference}&sessionId=${session.id}`);   
 
 
     addNotification("Payment successful & session unlocked");
@@ -3213,7 +3209,7 @@ async function loadCoachSessions(){
         <br>
         <strong>Time:</strong> ${s.time}
         <br>
-        <strong>Status:</strong> ${s.status}
+        <strong>Status:</strong> ${s.status} (${s.paymentStatus})
         <br><br>
 
         ${
@@ -3282,18 +3278,23 @@ src="${
       </p>
 
       ${
-  session.status === 'paid'
+  session.paymentStatus === 'paid' && session.status === 'accepted'
     ? `<button onclick="joinSession('${session.meetingLink}')">
          Join Session
        </button>`
-    : session.status === 'accepted'
+    : session.paymentStatus === 'paid' && session.status === 'pending'
+    ? `<span class="text-warning">
+         Paid • Waiting for coach approval
+       </span>`
+    : session.paymentStatus === 'unpaid'
     ? `<button onclick="payForSession(${session.id})">
          Pay Now
        </button>`
     : `<span class="text-muted">
          Awaiting Approval
        </span>`
-}      
+} 
+   
     `;
 
     container.appendChild(card);
