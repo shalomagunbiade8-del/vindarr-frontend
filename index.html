@@ -618,6 +618,17 @@ Coach Dashboard
 
 <button onclick="updateCoachProfile()">Save</button>
 
+<!-- Bank details segment -->
+ <h3>Bank Details (for payouts)</h3>
+
+<input id="bankName" placeholder="Bank Name">
+
+<input id="accountNumber" placeholder="Account Number">
+
+<input id="accountName" placeholder="Account Name">
+
+<button onclick="saveBankDetails()">Save Bank Details</button> 
+
 
 <h3>Upload Resource</h3>
 
@@ -3150,6 +3161,7 @@ function openCoachDashboard(){
   // ✅ Safe calls
   loadCoachResources(window.activeCoachId);
   loadCoachSessions();
+  loadBankDetails();
 } 
 
 // ================= GET MY COACH PROFILE =================
@@ -3430,6 +3442,50 @@ async function approveCoach(id) {
 
   loadPendingCoaches();
 } 
+
+// Bank details info in coach dboard for pay
+// save bank details
+async function saveBankDetails() {
+  const token = localStorage.getItem("token");
+
+  const bankName = document.getElementById("bankName").value;
+  const accountNumber = document.getElementById("accountNumber").value;
+  const accountName = document.getElementById("accountName").value;
+
+  const res = await fetch(`${API_BASE_URL}/users/bank-details`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      bankName,
+      accountNumber,
+      accountName
+    })
+  });
+
+  const data = await res.json();
+
+  alert("Bank details saved successfully");
+} 
+
+// load bank details
+async function loadBankDetails() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_BASE_URL}/users/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const user = await res.json();
+
+  document.getElementById("bankName").value = user.bankName || "";
+  document.getElementById("accountNumber").value = user.accountNumber || "";
+  document.getElementById("accountName").value = user.accountName || "";
+}
 
 
 // Complete stories system
