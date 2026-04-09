@@ -234,18 +234,7 @@
 }
 
 /* CARDS */
-.card {
-  background:#111;
-  padding:25px;
-  margin-bottom:25px;
-  border-radius:12px;
-  box-shadow:0 0 20px rgba(209,0,0,0.1);
-  transition:0.3s;
-}
 
-.card:hover {
-  transform:translateY(-5px);
-}
 
 /* ANIMATION */
 @keyframes fadeIn {
@@ -257,11 +246,46 @@
   animation:fadeIn 1s ease;
 } 
 
+/* Improve readability */
+p {
+  color: #ddd;
+}
+
+h1, h2, h3 {
+  color: #fff;
+}
+
+ul li {
+  color: #ccc;
+}
+
+/* Premium red glow effect */
+.card:hover {
+  box-shadow:0 0 25px rgba(209,0,0,0.3);
+} 
+
 
 :root{--black:#0d0d0d;--red:#d10000;--white:#ffffff;}
 body{background:var(--black);color:var(--white);}  
 .navbar,.nav-icons{background:#111;}  
-.card{background:#1a1a1a;color:#fff;border-radius:.75rem;}  
+/* .card{background:#1a1a1a;color:#fff;border-radius:.75rem;}   */
+/* new card style */
+.card {
+  background:#1f1f1f;
+  color:#fff;
+  padding:25px;
+  margin-bottom:35px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  border:1px solid rgba(255,255,255,0.05);
+  transition:0.3s;
+}
+
+.card:hover {
+  transform:translateY(-5px);
+  box-shadow:0 15px 40px rgba(0,0,0,0.8);
+} 
+
 .page{display:none;}  
 .page.active{display:block;}  
 .nav-icons{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;padding:.6rem 0;z-index:1000;}  
@@ -283,7 +307,7 @@ body{background:var(--black);color:var(--white);}
 <body>
 
   <!-- LANDING PAGE -->
-   <div id="landingPage" style="display:block; background:#000; color:#fff; height:100vh; overflow-y:auto; font-family:sans-serif;">
+   <div id="landingPage" style="display:block; background:#000; color:#fff; min-height:100vh; font-family:sans-serif;"> 
 
   <!-- TOP NAV -->
   <div style="position:sticky; top:0; background:#000; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; z-index:1000;">
@@ -307,7 +331,7 @@ body{background:var(--black);color:var(--white);}
 
     <!-- HERO -->
     <div style="text-align:center; margin-bottom:80px; animation:fadeIn 1s ease;">
-      <h1 style="color:#d10000; font-size:42px;">Make smarter migration decisions.</h1>
+      <h1 style="color:#ff1a1a; font-size:48px; font-weight:700;"> Make smarter migration decisions.</h1>
 
       <p style="font-size:18px; margin:20px 0;">
         Learn from real experiences, understand life abroad, and connect with verified experts before you move.
@@ -1036,7 +1060,14 @@ Coach Dashboard
 <!-- Login page -->
 
 <input id="email" class="form-control mb-2" placeholder="Email">
-<input id="password" type="password" class="form-control mb-2" placeholder="Password">
+<div class="position-relative mb-2">
+  <input id="password" type="password" class="form-control pe-5" placeholder="Password">
+
+  <i class="bi bi-eye-slash toggle-password"
+     data-target="password"
+     style="position:absolute; top:50%; right:15px; transform:translateY(-50%); cursor:pointer; color:#aaa;">
+  </i>
+</div>
 <button class="btn btn-danger w-100" onclick="login()">Login</button>
 
 <!-- Register page -->
@@ -1047,7 +1078,14 @@ Coach Dashboard
 
 <input id="reg-username" class="form-control mb-2" placeholder="Username">
 <input id="reg-email" class="form-control mb-2" placeholder="Email">
-<input id="reg-password" type="password" class="form-control mb-2" placeholder="Password">
+<div class="position-relative mb-2">
+  <input id="reg-password" type="password" class="form-control pe-5" placeholder="Password">
+
+  <i class="bi bi-eye-slash toggle-password"
+     data-target="reg-password"
+     style="position:absolute; top:50%; right:15px; transform:translateY(-50%); cursor:pointer; color:#aaa;">
+  </i>
+</div> 
 
 <select id="reg-role" class="form-control mb-2">
   <option value="learner">Learner</option>
@@ -1060,8 +1098,7 @@ Coach Dashboard
 </button>
 </div>
 
-
-
+<!-- bottom nav-icons -->
 <div class="nav-icons">
 <i class="bi bi-house active" onclick="showPage('home')"></i>
 <i class="bi bi-cloud-upload" onclick="auth('upload')"></i>
@@ -4399,6 +4436,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Coaches load page initializer
 document.addEventListener("DOMContentLoaded", () => {
   renderVPCoaches();
+});
+
+// Password addEventlistener
+document.addEventListener("DOMContentLoaded", function () {
+
+  document.querySelectorAll(".toggle-password").forEach(icon => {
+    icon.addEventListener("click", function () {
+
+      const inputId = this.getAttribute("data-target");
+      const input = document.getElementById(inputId);
+
+      if (!input) return;
+
+      const type = input.type === "password" ? "text" : "password";
+      input.type = type;
+
+      // Toggle icon
+      this.classList.toggle("bi-eye");
+      this.classList.toggle("bi-eye-slash");
+    });
+  });
+
 });
 
 // new gobal data arrays
