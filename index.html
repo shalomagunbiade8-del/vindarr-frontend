@@ -196,6 +196,68 @@
   border-radius:50%;
 }
 
+/* Hide navbar and bottom nav until landing page is exited */
+.navbar, .nav-icons, .page {
+  display: none;
+} 
+
+/* Landing page design */
+/* BUTTONS */
+.cta-btn {
+  background:#d10000;
+  color:#fff;
+  border:none;
+  padding:12px 20px;
+  border-radius:8px;
+  margin:10px;
+  transition:0.3s;
+}
+
+.cta-btn:hover {
+  transform:scale(1.05);
+  background:#ff1a1a;
+}
+
+.cta-outline {
+  border:1px solid #d10000;
+  color:#d10000;
+  background:none;
+  padding:12px 20px;
+  border-radius:8px;
+  margin:10px;
+  transition:0.3s;
+}
+
+.cta-outline:hover {
+  background:#d10000;
+  color:#fff;
+}
+
+/* CARDS */
+.card {
+  background:#111;
+  padding:25px;
+  margin-bottom:25px;
+  border-radius:12px;
+  box-shadow:0 0 20px rgba(209,0,0,0.1);
+  transition:0.3s;
+}
+
+.card:hover {
+  transform:translateY(-5px);
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.fade {
+  animation:fadeIn 1s ease;
+} 
+
+
 :root{--black:#0d0d0d;--red:#d10000;--white:#ffffff;}
 body{background:var(--black);color:var(--white);}  
 .navbar,.nav-icons{background:#111;}  
@@ -219,6 +281,142 @@ body{background:var(--black);color:var(--white);}
 </head>
 
 <body>
+
+  <!-- LANDING PAGE -->
+   <div id="landingPage" style="display:block; background:#000; color:#fff; height:100vh; overflow-y:auto; font-family:sans-serif;">
+
+  <!-- TOP NAV -->
+  <div style="position:sticky; top:0; background:#000; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; z-index:1000;">
+    
+    <div style="color:#d10000; font-weight:bold; font-size:20px;">
+      VINDARR
+    </div>
+
+    <div>
+      <button onclick="enterSite(); showPage('login')" style="margin-right:10px; background:none; border:1px solid #d10000; color:#d10000; padding:8px 14px; border-radius:6px;">
+        Login
+      </button>
+
+      <button onclick="enterSite(); showPage('register')" style="background:#d10000; border:none; color:#fff; padding:8px 14px; border-radius:6px;">
+        Get Started
+      </button>
+    </div>
+  </div>
+
+  <div style="max-width:1000px; margin:auto; padding:40px 20px;">
+
+    <!-- HERO -->
+    <div style="text-align:center; margin-bottom:80px; animation:fadeIn 1s ease;">
+      <h1 style="color:#d10000; font-size:42px;">Make smarter migration decisions.</h1>
+
+      <p style="font-size:18px; margin:20px 0;">
+        Learn from real experiences, understand life abroad, and connect with verified experts before you move.
+      </p>
+
+      <p style="font-weight:bold;">Don’t migrate blind.</p>
+
+      <div style="margin-top:20px;">
+        <button onclick="enterSite()" class="cta-btn">
+          Explore Stories
+        </button>
+
+        <button onclick="enterSite(); showPage('visaprep')" class="cta-outline">
+          Find a Migration Coach
+        </button>
+      </div>
+    </div>
+
+    <!-- PROBLEM -->
+    <div class="card fade">
+      <h3>🚨 The Problem</h3>
+      <p>Migrating is one of the biggest decisions of your life.</p>
+      <ul>
+        <li>Too much conflicting information</li>
+        <li>Fake or unreliable agents</li>
+        <li>Expensive mistakes</li>
+        <li>No real understanding of life abroad</li>
+      </ul>
+      <p><strong>You shouldn’t have to guess your future.</strong></p>
+    </div>
+
+    <!-- SOLUTION -->
+    <div class="card fade">
+      <h3>✅ The Solution</h3>
+      <ul>
+        <li>Real stories from people already abroad</li>
+        <li>Honest insights about different countries</li>
+        <li>Verified coaches you can speak with directly</li>
+      </ul>
+      <p><strong>Move with clarity and confidence.</strong></p>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <div class="card fade">
+      <h3>⚙️ How It Works</h3>
+      <p><strong>1.</strong> Watch and be inspired by real migration stories</p>
+      <p><strong>2.</strong> Understand your destination</p>
+      <p><strong>3.</strong> Connect with verified experts</p>
+    </div>
+
+    <!-- EXPLORE -->
+    <div class="card fade">
+      <h3>🌍 What You Can Explore</h3>
+      <ul>
+        <li>Culture & lifestyle</li>
+        <li>Cost of living</li>
+        <li>Jobs & opportunities</li>
+        <li>Immigration processes and updates</li>
+        <li>Food, language, fashion, diplomatic events and daily life</li>
+        <li>Real migrant experiences and travel blogs</li>
+        <li>Politics, laws and documentaries</li>
+        <li>Vlogs and podcast</li>
+        <li>Tech, science and innovation</li>
+      </ul>
+    </div>
+
+    <!-- TRUST -->
+    <div class="card fade">
+      <h3>🤝 Trust & Safety</h3>
+      <ul>
+        <li>Real users, real experiences</li>
+        <li>Verified migration coaches</li>
+        <li>Transparent insights — no sugarcoating</li>
+      </ul>
+    </div>
+
+    <!-- Vindarr Migration Coaches-->
+    <div class="card fade">
+      <h3>🤝 Vindarr Migration Coach</h3>
+      <ul>
+        <li>Anyone with something to empower the community can be a coach while signing up</li>
+        <li>If you can speak and teach a foreign language, cook local and foreign dishes, share your travel experience... you can be a coach or creator</li>
+        <li>But a Vindarr Migration Coach is totally different and to be verified you must be:</li>
+        <li>An Immigration lawyer</li>
+        <li>An active or retired diplomat or affiliated with with embassies, consulates or high commisions</li>
+        <li>Registered Travel agencies and consultants </li>
+        <li>With at least 5 years of experience and evidence to prove such</li>
+        <li>As well as proof of considerable rate of success</li>
+      </ul>
+    </div>
+
+
+    <!-- CTA -->
+    <div style="text-align:center; margin-top:60px;" class="fade">
+      <h3>Migration is too important to guess and too exciting to be stuck.</h3>
+      <p>Make the right move with Vindarr.</p>
+
+      <button onclick="enterSite()" class="cta-btn">
+        Get Started
+      </button>
+
+      <button onclick="enterSite()" class="cta-outline">
+        Explore Stories
+      </button>
+    </div>
+
+  </div>
+</div> 
+
 
 <nav class="navbar navbar-dark fixed-top px-3 d-flex justify-content-between">
 
@@ -351,7 +549,7 @@ Load More
 
 <hr>
 <button onclick="applyCoach()" class="btn btn-danger">
-Become a Coach
+Become a Migration Coach
 </button>
 
 <div id="profileVideosUpload">Uploaded Videos</div>
@@ -892,6 +1090,16 @@ Coach Dashboard
 
 <script>
 
+  // auto skip landing page for returning users
+  document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("visited")) {
+    // Skip landing page
+    document.getElementById("landingPage").style.display = "none";
+    document.querySelectorAll(".navbar, .nav-icons, .page").forEach(el => el.style.display = "");
+    showPage(isAuthenticated() ? 'home' : 'login');
+  }
+}); 
+
 let currentUser = null;
 
 async function initUser() {
@@ -1042,6 +1250,25 @@ function auth(p) {
     return showPage('login');
   }
   showPage(p);
+} 
+
+// enter landing page site
+function enterSite() {
+  // Hide landing page
+  document.getElementById("landingPage").style.display = "none";
+
+  // Show navbar, bottom nav, and pages
+  document.querySelectorAll(".navbar, .nav-icons, .page").forEach(el => el.style.display = "");
+
+  // Show appropriate page
+  if (isAuthenticated()) {
+    showPage('home');
+  } else {
+    showPage('login');
+  }
+
+  // Optional: mark user has visited landing page
+  localStorage.setItem("visited", "true");
 } 
 
 
