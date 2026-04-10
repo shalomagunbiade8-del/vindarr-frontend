@@ -1013,6 +1013,12 @@ Coach Dashboard
     <h5 id="vpModalCoachName"></h5>
 <input type="hidden" id="vpModalCoachHidden">
 
+<input type="hidden" id="vpModalPriceHidden">
+
+<p class="text-light">
+  Session Price: <strong id="vpModalPriceDisplay">₦0</strong>
+</p> 
+
     <input type="date" id="vpModalDate" class="form-control mb-2">
     <input type="time" id="vpModalTime" class="form-control mb-2">
 
@@ -2767,7 +2773,7 @@ async function renderVPCoaches() {
             </button>
 
             <button class="btn btn-sm btn-danger"
-              onclick="openVPBookModal(${coach.id})">
+              onclick='openVPBookModal(${JSON.stringify(coach)})'>
               Book
             </button>
 
@@ -2828,28 +2834,122 @@ function startCoachChat(username) {
 } 
 
 /* ===================== OPEN BOOK SESSION MODAL ===================== */
-function openVPBookModal(coachId) {
+function openVPBookModal(coach) {
 
   if (!currentUser) {
     alert("Login required");
     return;
   }
 
-  document.getElementById('vpModalCoachHidden').value = coachId;
+  document.getElementById('vpModalCoachHidden').value = coach.id;
+
+  document.getElementById('vpModalPriceHidden').value = coach.price;
+  document.getElementById('vpModalPriceDisplay').innerText =
+    `₦${Number(coach.price).toLocaleString()}`;
 
   document.getElementById('vpModalCoachName').innerText =
-    "Booking Session";
+    `Booking Session with ${coach.user?.username || "Coach"}`;
 
   document.getElementById('vpBookModal').style.display = 'flex';
-
 } 
 
 
 /* ===================== CONFIRM BOOKING ===================== */
+// async function confirmVPBooking() {
+//   if (!currentUser) return;
+
+//   const coachId = document.getElementById('vpModalCoachHidden').value;
+//   const price = Number(document.getElementById('vpModalPriceHidden').value); // ✅ dynamic price
+//   const date = document.getElementById('vpModalDate').value;
+//   const time = document.getElementById('vpModalTime').value;
+
+//   if (!date || !time) {
+//     alert("Please select date and time");
+//     return;
+//   }
+
+//   try {
+//     // Step 1: Create session
+//     const sessionRes = await fetch(`${API_BASE_URL}/sessions`, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         learnerId: currentUser.id,
+//         coachId,
+//         date,
+//         time,
+//         price // ✅ store session price
+//       })
+//     });
+
+//     if (!sessionRes.ok) throw new Error("Failed to create session");
+
+//     const session = await sessionRes.json();
+
+//     // Step 2: Initialize payment
+//     const payRes = await fetch(`${API_BASE_URL}/payments/initialize`, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         email: currentUser.email,
+//         amount: price * 100, // ✅ dynamic
+//         sessionId: session.id
+//       })
+//     });
+
+//     if (!payRes.ok) throw new Error("Payment initialization failed");
+
+//     const payData = await payRes.json();
+
+//     if (!payData.status) {
+//       console.error(payData);
+//       alert("Payment initialization failed");
+//       return;
+//     }
+
+//     // Step 3: Paystack popup
+//     const handler = PaystackPop.setup({
+//       key: "pk_live_xxxxxxxxxxxxx", // ✅ LIVE KEY
+//       email: currentUser.email,
+//       amount: price, // ✅ DO NOT multiply here
+
+//       ref: "VINDARR_" + Date.now(),
+
+//       callback: function(response) {
+//         (async () => {
+
+//           await fetch(`${API_BASE_URL}/payments/verify?reference=${response.reference}&sessionId=${session.id}`);
+
+//           addNotification("Payment successful & session unlocked");
+//           alert("Payment successful! Wait for coach approval.");
+
+//           loadLearnerSessions();
+//           closeVPBookModal();
+
+//         })();
+//       },
+
+//       onClose: function() {
+//         alert("Payment cancelled");
+//       }
+//     });
+
+//     handler.openIframe();
+
+//   } catch (err) {
+//     console.error(err);
+//     alert("Payment error: " + err.message);
+//     // Optionally: delete session if payment init fails
+//     await fetch(`${API_BASE_URL}/sessions/${session.id}`, { method: 'DELETE' });
+//   }
+// } 
+
+// Temporary confirm booking till paystack review done
 async function confirmVPBooking() {
   if (!currentUser) return;
 
   const coachId = document.getElementById('vpModalCoachHidden').value;
+  const price = Number(document.getElementById('vpModalPriceHidden').value);
   const date = document.getElementById('vpModalDate').value;
   const time = document.getElementById('vpModalTime').value;
 
@@ -2858,72 +2958,14 @@ async function confirmVPBooking() {
     return;
   }
 
-  try {
-    // Step 1: Create session
-    const sessionRes = await fetch(`${API_BASE_URL}/sessions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ learnerId: currentUser.id, coachId, date, time })
-    });
+  // 🚫 DISABLE PAYMENT + SESSION CREATION (TEMPORARY)
+  alert("🚀 Bookings will be available very soon. Payments are currently under review.");
 
-    if (!sessionRes.ok) throw new Error("Failed to create session");
+  // OPTIONAL: close modal after message
+  closeVPBookModal();
 
-    const session = await sessionRes.json();
-
-    // Step 2: Initialize payment
-    const payRes = await fetch(`${API_BASE_URL}/payments/initialize`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: currentUser.email, amount: 5000, sessionId: session.id })
-    });
-
-    if (!payRes.ok) throw new Error("Payment initialization failed");
-
-    const payData = await payRes.json();
-
-    if (!payData.status) {
-  console.error(payData);
-  alert("Payment initialization failed");
   return;
 }
-
-    // Step 3: Open Paystack
-    const handler = PaystackPop.setup({
-      key: "pk_test_898afbabc434c727ce990e60f8a188e712ea9427",
-      email: currentUser.email,
-      amount: 5000 * 100,
-
-
-      callback: function(response) {
-
-  (async () => {
-
-    await fetch(`${API_BASE_URL}/payments/verify?reference=${response.reference}&sessionId=${session.id}`);   
-
-
-    addNotification("Payment successful & session unlocked");
-
-    alert("Payment successful! Wait for coach approval to join session.");
-
-    loadLearnerSessions();
-    closeVPBookModal();
-
-  })();
-
-},
-
-      onClose: function() { alert("Payment cancelled"); }
-    });
-
-    handler.openIframe();
-
-  } catch (err) {
-    console.error(err);
-    alert("Payment error: " + err.message);
-    // Optionally: delete session if payment init fails
-    await fetch(`${API_BASE_URL}/sessions/${session.id}`, { method: 'DELETE' });
-  }
-} 
 
 
 // Open coach profile function
