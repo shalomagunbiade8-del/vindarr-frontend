@@ -481,7 +481,11 @@ body{background:var(--black);color:var(--white);}
 
 <!-- Home and Video Feed page -->
 <div id="home" class="page active container py-5">
-  <input class="form-control mb-3" placeholder="Search videos, topics…">
+  <input 
+  id="searchInput"
+  class="form-control mb-3" 
+  placeholder="Search videos, topics…"
+> 
   <div id="filters" class="mb-3"></div>
   <div id="feed" class="row g-3"></div>
 
@@ -2066,6 +2070,35 @@ function loadMoreVideos(){
   page++;
   loadVideos();
 } 
+
+// Video function look
+let searchTimeout;
+
+document.getElementById("searchInput").addEventListener("input", function(e) {
+  const query = e.target.value;
+
+  clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(async () => {
+
+    if (!query.trim()) {
+      loadVideos(); // fallback to normal feed
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/videos/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+
+      posts = data;
+      renderVideos();
+
+    } catch (err) {
+      console.error("Search error:", err);
+    }
+
+  }, 400); // debounce
+}); 
 
 
 /* ===================== RENDER VIDEO FEED ===================== */
