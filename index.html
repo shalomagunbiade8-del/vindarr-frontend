@@ -1131,6 +1131,7 @@ Coach Dashboard
 <div class="nav-icons">
 <i class="bi bi-house active" onclick="showPage('home')"></i>
 <i class="bi bi-cloud-upload" onclick="auth('upload')"></i>
+<i class="bi bi-search" onclick="showPage('search')"></i> 
 <i class="bi bi-inbox" onclick="auth('messages')"></i>
 <i class="bi bi-passport" onclick="showPage('visaprep')"></i>
 <!-- <i class="bi bi-people" onclick="startMeetify('General Meetify Session')"></i> -->
@@ -1182,6 +1183,18 @@ Coach Dashboard
       <button class="btn btn-secondary w-100 mt-2" onclick="closeCreateRoomModal()">Cancel</button>
     </div>
   </div>
+</div> 
+
+<!-- Vindarr discover page -->
+ <div id="search" class="page container py-4">
+
+  <input id="globalSearch"
+         class="form-control mb-3"
+         placeholder="Search users or communities..."
+         oninput="runGlobalSearch(this.value)">
+
+  <div id="searchResults"></div>
+
 </div> 
 
 
@@ -1526,6 +1539,100 @@ function renderNotifications(){
 // Ensure coach users are marketplace-ready
 if (currentUser && currentUser.role === 'coach') {
 } 
+
+
+// Global search logic
+async function runGlobalSearch(query){
+
+  if(!query){
+    document.getElementById("searchResults").innerHTML = "";
+    return;
+  }
+
+  const [usersRes, roomsRes] = await Promise.all([
+    fetch(`${API_BASE_URL}/users`),
+    fetch(`${API_BASE_URL}/rooms`)
+  ]);
+
+  const users = await usersRes.json();
+  const rooms = await roomsRes.json();
+
+  const filteredUsers = users.filter(u =>
+    u.username.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const filteredRooms = rooms.filter(r =>
+    r.name.toLowerCase().includes(query.toLowerCase())
+  );
+
+  renderSearchResults(filteredUsers, filteredRooms);
+} 
+
+// Render search results
+function renderSearchResults(users, rooms){
+
+  const container = document.getElementById("searchResults");
+
+  container.innerHTML = `
+    <h6 class="text-muted">Users</h6>
+    ${users.map(u => `
+      <div class="d-flex align-items-center gap-2 mb-2 p-2 border rounded">
+
+        <img src="${u.avatar || 'https://via.placeholder.com/32'}"
+             class="rounded-circle"
+             width="32"
+             style="cursor:pointer"
+             onclick="openProfileByUsername('${u.username}')">
+
+        <span style="flex:1">${u.username}</span>
+
+        <button class="btn btn-sm btn-success"
+                onclick="addUserToGroup('${u.username}')">
+          Add
+        </button>
+
+      </div>
+    `).join('')}
+
+    <h6 class="text-muted mt-3">Communities</h6>
+    ${rooms.map(r => `
+      <div class="d-flex align-items-center gap-2 mb-2 p-2 border rounded">
+
+        <img src="https://via.placeholder.com/32"
+             class="rounded-circle"
+             width="32">
+
+        <span style="flex:1">${r.name}</span>
+
+        <button class="btn btn-sm btn-primary"
+                onclick="joinRoom(${r.id})">
+          Join
+        </button>
+
+      </div>
+    `).join('')}
+  `;
+} 
+
+// join room function
+function joinRoom(roomId){
+
+  // add to UI if not already
+  if(!document.querySelector(`#rooms li[data-room='${roomId}']`)){
+    loadRooms();
+  }
+
+  const li = document.querySelector(`#rooms li[data-room='${roomId}']`);
+  if(li){
+    openRoom(roomId, li);
+  }
+}  
+
+// Add user to group in prep for later expansion
+function addUserToGroup(username){
+  alert(username + " selected (group feature next)");
+}
+
 
 
 /* ===================== CHAT ===================== */
@@ -2100,8 +2207,14 @@ async function createGroup(){
 
   const room = await res.json();
 
-  openRoom(room.id, room.name);
+  // ✅ ADD TO UI PROPERLY
+  addRoomToUI(room);
+
+  // ✅ AUTO OPEN THE ROOM
+  const li = document.querySelector(`#rooms li[data-room='${room.id}']`);
+  openRoom(room.id, li);
 } 
+
 
 // open/close modal for room creation
 function openCreateRoomModal(){
@@ -2114,7 +2227,13 @@ function closeCreateRoomModal(){
 
 // create a room function
 async function createRoom(){
-  const name = document.getElementById("roomName").value;
+  const name = document.getElementById("roomName").value.trim();
+
+if(!name){
+  alert("Group name is required");
+  return;
+} 
+
   const description = document.getElementById("roomDesc").value;
 
   const res = await fetch(API_BASE_URL + "/rooms", {
@@ -2128,8 +2247,12 @@ async function createRoom(){
 
   const room = await res.json();
 
-  closeCreateRoomModal();
-  addRoomToUI(room);
+closeCreateRoomModal();
+addRoomToUI(room); 
+
+const li = document.querySelector(`#rooms li[data-room='${room.id}']`);
+openRoom(room.id, li); 
+
 } 
 
 // load room function
@@ -2145,20 +2268,36 @@ async function loadRooms(){
 
 // add room to ui
 function addRoomToUI(room){
+
+  const list = document.getElementById("rooms");
+
+  // prevent duplicates
+  if(document.querySelector(`#rooms li[data-room='${room.id}']`)) return;
+
   const li = document.createElement("li");
-  li.className = "list-group-item bg-dark text-white";
+  li.className = "list-group-item bg-dark text-white d-flex align-items-center gap-2";
   li.setAttribute("data-room", room.id);
 
   li.innerHTML = `
-    <strong>${room.name}</strong><br>
-    <small>${room.description || ''}</small>
+    <img src="https://via.placeholder.com/32"
+         class="rounded-circle"
+         width="32">
+
+    <div style="flex:1">
+      <div class="d-flex justify-content-between">
+        <strong>${room.name || "Unnamed Group"}</strong>
+        <small class="text-muted"></small>
+      </div>
+      <div class="small text-muted">
+        ${room.description || "No messages yet"}
+      </div>
+    </div>
   `;
 
   li.onclick = () => openRoom(room.id, li);
 
-  document.getElementById("rooms").appendChild(li);
+  list.prepend(li);
 } 
-
 
 
 
