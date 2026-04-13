@@ -55,43 +55,52 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
+.msg {
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  max-width: 75%;
+}
+
 #chatLog .msg {
-  padding: 6px 8px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  max-width: 85%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  max-width: 75%;
+  font-size: 14px;
+  position: relative;
+  animation: fadeIn .2s ease-in;
 }
 
 .msg.you {
-  background:#dc3545;
-  margin-left:auto;
-  text-align:right;
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  margin-left: auto;
+  text-align: right;
+  color: #fff;
 }
 
 .msg.them {
-  background:#2b2b2b;
+  background: #1f1f1f;
+  color: #ddd;
 }
 
-.msg small {
-  opacity:.7;
-  font-size:11px;
-} 
-
-.chat-message { position: relative; }
+.msg .timestamp {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-left: 6px;
+}
 
 .msg-status {
-  font-size: 12px;
-  color: #fff; /* was muted #aaa */
-  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 3px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 } 
 
-.reply-preview {
-  font-size: 12px;
-  opacity: 0.8;
-  border-left: 3px solid #dc3545;
-  padding-left: 6px;
-  margin-bottom: 4px;
-}
 
 #visaprep-root {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -656,6 +665,16 @@ Become a Migration Coach
 <div id="messages" class="page container py-5">
   <div id="inbox">
     <h4>Inbox</h4>
+
+    <!-- ===== GROUP CHAT ===== -->
+<div class="mb-2">
+  <button class="btn btn-danger w-100" onclick="openCreateRoomModal()">
+    + Create Group
+  </button>
+</div>
+
+<ul id="rooms" class="list-group mb-3"></ul>
+
     <ul class="list-group">
       <li class="list-group-item bg-dark text-light d-flex align-items-center gap-2 active">
   
@@ -716,7 +735,7 @@ Become a Migration Coach
     <input id="chatInput"
            class="form-control"
            placeholder="Type message"
-           onkeydown="sendMsg(event)">
+           onkeydown="if(event.key==='Enter'){sendMsg(event)}">
   </div>
 </div> 
 
@@ -1130,6 +1149,42 @@ Coach Dashboard
   </div>
 </div>
 
+<!-- Vindarr user discovery -->
+<div id="userModal" class="modal" style="display:none;">
+  <div class="modal-content bg-dark text-light p-3 rounded">
+
+    <h5>Discover Users</h5>
+
+    <input type="text"
+           class="form-control mb-2"
+           placeholder="Search users..."
+           oninput="searchUsers(this.value)">
+
+    <div id="userList"></div>
+
+    <button class="btn btn-success mt-2" onclick="createGroup()">
+      Create Group
+    </button>
+
+  </div>
+</div> 
+
+<!-- ===== CREATE ROOM MODAL ===== -->
+<div id="createRoomModal" class="modal" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-white p-3">
+      <h5>Create Group Chat</h5>
+
+      <input id="roomName" class="form-control mb-2" placeholder="Group name">
+      <input id="roomDesc" class="form-control mb-3" placeholder="Description">
+
+      <button class="btn btn-success w-100" onclick="createRoom()">Create</button>
+      <button class="btn btn-secondary w-100 mt-2" onclick="closeCreateRoomModal()">Cancel</button>
+    </div>
+  </div>
+</div> 
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Jitsi API script -->
@@ -1183,6 +1238,7 @@ let activeVideo=null, videoComments={};
 let viewedProfile = null;
 
 // ================= CHAT STATE EXTENSIONS =================
+let currentRoom = null; // hybrid support for groups 
 let chatStore = {};            // { username: [messages] }
 let replyToMessage = null;     // for reply feature
 let currentSessionContext = null; // coach / VisaPrep session info 
@@ -1224,42 +1280,52 @@ socket.on("connect", () => {
 
 socket.on("receiveMessage", (msg) => {
 
-  if(!chatStore[msg.senderUsername]){
-    chatStore[msg.senderUsername] = [];
-    addToInbox(msg.senderUsername, msg.senderAvatar || null);
+  const key = msg.roomId || msg.senderUsername;
+
+  if(!chatStore[key]){
+    chatStore[key] = [];
+
+    if(!msg.roomId){
+      addToInbox(msg.senderUsername, msg.senderAvatar || null);
+    }
   }
 
-  // Notifications
-  if(msg.senderUsername !== activeChat){
-  addNotification(`New message from ${msg.senderUsername}`);
-}
-
-  chatStore[msg.senderUsername].push({
+  chatStore[key].push({
     id: msg.id,
-    sender: msg.senderUsername,
+    sender: msg.senderUsername === currentUser.username ? "You" : msg.senderUsername,
     text: msg.text,
     time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-    status: 'unseen',
     attachmentUrl: msg.attachmentUrl,
-    attachmentType: msg.attachmentType
+    attachmentType: msg.attachmentType,
+    status: msg.senderUsername === currentUser.username ? 'Sent ✓' : ''
   });
 
-  updateInboxPreview(msg.senderUsername, {
-  text: msg.text,
-  time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-});
+  // ✅ Update inbox preview (ONLY for 1–1 chats)
+  if(!msg.roomId){
+    updateInboxPreview(msg.senderUsername, {
+      text: msg.text,
+      time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    });
+  }
 
-  // Highlight unread in inbox
+  // ✅ Highlight unread messages
   const li = document.querySelector(`#inbox li[data-user='${msg.senderUsername}']`);
   if(li && msg.senderUsername !== activeChat){
     li.classList.add('bg-warning','text-dark');
   }
 
-  if(activeChat === msg.senderUsername){
+  // ✅ Render correct chat (group or 1–1)
+  if(
+    (msg.roomId && currentRoom === msg.roomId) ||
+    (!msg.roomId && activeChat === msg.senderUsername)
+  ){
     renderChat();
+
     // Mark as seen
-    chatStore[msg.senderUsername].forEach(m => m.status = 'Seen ✓✓');
-    if(li) li.classList.remove('bg-warning','text-dark');
+    if(!msg.roomId && chatStore[msg.senderUsername]){
+      chatStore[msg.senderUsername].forEach(m => m.status = 'Seen ✓✓');
+      if(li) li.classList.remove('bg-warning','text-dark');
+    }
   }
 
 }); 
@@ -1509,11 +1575,12 @@ async function sendMsg(e){
   } 
 
   if(!chatInput.value && !pendingAttachment) return;
-  if(!activeChat) return;
+  if(!activeChat && !currentRoom) return; 
 
   const msgData = {
     senderUsername: currentUser?.username || "annonymous",
-    receiverUsername: activeChat,
+    receiverUsername: currentRoom ? null : activeChat,
+roomId: currentRoom ? currentRoom : null,
     text: chatInput.value,
     attachmentUrl: null,
     attachmentType: null,
@@ -1547,8 +1614,12 @@ async function sendMsg(e){
   }).then(r=>r.json());
 
   // Add to local chatStore
-  if(!chatStore[activeChat]) chatStore[activeChat] = [];
-  chatStore[activeChat].push({
+  const key = currentRoom || activeChat;
+
+if(!chatStore[key]) chatStore[key] = [];
+
+chatStore[key].push({
+
     id: saved.id,
     sender: 'You',
     text: saved.text,
@@ -1563,6 +1634,15 @@ async function sendMsg(e){
   time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
 }); 
 
+if(currentRoom){
+  const roomEl = document.querySelector(`#rooms li[data-room='${currentRoom}']`);
+  if(roomEl){
+    roomEl.innerHTML = `
+      <strong>${roomEl.innerText.split('\n')[0]}</strong><br>
+      <small>${msgData.text?.slice(0,25) || '📎 Attachment'}</small>
+    `;
+  }
+} 
 
   // Reset input
   chatInput.value = '';
@@ -1574,6 +1654,29 @@ async function sendMsg(e){
 
   console.log("SENDING:", msgData);
 }
+
+// open room function
+async function openRoom(roomId, el){
+
+  // remove active from all rooms
+  document.querySelectorAll('#rooms li').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+
+  inbox.style.display = 'none';
+  chat.style.display = 'block';
+
+  currentRoom = roomId;
+  activeChat = null;
+
+  if(!chatStore[roomId]) chatStore[roomId] = [];
+
+  await loadRoomMessages(roomId);
+
+  socket.emit("joinRoom", roomId); // VERY IMPORTANT
+
+  renderChat();
+} 
+
 
 
 /* ---------- RENDER CHAT ---------- */
@@ -1589,39 +1692,39 @@ function renderChat(){
     `;
   }
 
-  chatStore[activeChat].forEach(msg => {
+  const messages = currentRoom
+  ? chatStore[currentRoom]
+  : chatStore[activeChat];
+
+messages?.forEach(msg => {
   chatLog.innerHTML += `
-    <div class="msg ${msg.sender === 'You' ? 'you' : 'them'} mb-2"
-         data-id="${msg.id}"
-         oncontextmenu="replyMessage(${msg.id}); return false;"> 
+  <div class="msg ${msg.sender === 'You' ? 'you' : 'them'}"
+       data-id="${msg.id}"
+       onmousedown="startPressTimer(event, this)"
+       onmouseup="clearPressTimer()"
+       ontouchstart="startPressTimer(event, this)"
+       ontouchend="clearPressTimer()">
 
+    <div>
+      ${currentRoom && msg.sender !== 'You' ? `<strong>${msg.sender}: </strong>` : ''}
+${msg.text || ''} 
+    </div>
 
-        <span class="badge ${msg.sender === 'You' ? 'bg-danger' : 'bg-secondary'}">
-          ${msg.sender}
-        </span>
-        <span class="timestamp">${msg.time}</span>
+    ${msg.attachmentUrl ? renderAttachment({
+      data: API_BASE_URL + msg.attachmentUrl,
+      type: msg.attachmentType,
+      name: 'Attachment'
+    }) : ''}
 
-        ${msg.replyTo ? `<div class="small text-muted">↩ ${msg.replyTo.text}</div>` : ''}
+    <div class="timestamp">
+      ${msg.time}
+    </div>
 
-        <div>${msg.text}</div>
+    ${msg.sender === 'You' ? `
+      <div class="msg-status">${msg.status}</div>
+    ` : ``}
+  </div>
 
-        ${msg.attachment || msg.attachmentUrl ? renderAttachment(
-  msg.attachment || {
-    data: API_BASE_URL + msg.attachmentUrl,
-    type: msg.attachmentType,
-    name: msg.text || 'Attachment'
-  }
-) : ''} 
-
-        ${msg.sender === 'You' ? `
-          <div class="small text-muted">${msg.status}</div>
-        ` : `
-          <button class="btn btn-sm btn-outline-light mt-1"
-                  onclick="reviewWithAI(${msg.id})">
-            🤖 Review this answer
-          </button>
-        `}
-      </div>
     `;
   });
 
@@ -1630,10 +1733,13 @@ function renderChat(){
 
 /* ---------- REPLY ---------- */
 function replyMessage(msgId){
-  const msg = chatStore[activeChat].find(m => m.id === msgId);
+  const key = currentRoom || activeChat;
+  const msg = chatStore[key].find(m => m.id === msgId);
+
   replyToMessage = msg;
   chatInput.placeholder = `Replying to: "${msg.text}"`;
-}
+} 
+
 
 /* ---------- ATTACHMENTS ---------- */
 function handleAttachment(file){
@@ -1668,21 +1774,6 @@ function renderAttachment(att){
   `;
 } 
 
-/* ---------- AI REVIEW ---------- */
-function reviewWithAI(msgId){
-  const msg = chatStore[activeChat].find(m => m.id === msgId);
-
-  chatStore[activeChat].push({
-    id: Date.now(),
-    sender: 'AI',
-    text: `Feedback: Improve clarity, structure your answer better, and include specific examples.`,
-    time: getTime(),
-    status: 'seen'
-  });
-
-  renderChat();
-} 
-
 
 // Set reply helper functions
 function setReply(messageId, text){
@@ -1709,16 +1800,11 @@ async function deleteMessage(btn){
     method: "DELETE"
   });
 
-  // Remove from chatStore
-  chatStore[activeChat] = chatStore[activeChat].filter(m => m.id != msgId);
+  const key = currentRoom || activeChat;
 
-  msgEl.remove();
-}
+  chatStore[key] = chatStore[key].filter(m => m.id != msgId);
 
-
-// AI Review Function
-function aiReview(text){
-  alert('AI Review coming soon 🚀\n\nMessage:\n' + text);
+  renderChat();
 } 
 
 
@@ -1816,8 +1902,11 @@ function showMsgOptions(e, msgEl){
   menu.style.left = e.clientX + 'px';
 
   menu.innerHTML = `
-    <div style="cursor:pointer" onclick="deleteMessage(this)">🗑 Delete</div>
-  `;
+  <div style="cursor:pointer;color:red"
+       onclick="deleteMessageById('${msgEl.dataset.id}')">
+    🗑 Delete Message
+  </div>
+`; 
 
   menu.msgEl = msgEl;
   document.body.appendChild(menu);
@@ -1827,6 +1916,23 @@ function showMsgOptions(e, msgEl){
   }, 50);
 }
 
+// Delete msg by id
+async function deleteMessageById(msgId){
+
+  const key = currentRoom || activeChat;
+
+  // remove instantly (better UX)
+  chatStore[key] = chatStore[key].filter(m => m.id != msgId);
+  renderChat();
+
+  try{
+    await fetch(`${API_BASE_URL}/messages/${msgId}`,{
+      method: "DELETE"
+    });
+  }catch(err){
+    console.error("Delete failed", err);
+  }
+} 
  
 
 // Attach file function
@@ -1910,6 +2016,150 @@ async function loadMessagesFromServer(username){
   }
 
 } 
+
+// load room message 
+async function loadRoomMessages(roomId){
+  const res = await fetch(API_BASE_URL + "/messages/room/" + roomId, {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    }
+  });
+
+  const messages = await res.json();
+
+  chatStore[roomId] = messages.map(m => ({
+    id: m.id,
+    sender: m.sender.username === currentUser.username ? "You" : m.sender.username,
+    text: m.text,
+    time: new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+    attachmentUrl: m.attachmentUrl,
+    attachmentType: m.attachmentType
+  }));
+} 
+
+
+// Load users for vindarr discovery
+async function loadUsers(){
+  const res = await fetch(`${API_BASE_URL}/users`);
+  const users = await res.json();
+
+  window.allUsers = users;
+
+  renderUsers(users);
+} 
+
+
+// render users for vindarr discovery
+function renderUsers(users){
+
+  const container = document.getElementById('userList');
+
+  container.innerHTML = users.map(u => `
+    <div class="d-flex align-items-center gap-2 mb-2 p-2 border rounded">
+
+      <img src="${u.avatar || 'https://via.placeholder.com/32'}"
+           class="rounded-circle"
+           width="32">
+
+      <span style="flex:1">${u.username}</span>
+
+      <input type="checkbox" value="${u.username}">
+    </div>
+  `).join('');
+} 
+
+// search users for vindarr discovery
+function searchUsers(query){
+
+  const filtered = window.allUsers.filter(u =>
+    u.username.toLowerCase().includes(query.toLowerCase())
+  );
+
+  renderUsers(filtered);
+} 
+
+// create group function
+async function createGroup(){
+
+  const selected = [...document.querySelectorAll('#userList input:checked')]
+    .map(i => i.value);
+
+  if(selected.length < 2){
+    alert("Select at least 2 users");
+    return;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/rooms`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      name: "New Group",
+      members: selected
+    })
+  });
+
+  const room = await res.json();
+
+  openRoom(room.id, room.name);
+} 
+
+// open/close modal for room creation
+function openCreateRoomModal(){
+  document.getElementById("createRoomModal").style.display = "block";
+}
+
+function closeCreateRoomModal(){
+  document.getElementById("createRoomModal").style.display = "none";
+} 
+
+// create a room function
+async function createRoom(){
+  const name = document.getElementById("roomName").value;
+  const description = document.getElementById("roomDesc").value;
+
+  const res = await fetch(API_BASE_URL + "/rooms", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    },
+    body: JSON.stringify({ name, description })
+  });
+
+  const room = await res.json();
+
+  closeCreateRoomModal();
+  addRoomToUI(room);
+} 
+
+// load room function
+async function loadRooms(){
+  const res = await fetch(API_BASE_URL + "/rooms");
+  const rooms = await res.json();
+
+  const list = document.getElementById("rooms");
+  list.innerHTML = "";
+
+  rooms.forEach(r => addRoomToUI(r));
+} 
+
+// add room to ui
+function addRoomToUI(room){
+  const li = document.createElement("li");
+  li.className = "list-group-item bg-dark text-white";
+  li.setAttribute("data-room", room.id);
+
+  li.innerHTML = `
+    <strong>${room.name}</strong><br>
+    <small>${room.description || ''}</small>
+  `;
+
+  li.onclick = () => openRoom(room.id, li);
+
+  document.getElementById("rooms").appendChild(li);
+} 
+
+
 
 
 /* ===================== CATEGORIES ===================== */
