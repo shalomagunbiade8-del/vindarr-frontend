@@ -275,9 +275,8 @@ ul li {
 
 /* readjustment to pages and top navbar area */
 .page {
-  padding-top: 12px;
+  padding-top: 100px;
 } 
-
 
 :root{--black:#0d0d0d;--red:#d10000;--white:#ffffff;}
 body{background:var(--black);color:var(--white);}  
@@ -329,11 +328,13 @@ body{background:var(--black);color:var(--white);}
     </div>
 
     <div>
-      <button onclick="enterSite(); showPage('login')" style="margin-right:10px; background:none; border:1px solid #d10000; color:#d10000; padding:8px 14px; border-radius:6px;">
+      <button onclick="goToPage('login')" 
+      style="margin-right:10px; background:none; border:1px solid #d10000; 
+      color:#d10000; padding:8px 14px; border-radius:6px;">
         Login
       </button>
 
-      <button onclick="enterSite(); showPage('register')" style="background:#d10000; border:none; color:#fff; padding:8px 14px; border-radius:6px;">
+      <button onclick="goToPage('register')" style="background:#d10000; border:none; color:#fff; padding:8px 14px; border-radius:6px;">
         Get Started
       </button>
     </div>
@@ -441,7 +442,7 @@ body{background:var(--black);color:var(--white);}
       <h3>Migration is too important to guess and too exciting to be stuck.</h3>
       <p>Make the right move with Vindarr.</p>
 
-      <button onclick="enterSite()" class="cta-btn">
+      <button onclick="goToPage('home')" class="cta-btn">
         Get Started
       </button>
 
@@ -1383,23 +1384,40 @@ function auth(p) {
 } 
 
 // enter landing page site
-function enterSite() {
-  // Hide landing page
-  document.getElementById("landingPage").style.display = "none";
+// function enterSite() {
+//   // Hide landing page
+//   document.getElementById("landingPage").style.display = "none";
 
-  // Show navbar, bottom nav, and pages
-  document.querySelectorAll(".navbar, .nav-icons, .page").forEach(el => el.style.display = "");
+//   // Show navbar, bottom nav, and pages
+//   document.querySelectorAll(".navbar, .nav-icons, .page").forEach(el => el.style.display = "");
 
-  // Show appropriate page
-  if (isAuthenticated()) {
-    showPage('home');
-  } else {
-    showPage('login');
-  }
+//   // Show appropriate page
+//   if (isAuthenticated()) {
+//     showPage('home');
+//   } else {
+//     showPage('login');
+//   }
 
-  // Optional: mark user has visited landing page
-  localStorage.setItem("visited", "true");
+//   // Optional: mark user has visited landing page
+//   localStorage.setItem("visited", "true");
+// } 
+
+function enterSite(){
+
+  // hide landing page
+  const landing = document.getElementById("landingPage");
+  if(landing) landing.style.display = "none";
+
+  // show app UI
+  document.querySelectorAll('.navbar, .nav-icons, .page')
+    .forEach(el => el.style.display = 'block');
+}
+
+function goToPage(page){
+  enterSite();
+  showPage(page);
 } 
+
 
 
 // Login function
@@ -1544,6 +1562,29 @@ function renderNotifications(){
 
 // Ensure coach users are marketplace-ready
 if (currentUser && currentUser.role === 'coach') {
+} 
+
+// autologin from landing page
+async function autoLogin(){
+
+  const token = localStorage.getItem("token");
+
+  if(!token){
+    return; // stay on landing
+  }
+
+  // user is logged in → skip landing
+  enterSite();
+
+  await loadCurrentUser();
+
+  // go to home page
+  showPage('home');
+
+  // load inbox if function exists
+  if(typeof loadInbox === "function"){
+    await loadInbox();
+  }
 } 
 
 
@@ -4933,6 +4974,10 @@ document.addEventListener("DOMContentLoaded", function () {
 const container =
   document.getElementById('vpCoachList') ||
   document.getElementById('vpCoachPreview');
+
+  document.addEventListener("DOMContentLoaded", () => {
+  autoLogin();
+});
 
 
 </script>
