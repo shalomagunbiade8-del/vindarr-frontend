@@ -273,6 +273,15 @@ ul li {
   box-shadow:0 0 25px rgba(209,0,0,0.3);
 } 
 
+/* readjustment to pages and top navbar area */
+.page {
+  padding-top: 80px;
+} 
+
+#search {
+  padding-top: 80px;
+} 
+
 
 :root{--black:#0d0d0d;--red:#d10000;--white:#ffffff;}
 body{background:var(--black);color:var(--white);}  
@@ -1684,15 +1693,20 @@ async function sendMsg(e){
   if(!chatInput.value && !pendingAttachment) return;
   if(!activeChat && !currentRoom) return; 
 
+  console.log("CHAT TARGET:", {
+  activeChat,
+  currentRoom
+}); 
+
   const msgData = {
-    senderUsername: currentUser?.username || "annonymous",
-    receiverUsername: currentRoom ? null : activeChat,
-roomId: currentRoom ? currentRoom : null,
-    text: chatInput.value,
-    attachmentUrl: null,
-    attachmentType: null,
-    attachment: pendingAttachment
-  };
+  senderUsername: currentUser?.username || "anonymous",
+  receiverUsername: currentRoom ? null : activeChat,
+  roomId: currentRoom ? currentRoom : null,
+  text: chatInput.value,
+  attachmentUrl: null,
+  attachmentType: null
+}; 
+
 
   // Upload attachment if exists
   if(pendingAttachment){
@@ -2227,14 +2241,14 @@ function closeCreateRoomModal(){
 
 // create a room function
 async function createRoom(){
+
   const name = document.getElementById("roomName").value.trim();
+  const description = document.getElementById("roomDesc").value.trim();
 
-if(!name){
-  alert("Group name is required");
-  return;
-} 
-
-  const description = document.getElementById("roomDesc").value;
+  if(!name){
+    alert("Group name is required");
+    return;
+  }
 
   const res = await fetch(API_BASE_URL + "/rooms", {
     method: "POST",
@@ -2242,18 +2256,26 @@ if(!name){
       "Content-Type": "application/json",
       "Authorization": "Bearer " + localStorage.getItem("token")
     },
-    body: JSON.stringify({ name, description })
+    body: JSON.stringify({
+      name,
+      description,
+      members: [currentUser.username] // ✅ CRITICAL FIX
+    })
   });
 
   const room = await res.json();
 
-closeCreateRoomModal();
-addRoomToUI(room); 
+  console.log("ROOM CREATED:", room); // ✅ DEBUG
 
-const li = document.querySelector(`#rooms li[data-room='${room.id}']`);
-openRoom(room.id, li); 
+  closeCreateRoomModal();
 
+  addRoomToUI(room);
+
+  // ✅ AUTO OPEN ROOM
+  const li = document.querySelector(`#rooms li[data-room='${room.id}']`);
+  openRoom(room.id, li);
 } 
+
 
 // load room function
 async function loadRooms(){
@@ -2271,7 +2293,7 @@ function addRoomToUI(room){
 
   const list = document.getElementById("rooms");
 
-  // prevent duplicates
+  // جلوگیری از تکراری شدن
   if(document.querySelector(`#rooms li[data-room='${room.id}']`)) return;
 
   const li = document.createElement("li");
@@ -2285,11 +2307,10 @@ function addRoomToUI(room){
 
     <div style="flex:1">
       <div class="d-flex justify-content-between">
-        <strong>${room.name || "Unnamed Group"}</strong>
-        <small class="text-muted"></small>
+        <strong>${room.name && room.name !== "null" ? room.name : "Unnamed Group"}</strong>
       </div>
       <div class="small text-muted">
-        ${room.description || "No messages yet"}
+        ${room.description || "No description"}
       </div>
     </div>
   `;
