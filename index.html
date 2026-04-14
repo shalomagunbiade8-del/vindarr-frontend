@@ -302,6 +302,10 @@ body{background:var(--black);color:var(--white);}
 .page{display:none;}  
 .page.active{display:block;}  
 .nav-icons{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;padding:.6rem 0;z-index:1000;}  
+.nav-icons{
+  left:0;
+}
+
 .nav-icons i{font-size:1.6rem;color:#fff;cursor:pointer;}  
 .nav-icons i.active{color:var(--red);}  
 .video-meta{font-size:.85rem;color:#bbb;}  
@@ -313,7 +317,9 @@ body{background:var(--black);color:var(--white);}
 .timestamp{font-size:.7rem;color:#888;margin-left:.35rem;}
 .list-group-item.active{background:#1a1a1a;border-color:var(--red);}
 @media(min-width:768px){.nav-icons{display:none;} .navbar{display:flex;} body{padding-bottom:0;}}
-@media(max-width:767px){body{padding-bottom:70px;} .navbar{display:none;}}
+@media(max-width:767px){
+  body{padding-bottom:70px;} 
+} 
 </style>
 </head>
 
@@ -323,22 +329,23 @@ body{background:var(--black);color:var(--white);}
    <div id="landingPage" style="display:block; background:#000; color:#fff; min-height:100vh; font-family:sans-serif;"> 
 
     
-    <div style="color:#d10000; font-weight:bold; font-size:20px;">
-      VINDARR
-    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px;">
 
-    <div>
-      <button onclick="goToPage('login')" 
-      style="margin-right:10px; background:none; border:1px solid #d10000; 
-      color:#d10000; padding:8px 14px; border-radius:6px;">
-        Login
-      </button>
-
-      <button onclick="goToPage('register')" style="background:#d10000; border:none; color:#fff; padding:8px 14px; border-radius:6px;">
-        Get Started
-      </button>
-    </div>
+  <div style="color:#d10000; font-weight:bold; font-size:20px;">
+    VINDARR
   </div>
+
+  <div>
+    <button onclick="goToPage('login')" class="cta-outline">
+      Login
+    </button>
+
+    <button onclick="goToPage('register')" class="cta-btn">
+      Get Started
+    </button>
+  </div>
+
+</div> 
 
   <div style="max-width:1000px; margin:auto; padding:40px 20px;">
 
@@ -494,7 +501,7 @@ body{background:var(--black);color:var(--white);}
 </div>
 
 <!-- Home and Video Feed page -->
-<div id="home" class="page active container py-5">
+<div id="home" class="page container py-5">
   <input 
   id="searchInput"
   class="form-control mb-3" 
@@ -1384,33 +1391,19 @@ function auth(p) {
 } 
 
 // enter landing page site
-// function enterSite() {
-//   // Hide landing page
-//   document.getElementById("landingPage").style.display = "none";
-
-//   // Show navbar, bottom nav, and pages
-//   document.querySelectorAll(".navbar, .nav-icons, .page").forEach(el => el.style.display = "");
-
-//   // Show appropriate page
-//   if (isAuthenticated()) {
-//     showPage('home');
-//   } else {
-//     showPage('login');
-//   }
-
-//   // Optional: mark user has visited landing page
-//   localStorage.setItem("visited", "true");
-// } 
-
 function enterSite(){
 
-  // hide landing page
+  // hide landing
   const landing = document.getElementById("landingPage");
   if(landing) landing.style.display = "none";
 
-  // show app UI
+  // FORCE SHOW APP UI (override CSS)
   document.querySelectorAll('.navbar, .nav-icons, .page')
-    .forEach(el => el.style.display = 'block');
+    .forEach(el => {
+      el.style.display = 'block';
+      el.style.visibility = 'visible';
+    });
+
 }
 
 function goToPage(page){
@@ -1565,27 +1558,23 @@ if (currentUser && currentUser.role === 'coach') {
 } 
 
 // autologin from landing page
-async function autoLogin(){
+document.addEventListener("DOMContentLoaded", async () => {
 
   const token = localStorage.getItem("token");
 
-  if(!token){
-    return; // stay on landing
-  }
+  if(!token) return;
 
-  // user is logged in → skip landing
   enterSite();
 
-  await loadCurrentUser();
+  await initUser();
 
-  // go to home page
   showPage('home');
 
-  // load inbox if function exists
   if(typeof loadInbox === "function"){
     await loadInbox();
   }
-} 
+
+}); 
 
 
 // Global search logic
