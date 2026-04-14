@@ -275,11 +275,7 @@ ul li {
 
 /* readjustment to pages and top navbar area */
 .page {
-  padding-top: 80px;
-} 
-
-#search {
-  padding-top: 80px;
+  padding-top: 12px;
 } 
 
 
@@ -327,8 +323,6 @@ body{background:var(--black);color:var(--white);}
   <!-- LANDING PAGE -->
    <div id="landingPage" style="display:block; background:#000; color:#fff; min-height:100vh; font-family:sans-serif;"> 
 
-  <!-- TOP NAV -->
-  <div style="position:sticky; top:0; background:#000; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; z-index:1000;">
     
     <div style="color:#d10000; font-weight:bold; font-size:20px;">
       VINDARR
@@ -460,6 +454,7 @@ body{background:var(--black);color:var(--white);}
 </div> 
 
 
+<!-- Top nav bar original -->
 <nav class="navbar navbar-dark fixed-top px-3 d-flex justify-content-between">
 
   <span class="d-flex align-items-center fw-bold text-danger title" style="cursor: pointer; font-size: 27px; " onclick="showPage('home')">
@@ -1441,6 +1436,8 @@ async function login() {
 
     await loadStories();
 
+    await loadInbox(); 
+
   
 
   } catch (err) {
@@ -1724,9 +1721,6 @@ async function sendMsg(e){
   msgData.attachmentType = file.type;
 } 
 
-  // Emit to socket
-  socket.emit("sendMessage", msgData);
-
   // Save to backend
   const saved = await fetch(`${API_BASE_URL}/messages`,{
     method:"POST",
@@ -1734,44 +1728,17 @@ async function sendMsg(e){
     body: JSON.stringify(msgData)
   }).then(r=>r.json());
 
-  // Add to local chatStore
-  const key = currentRoom || activeChat;
-
-if(!chatStore[key]) chatStore[key] = [];
-
-chatStore[key].push({
-
-    id: saved.id,
-    sender: 'You',
-    text: saved.text,
-    time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-    status: 'Sent ✓',
-    attachmentUrl: saved.attachmentUrl,
-    attachmentType: saved.attachmentType
-  });
-
   updateInboxPreview(activeChat, {
   text: saved.text,
   time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
 }); 
 
-if(currentRoom){
-  const roomEl = document.querySelector(`#rooms li[data-room='${currentRoom}']`);
-  if(roomEl){
-    roomEl.innerHTML = `
-      <strong>${roomEl.innerText.split('\n')[0]}</strong><br>
-      <small>${msgData.text?.slice(0,25) || '📎 Attachment'}</small>
-    `;
-  }
-} 
 
   // Reset input
   chatInput.value = '';
   pendingAttachment = null;
   replyToMessage = null;
   document.getElementById('replyPreview').classList.add('d-none');
-
-  renderChat();
 
   console.log("SENDING:", msgData);
 }
@@ -2318,6 +2285,23 @@ function addRoomToUI(room){
   li.onclick = () => openRoom(room.id, li);
 
   list.prepend(li);
+} 
+
+// Load inbox function
+async function loadInbox(){
+
+  const token = localStorage.getItem("token");
+
+  if(!token) return;
+
+  // ✅ LOAD ROOMS
+  const rooms = await fetch(`${API_BASE_URL}/rooms`)
+    .then(r=>r.json());
+
+  rooms.forEach(room => {
+    addRoomToUI(room);
+  });
+
 } 
 
 
