@@ -973,6 +973,15 @@ Coach Dashboard
     />
   </div>
 
+  <!-- story dashboard -->
+  <div class="mb-3 text-end">
+  <button class="btn btn-warning" onclick="showVPPage('storyDashboard')">
+    My Stories
+  </button>
+</div>
+
+<div id="vpStoryFeed" class="row"></div>
+
   <div id="storyResults"></div>
 
 </div> 
@@ -3163,8 +3172,18 @@ function showVPPage(id) {
 
   if (id === 'coaches') renderVPCoaches();
   if (id === 'stories') loadStories();
-  if (id === 'wishes') renderWishes();
-  if (id === 'boards') renderBoards();
+  if (id === 'storyDashboard') {
+  loadMyStories();
+}
+
+if (id === 'storyView') {
+  document.getElementById("storyContent").innerHTML = "Loading...";
+} 
+
+
+
+  // if (id === 'wishes') renderWishes();
+  // if (id === 'boards') renderBoards();
 
   // 🔥 ADD THIS BLOCK
 if (id === 'adminPanel') {
@@ -4361,6 +4380,9 @@ function renderStories(stories, append = false) {
   stories.forEach(story => {
 
     const div = document.createElement("div");
+    div.onclick = () => openStoryPage(story.id);
+div.style.cursor = "pointer";
+
     div.className = "col-md-4 mb-4";
 
     div.innerHTML = `
@@ -4377,7 +4399,7 @@ onclick="openProfileByUsername('${story.username}')"
   style="width:45px;height:45px;object-fit:cover;cursor:pointer;"
 /> 
 
-            <strong>${story.author}</strong>
+            <strong>${story.username || story.user?.username}</strong> 
           </div>
 
           <h5>${story.title}</h5>
@@ -4626,53 +4648,51 @@ function renderSearchResults(stories){
 // Open full story page
 async function openStoryPage(id){
 
-  showPage('storyView');
+  showPage('visaprep');
+  showVPPage('storyView');
 
-  const res = await fetch(`${API_BASE_URL}/stories/${id}`);
-  const story = await res.json();
+  document.getElementById("storyContent").innerHTML = "Loading...";
 
-  if(!story || !story.id){
-    document.getElementById("storyContent").innerHTML = "Story not found";
-    return;
-  }
+  try{
+    const res = await fetch(`${API_BASE_URL}/stories/${id}`);
+    const story = await res.json();
 
-  document.getElementById("storyContent").innerHTML = `
+    if(!story || !story.id){
+      document.getElementById("storyContent").innerHTML = "Story not found";
+      return;
+    }
 
-    <div class="mb-4">
+    document.getElementById("storyContent").innerHTML = `
+      <div style="max-width:800px;margin:auto;">
 
-      <div class="d-flex align-items-center mb-3">
-        <img src="${story.avatar}" 
-          onclick="openProfileByUsername('${story.username}')"
-          style="width:55px;height:55px;border-radius:50%;cursor:pointer;margin-right:12px;" />
+        <div class="d-flex align-items-center mb-3">
+          <img src="${story.avatar}" 
+            onclick="openProfileByUsername('${story.username}')"
+            style="width:55px;height:55px;border-radius:50%;cursor:pointer;margin-right:12px;" />
 
-        <div>
-          <strong>${story.username}</strong><br/>
-          <small>${new Date(story.createdAt).toLocaleString()}</small>
+          <div>
+            <strong>${story.username}</strong><br/>
+            <small>${new Date(story.createdAt).toLocaleString()}</small>
+          </div>
         </div>
+
+        <h1>${story.title}</h1>
+
+        ${story.imageUrl ? `
+          <img src="${story.imageUrl}" class="img-fluid mb-4 rounded"/>
+        ` : ""}
+
+        <div style="line-height:1.9;font-size:17px;">
+          ${story.content}
+        </div>
+
+        <div class="mt-3">❤️ ${story.likesCount}</div>
       </div>
+    `;
 
-      <h1 style="font-weight:700; margin-bottom:15px;">
-        ${story.title}
-      </h1>
-
-      ${story.imageUrl ? `
-        <img src="${story.imageUrl}" class="img-fluid mb-4 rounded"/>
-      ` : ""}
-
-      <div style="
-        font-size:17px;
-        line-height:1.9;
-        color:#ddd;
-      ">
-        ${story.content}
-      </div>
-
-      <div class="mt-4">
-        ❤️ ${story.likesCount}
-      </div>
-
-    </div>
-  `;
+  }catch(err){
+    console.error(err);
+  }
 } 
 
 // Load my stories
