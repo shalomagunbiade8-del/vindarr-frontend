@@ -963,22 +963,25 @@ Coach Dashboard
 
   <!-- ================= STORIES FEED ================= -->
 <div id="vp-stories" class="vp-page">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="fw-bold">Travel Stories</h5>
-    <button class="vp-primary" onclick="openStoryModal()">
-  ＋ Upload
-</button>
 
+  <div class="mb-4">
+    <input 
+      id="storySearch"
+      class="form-control"
+      placeholder="Search migration stories, experiences..."
+      oninput="searchStories(this.value)"
+    />
   </div>
-  <div class="row" id="vpStoryFeed"></div>
 
-  <div class="text-center mt-3">
-  <button id="loadMoreBtn" class="btn btn-outline-primary" onclick="loadMoreStories()">
-    Load More
-  </button>
+  <div id="storyResults"></div>
+
+</div> 
+
+<!-- Full article page -->
+ <div id="storyView" class="page container" style="padding-top:120px;">
+  <div id="storyContent"></div>
 </div>
 
-</div>
 
 <!-- ================= WISHES ================= -->
 <!-- <div id="vp-wishes" class="vp-page">
@@ -4550,6 +4553,92 @@ async function toggleLike(storyId) {
     console.error(err);
   }
 }  
+
+// search stories function
+async function searchStories(query){
+
+  if(!query){
+    document.getElementById("storyResults").innerHTML = "";
+    return;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/stories/search?q=${query}`);
+  const data = await res.json();
+
+  renderSearchResults(data);
+} 
+
+// Render search results
+function renderSearchResults(stories){
+
+  const container = document.getElementById("storyResults");
+  container.innerHTML = "";
+
+  stories.forEach(story => {
+
+    const div = document.createElement("div");
+    div.className = "card mb-3 p-3";
+    div.style.cursor = "pointer";
+
+    div.onclick = () => openStoryPage(story.id);
+
+    div.innerHTML = `
+      <div class="d-flex align-items-center mb-2">
+        <img src="${story.avatar}" 
+             onclick="event.stopPropagation(); openProfileByUsername('${story.user?.username}')"
+             style="width:40px;height:40px;border-radius:50%;margin-right:10px;cursor:pointer;" />
+
+        <strong>${story.user?.username || "User"}</strong>
+      </div>
+
+      <h5>${story.title}</h5>
+
+      <small>${new Date(story.createdAt).toLocaleString()}</small>
+
+      ${story.imageUrl ? `<img src="${story.imageUrl}" class="img-fluid mt-2"/>` : ""}
+    `;
+
+    container.appendChild(div);
+  });
+} 
+
+// Open full story page
+async function openStoryPage(id){
+
+  showPage('storyView');
+
+  const res = await fetch(`${API_BASE_URL}/stories?page=1`);
+  const result = await res.json();
+
+  const story = result.data.find(s => s.id === id);
+
+  if(!story) return;
+
+  document.getElementById("storyContent").innerHTML = `
+    
+    <div class="mb-3 d-flex align-items-center">
+      <img src="${story.avatar}" 
+           onclick="openProfileByUsername('${story.username}')"
+           style="width:50px;height:50px;border-radius:50%;cursor:pointer;margin-right:10px;" />
+
+      <strong>${story.username}</strong>
+    </div>
+
+    <h2>${story.title}</h2>
+
+    <small>${new Date(story.createdAt).toLocaleString()}</small>
+
+    ${story.imageUrl ? `<img src="${story.imageUrl}" class="img-fluid my-3"/>` : ""}
+
+    <p style="line-height:1.8; font-size:16px;">
+      ${story.content}
+    </p>
+
+    <button onclick="toggleLike(${story.id})">
+      ❤️ Like
+    </button>
+  `;
+} 
 
 
 // Wishes and Pin system
