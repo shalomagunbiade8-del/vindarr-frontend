@@ -982,6 +982,19 @@ Coach Dashboard
   <div id="storyContent"></div>
 </div>
 
+<!-- Author story dashboard -->
+ <div id="storyDashboard" class="page container" style="padding-top:120px;">
+
+  <h4 class="mb-3">My Stories</h4>
+
+  <button class="btn btn-danger mb-3" onclick="openStoryModal()">
+    + New Story
+  </button>
+
+  <div id="myStories"></div>
+
+</div> 
+
 
 <!-- ================= WISHES ================= -->
 <!-- <div id="vp-wishes" class="vp-page">
@@ -4474,8 +4487,14 @@ if (file) {
   formData.append("image", file);
 }
 
-const res = await fetch(`${API_BASE_URL}/stories`, {
-  method: "POST",
+const url = window.editingStoryId
+  ? `${API_BASE_URL}/stories/${window.editingStoryId}`
+  : `${API_BASE_URL}/stories`;
+
+const method = window.editingStoryId ? "PATCH" : "POST";
+
+const res = await fetch(url, {
+  method, 
   headers: {
     "Authorization": `Bearer ${token}`
   },
@@ -4487,6 +4506,8 @@ const res = await fetch(`${API_BASE_URL}/stories`, {
     if (!res.ok) throw new Error(data.message);
 
     alert("Story uploaded successfully!");
+
+    window.editingStoryId = null; 
 
 closeStoryModal();
 
@@ -4607,37 +4628,103 @@ async function openStoryPage(id){
 
   showPage('storyView');
 
-  const res = await fetch(`${API_BASE_URL}/stories?page=1`);
-  const result = await res.json();
+  const res = await fetch(`${API_BASE_URL}/stories/${id}`);
+  const story = await res.json();
 
-  const story = result.data.find(s => s.id === id);
-
-  if(!story) return;
+  if(!story || !story.id){
+    document.getElementById("storyContent").innerHTML = "Story not found";
+    return;
+  }
 
   document.getElementById("storyContent").innerHTML = `
-    
-    <div class="mb-3 d-flex align-items-center">
-      <img src="${story.avatar}" 
-           onclick="openProfileByUsername('${story.username}')"
-           style="width:50px;height:50px;border-radius:50%;cursor:pointer;margin-right:10px;" />
 
-      <strong>${story.username}</strong>
+    <div class="mb-4">
+
+      <div class="d-flex align-items-center mb-3">
+        <img src="${story.avatar}" 
+          onclick="openProfileByUsername('${story.username}')"
+          style="width:55px;height:55px;border-radius:50%;cursor:pointer;margin-right:12px;" />
+
+        <div>
+          <strong>${story.username}</strong><br/>
+          <small>${new Date(story.createdAt).toLocaleString()}</small>
+        </div>
+      </div>
+
+      <h1 style="font-weight:700; margin-bottom:15px;">
+        ${story.title}
+      </h1>
+
+      ${story.imageUrl ? `
+        <img src="${story.imageUrl}" class="img-fluid mb-4 rounded"/>
+      ` : ""}
+
+      <div style="
+        font-size:17px;
+        line-height:1.9;
+        color:#ddd;
+      ">
+        ${story.content}
+      </div>
+
+      <div class="mt-4">
+        ❤️ ${story.likesCount}
+      </div>
+
     </div>
-
-    <h2>${story.title}</h2>
-
-    <small>${new Date(story.createdAt).toLocaleString()}</small>
-
-    ${story.imageUrl ? `<img src="${story.imageUrl}" class="img-fluid my-3"/>` : ""}
-
-    <p style="line-height:1.8; font-size:16px;">
-      ${story.content}
-    </p>
-
-    <button onclick="toggleLike(${story.id})">
-      ❤️ Like
-    </button>
   `;
+} 
+
+// Load my stories
+async function loadMyStories(){
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_BASE_URL}/stories?page=1`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const result = await res.json();
+
+  const container = document.getElementById("myStories");
+  container.innerHTML = "";
+
+  result.data
+    .filter(s => Number(s.userId) === Number(currentUser.id))
+    .forEach(story => {
+
+      const div = document.createElement("div");
+      div.className = "card p-3 mb-3";
+
+      div.innerHTML = `
+        <h5>${story.title}</h5>
+        <small>${new Date(story.createdAt).toLocaleString()}</small>
+
+        <div class="mt-2">
+          <button onclick="editStory(${story.id})">Edit</button>
+          <button onclick="deleteStory(${story.id})">Delete</button>
+        </div>
+      `;
+
+      container.appendChild(div);
+    });
+} 
+
+
+// Edit story basic level
+async function editStory(id){
+
+  const res = await fetch(`${API_BASE_URL}/stories/${id}`);
+  const story = await res.json();
+
+  openStoryModal();
+
+  document.getElementById("story-title").value = story.title;
+  document.getElementById("story-content").value = story.content;
+
+  window.editingStoryId = id;
 } 
 
 
