@@ -278,6 +278,14 @@ ul li {
   padding-top: 100px;
 } 
 
+.navbar {
+  height: 80px;
+}
+
+body {
+  padding-top: 80px;
+}
+
 :root{--black:#0d0d0d;--red:#d10000;--white:#ffffff;}
 body{background:var(--black);color:var(--white);}  
 .navbar,.nav-icons{background:#111;}  
@@ -1198,7 +1206,8 @@ Coach Dashboard
 </div> 
 
 <!-- Vindarr discover page -->
- <div id="search" class="page container py-4" style="padding-top: 120px;">
+ <!-- <div id="search" class="page container py-4" style="padding-top: 120px;"> -->
+  <div id="search" class="page container" style="padding-top: 140px;">
 
   <input id="globalSearch"
          class="form-control mb-3"
@@ -1624,7 +1633,7 @@ function renderSearchResults(users, rooms){
 
         <button class="btn btn-sm btn-success"
                 onclick="addUserToGroup('${u.username}')">
-          Add
+          Add To Group
         </button>
 
       </div>
@@ -1642,7 +1651,7 @@ function renderSearchResults(users, rooms){
 
         <button class="btn btn-sm btn-primary"
                 onclick="joinRoom(${r.id})">
-          Join
+          Join Community
         </button>
 
       </div>
@@ -1666,8 +1675,19 @@ function joinRoom(roomId){
 
 // Add user to group in prep for later expansion
 function addUserToGroup(username){
-  alert(username + " selected (group feature next)");
-}
+
+  if(!currentRoom){
+    alert("Open a group chat first before adding users");
+    return;
+  }
+
+  socket.emit("addUserToRoom", {
+    roomId: currentRoom,
+    username
+  });
+
+  alert(username + " added to group");
+} 
 
 
 
