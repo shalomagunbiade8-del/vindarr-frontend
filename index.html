@@ -205,9 +205,19 @@
   border-radius:50%;
 }
 
-/* Hide navbar and bottom nav until landing page is exited */
+
+/* Hide ONLY navbar & bottom nav initially */
 .navbar, .nav-icons {
   display: none;
+}
+
+/* Page system (VERY IMPORTANT) */
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
 } 
 
 /* Landing page design */
@@ -300,6 +310,12 @@ fix navbar shift
   right: 0;
 } 
 
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+} 
+
 :root{--black:#0d0d0d;--red:#d10000;--white:#ffffff;}
 body{background:var(--black);color:var(--white);}  
 .navbar,.nav-icons{background:#111;}  
@@ -321,8 +337,7 @@ body{background:var(--black);color:var(--white);}
   box-shadow:0 15px 40px rgba(0,0,0,0.8);
 } 
 
-.page{display:none;}  
-.page.active{display:block;}  
+  
 .nav-icons{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;padding:.6rem 0;z-index:1000;}  
 .nav-icons{
   left:0;
@@ -1404,18 +1419,20 @@ function getUserAvatar(username){
 /* ===================== PAGE NAVIGATION ===================== */
 function showPage(p){
 
-  // Save page for refresh
+  // Save for refresh
   localStorage.setItem("lastPage", p);
 
+  // Hide ALL pages first
   document.querySelectorAll('.page')
     .forEach(x => x.classList.remove('active'));
 
+  // Show selected page
   const page = document.getElementById(p);
   if (!page) return;
 
   page.classList.add('active');
 
-  // VisaPrep reset
+  // Special: VisaPrep
   if (p === 'visaprep') {
 
     document.querySelectorAll('#visaprep .vp-page')
@@ -1441,15 +1458,16 @@ function auth(p) {
 // enter landing page site
 function enterSite(){
 
+  // Hide landing page
   const landing = document.getElementById("landingPage");
   if(landing) landing.style.display = "none";
 
-  // Force UI visible
-  document.querySelectorAll('.navbar, .nav-icons, .page')
+  // Show ONLY navbar & bottom nav
+  document.querySelectorAll('.navbar, .nav-icons')
     .forEach(el => {
-      el.style.display = 'block';
-      el.style.visibility = 'visible';
+      el.style.display = 'flex';
     });
+
 } 
 
 function goToPage(page){
@@ -5130,6 +5148,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (lastPage) {
     enterSite();          // 👈 VERY IMPORTANT
+
+    // HARD RESET (prevents all pages showing)
+document.querySelectorAll('.page')
+  .forEach(p => {
+    p.classList.remove('active');
+    p.style.display = '';
+  }); 
+
     showPage(lastPage);
   } else {
     // Show landing page only first time
