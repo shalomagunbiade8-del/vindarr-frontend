@@ -725,7 +725,7 @@ Become a Migration Coach
 
 <ul id="rooms" class="list-group mb-3"></ul>
 
-    <ul class="list-group">
+    <ul id="inboxList" class="list-group">
       <li class="list-group-item bg-dark text-light d-flex align-items-center gap-2 active">
   
   <!-- Avatar (profile click) -->
@@ -1359,42 +1359,48 @@ socket.on("connect", () => {
 
 socket.on("receiveMessage", (msg) => {
 
-  // GROUP CHAT
+  // GROUP
   if(msg.roomId){
 
-    if(msg.roomId !== currentRoom) return;
+    if(!chatStore[msg.roomId]) chatStore[msg.roomId] = [];
 
-    if(!chatStore[currentRoom]) chatStore[currentRoom] = [];
-
-    chatStore[currentRoom].push({
+    chatStore[msg.roomId].push({
       id: msg.id,
       sender: msg.senderUsername === currentUser.username ? "You" : msg.senderUsername,
       text: msg.text,
       time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
     });
 
-    renderChat();
+    if(currentRoom === msg.roomId){
+      renderChat();
+    }
+
     return;
   }
 
-  // 1–1 CHAT
+  // 1–1
   const otherUser =
     msg.senderUsername === currentUser.username
       ? msg.receiverUsername
       : msg.senderUsername;
 
-  if(otherUser !== activeChat) return;
+  if(!chatStore[otherUser]) chatStore[otherUser] = [];
 
-  if(!chatStore[activeChat]) chatStore[activeChat] = [];
-
-  chatStore[activeChat].push({
+  chatStore[otherUser].push({
     id: msg.id,
     sender: msg.senderUsername === currentUser.username ? "You" : msg.senderUsername,
     text: msg.text,
     time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
   });
 
-  renderChat();
+  // ✅ AUTO ADD TO INBOX
+  addToInbox(otherUser);
+
+  // only render if open
+  if(activeChat === otherUser){
+    renderChat();
+  }
+
 }); 
 
 
@@ -1816,10 +1822,37 @@ async function sendMsg(e){
 
   // Save to backend
   const saved = await fetch(`${API_BASE_URL}/messages`,{
+
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify(msgData)
   }).then(r=>r.json());
+
+  const msg = {
+  id: saved.id,
+  sender: "You",
+  text: saved.text,
+  time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+  attachmentUrl: saved.attachmentUrl,
+  attachmentType: saved.attachmentType
+};
+
+// store locally
+const key = currentRoom || activeChat;
+
+if(!chatStore[key]) chatStore[key] = [];
+chatStore[key].push(msg);
+
+// update UI immediately
+renderChat(); 
+
+if(activeChat){
+  addToInbox(activeChat);
+  updateInboxPreview(activeChat, {
+    text: saved.text,
+    time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+  });
+} 
 
   updateInboxPreview(activeChat, {
   text: saved.text,
@@ -1862,73 +1895,41 @@ async function openRoom(roomId, el){
 
 /* ---------- RENDER CHAT ---------- */
 function renderChat(){
+
   chatLog.innerHTML = '';
 
-  // prevent chat bleed
-  if(activeChat){
-  messages = chatStore[activeChat] || [];
-} else if(currentRoom){
-  messages = chatStore[currentRoom] || [];
-} else {
-  messages = [];
-}
+  let messages = [];
 
-  // Session context banner
-  if(currentSessionContext){
-    chatLog.innerHTML += `
-      <div class="alert alert-info small">
-        VisaPrep Session · Coach ${currentSessionContext.coach} · ${currentSessionContext.time}
-      </div>
-    `;
+  if(activeChat){
+    messages = chatStore[activeChat] || [];
+  } 
+  else if(currentRoom){
+    messages = chatStore[currentRoom] || [];
   }
 
-  const messages = currentRoom
-  // 1–1
-if(activeChat){
-  if(!chatStore[activeChat]) chatStore[activeChat] = [];
-  chatStore[activeChat].push(msg);
-}
+  messages.forEach(msg => {
 
-// group
-if(currentRoom){
-  if(!chatStore[currentRoom]) chatStore[currentRoom] = [];
-  chatStore[currentRoom].push(msg);
-} 
+    chatLog.innerHTML += `
+      <div class="msg ${msg.sender === 'You' ? 'you' : 'them'}">
 
-messages?.forEach(msg => {
-  chatLog.innerHTML += `
-  <div class="msg ${msg.sender === 'You' ? 'you' : 'them'}"
-       data-id="${msg.id}"
-       onmousedown="startPressTimer(event, this)"
-       onmouseup="clearPressTimer()"
-       ontouchstart="startPressTimer(event, this)"
-       ontouchend="clearPressTimer()">
+        <div>
+          ${currentRoom && msg.sender !== 'You' ? `<strong>${msg.sender}: </strong>` : ''}
+          ${msg.text || ''}
+        </div>
 
-    <div>
-      ${currentRoom && msg.sender !== 'You' ? `<strong>${msg.sender}: </strong>` : ''}
-${msg.text || ''} 
-    </div>
+        ${msg.attachmentUrl ? `
+          <img src="${API_BASE_URL + msg.attachmentUrl}" class="img-fluid rounded mt-1">
+        ` : ''}
 
-    ${msg.attachmentUrl ? renderAttachment({
-      data: API_BASE_URL + msg.attachmentUrl,
-      type: msg.attachmentType,
-      name: 'Attachment'
-    }) : ''}
+        <div class="timestamp">${msg.time}</div>
 
-    <div class="timestamp">
-      ${msg.time}
-    </div>
-
-    ${msg.sender === 'You' ? `
-      <div class="msg-status">${msg.status}</div>
-    ` : ``}
-  </div>
-
+      </div>
     `;
   });
 
   chatLog.scrollTop = chatLog.scrollHeight;
-}
+} 
+
 
 /* ---------- REPLY ---------- */
 function replyMessage(msgId){
