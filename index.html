@@ -1323,6 +1323,10 @@ let replyToMessage = null;     // for reply feature
 let currentSessionContext = null; // coach / VisaPrep session info 
 let pendingAttachment = null; 
 
+// Threaded messages
+let currentThread = null;
+let inboxThreads = {}; 
+
 // ===================== CHAT DATA STRUCTURE =====================
 let chats = {}; // stores messages per chat username
 let messageIdCounter = 0; // unique ID for each message 
@@ -1359,49 +1363,91 @@ socket.on("connect", () => {
 
 socket.on("receiveMessage", (msg) => {
 
+  let threadId;
+
   // GROUP
   if(msg.roomId){
+    threadId = "room_" + msg.roomId;
+  } else {
+    const otherUser =
+      msg.senderUsername === currentUser.username
+        ? msg.receiverUsername
+        : msg.senderUsername;
 
-    if(!chatStore[msg.roomId]) chatStore[msg.roomId] = [];
-
-    chatStore[msg.roomId].push({
-      id: msg.id,
-      sender: msg.senderUsername === currentUser.username ? "You" : msg.senderUsername,
-      text: msg.text,
-      time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-    });
-
-    if(currentRoom === msg.roomId){
-      renderChat();
-    }
-
-    return;
+    threadId = "user_" + otherUser;
   }
 
-  // 1–1
-  const otherUser =
-    msg.senderUsername === currentUser.username
-      ? msg.receiverUsername
-      : msg.senderUsername;
+  if(!chatStore[threadId]) chatStore[threadId] = [];
 
-  if(!chatStore[otherUser]) chatStore[otherUser] = [];
-
-  chatStore[otherUser].push({
+  const message = {
     id: msg.id,
     sender: msg.senderUsername === currentUser.username ? "You" : msg.senderUsername,
     text: msg.text,
     time: new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-  });
+  };
 
-  // ✅ AUTO ADD TO INBOX
-  addToInbox(otherUser);
+  chatStore[threadId].push(message);
+
+  // ✅ UPDATE INBOX
+  inboxThreads[threadId] = {
+    lastMessage: message.text,
+    time: Date.now()
+  };
+
+  renderInbox();
 
   // only render if open
-  if(activeChat === otherUser){
+  if(getThreadId() === threadId){
     renderChat();
   }
 
 }); 
+
+// Render inbox
+function renderInbox(){
+
+  const list = document.getElementById("inboxList");
+  list.innerHTML = "";
+
+  Object.keys(inboxThreads)
+    .sort((a,b)=> inboxThreads[b].time - inboxThreads[a].time)
+    .forEach(threadId => {
+
+      const item = inboxThreads[threadId];
+
+      const li = document.createElement("li");
+      li.className = "list-group-item";
+
+      const name = threadId.startsWith("user_")
+        ? threadId.replace("user_","")
+        : "Group " + threadId.replace("room_","");
+
+      li.innerHTML = `
+        <strong>${name}</strong>
+        <div class="small">${item.lastMessage || ''}</div>
+      `;
+
+      li.onclick = () => openThread(threadId);
+
+      list.appendChild(li);
+    });
+} 
+
+// Thread opener 
+function openThread(threadId){
+
+  currentThread = threadId;
+
+  if(threadId.startsWith("user_")){
+    activeChat = threadId.replace("user_","");
+    currentRoom = null;
+  } else {
+    currentRoom = threadId.replace("room_","");
+    activeChat = null;
+  }
+
+  renderChat();
+} 
 
 
 function getUserAvatar(username){
@@ -1775,6 +1821,20 @@ function backToInbox(){
   inbox.style.display='block';
 }
 
+// Get threaded messages
+function getThreadId(){
+
+  if(currentRoom){
+    return "room_" + currentRoom;
+  }
+
+  if(activeChat){
+    return "user_" + activeChat;
+  }
+
+  return null;
+} 
+
 /* ---------- SEND MESSAGE ---------- */
 async function sendMsg(e){
   if(e.key && e.key !== 'Enter') return;
@@ -1828,7 +1888,11 @@ async function sendMsg(e){
     body: JSON.stringify(msgData)
   }).then(r=>r.json());
 
-  const msg = {
+  // ✅ THREAD KEY
+const key = getThreadId();
+
+// ✅ BUILD MESSAGE
+const msg = {
   id: saved.id,
   sender: "You",
   text: saved.text,
@@ -1837,14 +1901,19 @@ async function sendMsg(e){
   attachmentType: saved.attachmentType
 };
 
-// store locally
-const key = currentRoom || activeChat;
-
+// ✅ STORE MESSAGE
 if(!chatStore[key]) chatStore[key] = [];
 chatStore[key].push(msg);
 
-// update UI immediately
-renderChat(); 
+// ✅ UPDATE INBOX (GMAIL STYLE)
+inboxThreads[key] = {
+  lastMessage: msg.text,
+  time: Date.now()
+};
+
+// ✅ RENDER
+renderChat();
+renderInbox(); 
 
 if(activeChat){
   addToInbox(activeChat);
@@ -1898,14 +1967,8 @@ function renderChat(){
 
   chatLog.innerHTML = '';
 
-  let messages = [];
-
-  if(activeChat){
-    messages = chatStore[activeChat] || [];
-  } 
-  else if(currentRoom){
-    messages = chatStore[currentRoom] || [];
-  }
+  const key = getThreadId();
+  let messages = chatStore[key] || [];
 
   messages.forEach(msg => {
 
@@ -1921,7 +1984,13 @@ function renderChat(){
           <img src="${API_BASE_URL + msg.attachmentUrl}" class="img-fluid rounded mt-1">
         ` : ''}
 
-        <div class="timestamp">${msg.time}</div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <small>${msg.time}</small>
+
+          ${msg.sender === "You" ? `
+            <button onclick="deleteMsg(${msg.id})" class="btn btn-sm btn-danger">x</button>
+          ` : ''}
+        </div>
 
       </div>
     `;
@@ -1990,19 +2059,15 @@ function setReply(messageId, text){
 } 
 
 // Delete message function
-async function deleteMessage(btn){
-  if(!confirm("Delete this message?")) return;
+async function deleteMsg(id){
 
-  const msgEl = btn.closest(".msg");
-  const msgId = msgEl.dataset.id;
-
-  await fetch(`${API_BASE_URL}/messages/${msgId}`,{
+  await fetch(`${API_BASE_URL}/messages/${id}`,{
     method: "DELETE"
   });
 
-  const key = currentRoom || activeChat;
+  const key = getThreadId();
 
-  chatStore[key] = chatStore[key].filter(m => m.id != msgId);
+  chatStore[key] = chatStore[key].filter(m => m.id !== id);
 
   renderChat();
 } 
