@@ -391,18 +391,19 @@ body{background:var(--black);color:var(--white);}
       <h1 style="color:#ff1a1a; font-size:48px; font-weight:700;"> Make smarter migration decisions.</h1>
 
       <p style="font-size:18px; margin:20px 0;">
-        Learn from real experiences, understand life abroad, and connect with verified experts before you move.
+        A search + content platform for real life decisions; starting with migration. Learn from real people before making life decisions.
       </p>
 
-      <p style="font-weight:bold;">Don’t migrate blind.</p>
+      <p style="font-weight:bold;">Vindarr is for students, young professionals, creators and everyday users to share stories, info, ideas, advice that can empower the community</p>
 
+      <p>Vindarr is your go-to platform for migration & a knowledge engine for youth</p>
       <div style="margin-top:20px;">
         <button onclick="enterSite()" class="cta-btn">
           Explore Stories
         </button>
 
         <button onclick="enterSite(); showPage('visaprep')" class="cta-outline">
-          Find a Migration Coach
+          Find Migration Coach & Info
         </button>
       </div>
     </div>
@@ -1432,6 +1433,12 @@ function showPage(p){
 
   page.classList.add('active');
 
+  // Load messages + rooms when opening chat page
+  if (p === 'messages') {
+    loadInbox();
+    loadRooms();
+  }
+
   // Special: VisaPrep
   if (p === 'visaprep') {
 
@@ -1695,18 +1702,31 @@ function renderSearchResults(users, rooms){
 } 
 
 // join room function
-function joinRoom(roomId){
+async function joinRoom(roomId){
 
-  // add to UI if not already
-  if(!document.querySelector(`#rooms li[data-room='${roomId}']`)){
-    loadRooms();
-  }
+  if(!currentUser) return alert("Login required");
+
+  // ✅ CALL BACKEND
+  await fetch(`${API_BASE_URL}/rooms/${roomId}/join`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
+      username: currentUser.username
+    })
+  });
+
+  // ✅ Refresh UI
+  loadRooms();
 
   const li = document.querySelector(`#rooms li[data-room='${roomId}']`);
+
   if(li){
     openRoom(roomId, li);
   }
-}  
+} 
+
 
 // Add user to group in prep for later expansion
 function addUserToGroup(username){
@@ -2192,24 +2212,25 @@ async function loadMessagesFromServer(username){
 
 // load room message 
 async function loadRoomMessages(roomId){
-  const res = await fetch(API_BASE_URL + "/messages/room/" + roomId, {
-    headers: {
-      "Authorization": "Bearer " + localStorage.getItem("token")
-    }
-  });
+
+  const res = await fetch(`${API_BASE_URL}/messages/room/${roomId}/${currentUser.username}`);
+
+  if(!res.ok){
+    alert("You must join this group first");
+    return;
+  }
 
   const messages = await res.json();
 
   chatStore[roomId] = messages.map(m => ({
     id: m.id,
-    sender: m.sender.username === currentUser.username ? "You" : m.sender.username,
+    sender: m.senderUsername === currentUser.username ? "You" : m.senderUsername,
     text: m.text,
     time: new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
     attachmentUrl: m.attachmentUrl,
     attachmentType: m.attachmentType
   }));
 } 
-
 
 // Load users for vindarr discovery
 async function loadUsers(){
@@ -2331,13 +2352,24 @@ async function createRoom(){
 
 // load room function
 async function loadRooms(){
+
   const res = await fetch(API_BASE_URL + "/rooms");
   const rooms = await res.json();
 
   const list = document.getElementById("rooms");
   list.innerHTML = "";
 
-  rooms.forEach(r => addRoomToUI(r));
+  rooms.forEach(r => {
+    if(r.members.includes(currentUser.username)){
+      addRoomToUI(r); // joined rooms first
+    }
+  });
+
+  rooms.forEach(r => {
+    if(!r.members.includes(currentUser.username)){
+      addRoomToUI(r); // discover section
+    }
+  });
 } 
 
 // add room to ui
@@ -2345,8 +2377,9 @@ function addRoomToUI(room){
 
   const list = document.getElementById("rooms");
 
-  // جلوگیری از تکراری شدن
   if(document.querySelector(`#rooms li[data-room='${room.id}']`)) return;
+
+  const isMember = room.members.includes(currentUser.username);
 
   const li = document.createElement("li");
   li.className = "list-group-item bg-dark text-white d-flex align-items-center gap-2";
@@ -2359,15 +2392,30 @@ function addRoomToUI(room){
 
     <div style="flex:1">
       <div class="d-flex justify-content-between">
-        <strong>${room.name && room.name !== "null" ? room.name : "Unnamed Group"}</strong>
+        <strong>${room.name || "Unnamed Group"}</strong>
       </div>
       <div class="small text-muted">
         ${room.description || "No description"}
       </div>
     </div>
+
+    ${
+      isMember
+      ? `<button class="btn btn-sm btn-success">Open</button>`
+      : `<button class="btn btn-sm btn-primary">Join</button>`
+    }
   `;
 
-  li.onclick = () => openRoom(room.id, li);
+  const btn = li.querySelector("button");
+
+  if(isMember){
+    btn.onclick = () => openRoom(room.id, li);
+  } else {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      joinRoom(room.id);
+    };
+  }
 
   list.prepend(li);
 } 
