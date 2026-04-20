@@ -1362,6 +1362,14 @@ socket.on("connect", () => {
 /* ================= RECEIVE REALTIME MESSAGE ================= */
 
 socket.on("receiveMessage", (msg) => {
+  //  HARD FILTER (prevents bleeding)
+if(
+  !msg.roomId &&
+  msg.senderUsername !== currentUser.username &&
+  msg.receiverUsername !== currentUser.username
+){
+  return;
+} 
 
   let threadId;
 
@@ -1559,6 +1567,10 @@ async function login() {
     await loadStories();
 
     await loadInbox(); 
+
+    await loadInbox();
+
+    await loadRooms();
 
   
 
@@ -1802,7 +1814,8 @@ async function openChat(username, el){
 
   activeChat = username;
 
-  if(!chatStore[username]) chatStore[username] = [];
+  const key = "user_" + username;
+if(!chatStore[key]) chatStore[key] = []; 
 
   await loadMessagesFromServer(username);
 
@@ -1856,7 +1869,7 @@ async function sendMsg(e){
 
   const msgData = {
   senderUsername: currentUser.username,
-  receiverUsername: currentRoom ? null : activeChat,
+  receiverUsername: !currentRoom ? activeChat : null, 
   roomId: currentRoom || null,
   text: chatInput.value || null,
   attachmentUrl: null,
@@ -1915,14 +1928,6 @@ inboxThreads[key] = {
 renderChat();
 renderInbox(); 
 
-if(activeChat){
-  addToInbox(activeChat);
-  updateInboxPreview(activeChat, {
-    text: saved.text,
-    time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-  });
-} 
-
   updateInboxPreview(activeChat, {
   text: saved.text,
   time: new Date(saved.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
@@ -1955,7 +1960,7 @@ async function openRoom(roomId, el){
 
   await loadRoomMessages(roomId);
 
-  socket.emit("joinRoom", roomId); // VERY IMPORTANT
+  socket.emit("joinRoom", Number(roomId));
 
   renderChat();
 } 
@@ -2084,63 +2089,6 @@ async function deleteMsg(id){
   ), 100);
 }
 
-// Add to inbox
-function addToInbox(username, avatar){
-
-  const list = document.querySelector('#inbox .list-group');
-
-  if([...list.children].some(li => li.dataset.user === username)) return;
-
-  const li = document.createElement('li');
-  li.className = 'list-group-item bg-dark text-light d-flex align-items-center gap-2';
-  li.dataset.user = username;
-
-  li.innerHTML = `
-    <img src="${avatar || 'https://via.placeholder.com/32'}"
-         class="rounded-circle"
-         width="32" height="32"
-         style="cursor:pointer"
-         onclick="openProfileByUsername('${username}')">
-
-    <div style="flex:1; cursor:pointer"
-         onclick="openChat('${username}', this.parentElement)">
-
-      <div class="d-flex justify-content-between">
-        <strong>${username}</strong>
-        <small class="msg-time text-muted"></small>
-      </div>
-
-      <div class="last-msg small text-muted">
-        No messages yet
-      </div>
-
-    </div>
-  `;
-
-  list.prepend(li); // NEW chats go top
-} 
-
-// Update inbox preview
-function updateInboxPreview(username, message){
-
-  const li = document.querySelector(`#inbox li[data-user='${username}']`);
-  if(!li) return;
-
-  const lastMsg = li.querySelector('.last-msg');
-  const time = li.querySelector('.msg-time');
-
-  lastMsg.innerText =
-    message.text
-      ? message.text.slice(0, 25)
-      : "📎 Attachment";
-
-  time.innerText = message.time;
-
-  // Move to top
-  li.parentElement.prepend(li);
-} 
-
-
 // LongPress Function and delete logic
 let pressTimer = null;
 
@@ -2264,7 +2212,9 @@ async function loadMessagesFromServer(username){
 
     const messages = await res.json();
 
-    chatStore[username] = messages.map(m => ({
+    const key = "user_" + username;
+
+chatStore[key] = messages.map(m => ({
   id: m.id,
   sender: m.senderUsername === currentUser.username ? "You" : username,
   text: m.text || "",
@@ -2294,7 +2244,9 @@ async function loadRoomMessages(roomId){
 
   const messages = await res.json();
 
-  chatStore[roomId] = messages.map(m => ({
+  const key = "room_" + roomId;
+
+chatStore[key] = messages.map(m => ({ 
     id: m.id,
     sender: m.senderUsername === currentUser.username ? "You" : m.senderUsername,
     text: m.text,
