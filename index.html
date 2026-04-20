@@ -408,79 +408,6 @@ body{background:var(--black);color:var(--white);}
       </div>
     </div>
 
-    <!-- PROBLEM -->
-    <div class="card fade">
-      <h3>🚨 The Problem</h3>
-      <p>Migrating is one of the biggest decisions of your life.</p>
-      <ul>
-        <li>Too much conflicting information</li>
-        <li>Fake or unreliable agents</li>
-        <li>Expensive mistakes</li>
-        <li>No real understanding of life abroad</li>
-      </ul>
-      <p><strong>You shouldn’t have to guess your future.</strong></p>
-    </div>
-
-    <!-- SOLUTION -->
-    <div class="card fade">
-      <h3>✅ The Solution</h3>
-      <ul>
-        <li>Real stories from people already abroad</li>
-        <li>Honest insights about different countries</li>
-        <li>Verified coaches you can speak with directly</li>
-      </ul>
-      <p><strong>Move with clarity and confidence.</strong></p>
-    </div>
-
-    <!-- HOW IT WORKS -->
-    <div class="card fade">
-      <h3>⚙️ How It Works</h3>
-      <p><strong>1.</strong> Watch and be inspired by real migration stories</p>
-      <p><strong>2.</strong> Understand your destination</p>
-      <p><strong>3.</strong> Connect with verified experts</p>
-    </div>
-
-    <!-- EXPLORE -->
-    <div class="card fade">
-      <h3>🌍 What You Can Explore</h3>
-      <ul>
-        <li>Culture & lifestyle</li>
-        <li>Cost of living</li>
-        <li>Jobs & opportunities</li>
-        <li>Immigration processes and updates</li>
-        <li>Food, language, fashion, diplomatic events and daily life</li>
-        <li>Real migrant experiences and travel blogs</li>
-        <li>Politics, laws and documentaries</li>
-        <li>Vlogs and podcast</li>
-        <li>Tech, science and innovation</li>
-      </ul>
-    </div>
-
-    <!-- TRUST -->
-    <div class="card fade">
-      <h3>🤝 Trust & Safety</h3>
-      <ul>
-        <li>Real users, real experiences</li>
-        <li>Verified migration coaches</li>
-        <li>Transparent insights — no sugarcoating</li>
-      </ul>
-    </div>
-
-    <!-- Vindarr Migration Coaches-->
-    <div class="card fade">
-      <h3>🤝 Vindarr Migration Coach</h3>
-      <ul>
-        <li>Anyone with something to empower the community can be a coach while signing up</li>
-        <li>If you can speak and teach a foreign language, cook local and foreign dishes, share your travel experience... you can be a coach or creator</li>
-        <li>But a Vindarr Migration Coach is totally different and to be verified you must be:</li>
-        <li>An Immigration lawyer</li>
-        <li>An active or retired diplomat or affiliated with with embassies, consulates or high commisions</li>
-        <li>Registered Travel agencies and consultants </li>
-        <li>With at least 5 years of experience and evidence to prove such</li>
-        <li>As well as proof of considerable rate of success</li>
-      </ul>
-    </div>
-
 
     <!-- CTA -->
     <div style="text-align:center; margin-top:60px;" class="fade">
@@ -1822,10 +1749,6 @@ if(!chatStore[key]) chatStore[key] = [];
 renderChat();
 
 
-  // Mark messages as seen
-  chatStore[username].forEach(m => {
-    if(m.sender !== 'You') m.status = 'seen';
-  });
 }
 
 /* ---------- BACK ---------- */
@@ -2080,14 +2003,32 @@ async function deleteMsg(id){
 
     // Add chat launcher
     function chatWithProfile(){
+
   if(!viewedProfile) return;
-  addToInbox(viewedProfile.username, viewedProfile.avatar);
-  showPage('messages');
-  setTimeout(() => openChat(viewedProfile.username,
-    [...document.querySelectorAll('#inbox li')]
-      .find(li => li.dataset.user === viewedProfile.username)
-  ), 100);
-}
+
+  const username = viewedProfile.username;
+
+  // go to inbox page
+  showPage('inbox');
+
+  setTimeout(() => {
+
+    const el = document.querySelector(`#inboxList li[data-user='${username}']`);
+
+    if(el){
+      openChat(username, el);
+    } else {
+      console.warn("User not in inbox yet, reloading...");
+
+      loadInbox().then(() => {
+        const newEl = document.querySelector(`#inboxList li[data-user='${username}']`);
+        if(newEl) openChat(username, newEl);
+      });
+    }
+
+  }, 300);
+} 
+
 
 // LongPress Function and delete logic
 let pressTimer = null;
@@ -2221,7 +2162,6 @@ chatStore[key] = messages.map(m => ({
   time: m.createdAt
     ? new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
     : "",
-  status: "Seen ✓✓"
 }));
 
   }catch(err){
@@ -2453,6 +2393,8 @@ async function loadInbox(){
   const list = document.getElementById("inboxList");
   list.innerHTML = "";
 
+  const seenUsers = new Set();
+
   messages.forEach(m => {
 
     const otherUser =
@@ -2460,10 +2402,16 @@ async function loadInbox(){
         ? m.receiverUsername
         : m.senderUsername;
 
-    if(!otherUser) return;
+    if(!otherUser || seenUsers.has(otherUser)) return;
+
+    seenUsers.add(otherUser);
 
     const li = document.createElement("li");
+
     li.className = "list-group-item bg-dark text-white";
+
+    // ✅ VERY IMPORTANT
+    li.setAttribute("data-user", otherUser);
 
     li.innerHTML = `
       <strong>${otherUser}</strong><br>
