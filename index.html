@@ -396,9 +396,9 @@ body{background:var(--black);color:var(--white);}
 
       <p style="font-weight:bold;">Vindarr is for students, young professionals, creators and everyday users to share stories, info, ideas, advice that can empower the community</p>
 
-      <p>Vindarr is your go-to platform for migration & a knowledge engine for youth</p>
+      <p>Vindarr is your go-to platform for migration, info sharing & a knowledge engine for youth</p>
       <div style="margin-top:20px;">
-        <button onclick="enterSite()" class="cta-btn">
+        <button onclick="enterSite(); showPage('visaprep')" class="cta-btn">
           Explore Stories
         </button>
 
@@ -1993,27 +1993,41 @@ async function deleteMsg(id){
 
   const username = viewedProfile.username;
 
-  // go to inbox page
-  showPage('inbox');
+  // ✅ go to correct page
+  showPage('messages');
 
-  setTimeout(() => {
+  // ✅ wait for inbox to load properly
+  setTimeout(async () => {
 
-    const el = document.querySelector(`#inboxList li[data-user='${username}']`);
+    await loadInbox();
 
-    if(el){
-      openChat(username, el);
-    } else {
-      console.warn("User not in inbox yet, reloading...");
+    let el = document.querySelector(`#inboxList li[data-user='${username}']`);
 
-      loadInbox().then(() => {
-        const newEl = document.querySelector(`#inboxList li[data-user='${username}']`);
-        if(newEl) openChat(username, newEl);
-      });
+    // ✅ if user not in inbox, create it
+    if(!el){
+
+      const li = document.createElement("li");
+
+      li.className = "list-group-item bg-dark text-white";
+      li.setAttribute("data-user", username);
+
+      li.innerHTML = `
+        <strong>${username}</strong><br>
+        <small>Start conversation</small>
+      `;
+
+      li.onclick = () => openChat(username, li);
+
+      document.getElementById("inboxList").prepend(li);
+
+      el = li;
     }
 
-  }, 300);
-} 
+    // ✅ NOW open chat safely
+    openChat(username, el);
 
+  }, 300);
+}
 
 // LongPress Function and delete logic
 let pressTimer = null;
