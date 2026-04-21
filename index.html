@@ -337,6 +337,16 @@ body{background:var(--black);color:var(--white);}
   box-shadow:0 15px 40px rgba(0,0,0,0.8);
 } 
 
+/* inbox list styling */
+#inboxList li:hover{
+  background-color:#1a1a1a;
+  cursor:pointer;
+}
+
+#inboxList li.active{
+  background-color:#2a2a2a;
+} 
+
   
 .nav-icons{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;padding:.6rem 0;z-index:1000;}  
 .nav-icons{
@@ -668,6 +678,21 @@ Become a Migration Coach
        class="alert alert-info py-1 px-2 mb-2"
        style="display:none;font-size:13px;">
   </div>
+
+  <!-- chat header placement -->
+   <div id="chatHeader" class="d-flex align-items-center gap-2 mb-2 p-2 bg-dark rounded">
+
+  <img id="chatHeaderAvatar"
+       src="https://via.placeholder.com/40"
+       class="rounded-circle"
+       width="40" height="40">
+
+  <div>
+    <div id="chatHeaderName" style="font-weight:bold;"></div>
+    <div id="chatHeaderSub" style="font-size:12px;color:#aaa;"></div>
+  </div>
+
+</div> 
 
   <!-- Chat messages -->
   <div id="chatLog"
@@ -1726,6 +1751,16 @@ async function openChat(username, el){
 
   activeChat = username;
 
+  // ✅ Update chat header
+document.getElementById("chatHeaderName").innerText = username;
+
+document.getElementById("chatHeaderSub").innerText = "Direct message";
+
+// avatar (simple fallback)
+document.getElementById("chatHeaderAvatar").src =
+  `https://ui-avatars.com/api/?name=${username}`; 
+  
+
   const key = "user_" + username;
 if(!chatStore[key]) chatStore[key] = []; 
 
@@ -1863,6 +1898,14 @@ async function openRoom(roomId, el){
 
   currentRoom = roomId;
   activeChat = null;
+
+  // ✅ Update header for group
+document.getElementById("chatHeaderName").innerText = "Group Chat";
+
+document.getElementById("chatHeaderSub").innerText = "Community";
+
+document.getElementById("chatHeaderAvatar").src =
+  "https://cdn-icons-png.flaticon.com/512/681/681494.png"; 
 
   if(!chatStore[roomId]) chatStore[roomId] = [];
 
@@ -2407,14 +2450,32 @@ async function loadInbox(){
 
     const li = document.createElement("li");
 
-    li.className = "list-group-item bg-dark text-white";
+    li.className = "list-group-item bg-dark text-light d-flex align-items-center gap-3";
 
-    // ✅ VERY IMPORTANT
     li.setAttribute("data-user", otherUser);
 
+    // 🧠 Format time
+    const time = m.createdAt
+      ? new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+      : "";
+
     li.innerHTML = `
-      <strong>${otherUser}</strong><br>
-      <small>${m.text || "Attachment"}</small>
+      <!-- Avatar -->
+      <img src="https://via.placeholder.com/40"
+           class="rounded-circle"
+           width="40" height="40">
+
+      <!-- Text block -->
+      <div style="flex:1; min-width:0;">
+        <div class="d-flex justify-content-between">
+          <strong>${otherUser}</strong>
+          <small class="text-muted">${time}</small>
+        </div>
+
+        <div style="font-size:13px; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+          ${m.text || "Attachment"}
+        </div>
+      </div>
     `;
 
     li.onclick = () => openChat(otherUser, li);
@@ -2422,7 +2483,6 @@ async function loadInbox(){
     list.appendChild(li);
   });
 } 
-
 
 
 /* ===================== CATEGORIES ===================== */
