@@ -398,7 +398,7 @@ body{background:var(--black);color:var(--white);}
 
     <!-- HERO -->
     <div style="text-align:center; margin-bottom:80px; animation:fadeIn 1s ease;">
-      <h1 style="color:#ff1a1a; font-size:48px; font-weight:700;"> Share Knowledge. Spark Ideas. Connect Through Stories
+      <h1 style="color:#ff1a1a; font-size:48px; font-weight:700;"> Share Knowledge. Spark Ideas. Connect Through Stories. <br>
         Make smarter migration decisions.</h1>
 
       <p style="font-size:18px; margin:20px 0;">
@@ -476,6 +476,18 @@ body{background:var(--black);color:var(--white);}
   class="form-control mb-3" 
   placeholder="Search videos, topics…"
 > 
+
+<!-- Vindarr intel personalized feed -->
+ <div class="d-flex gap-2 mb-3">
+  <button class="btn btn-light btn-sm" onclick="switchFeed('general')">
+    General
+  </button>
+
+  <button class="btn btn-warning btn-sm" onclick="switchFeed('intel')">
+    ⚡ Vindarr Intel
+  </button>
+</div> 
+
   <div id="filters" class="mb-3"></div>
   <div id="feed" class="row g-3"></div>
 
@@ -524,7 +536,6 @@ Load More
       <option value="Music">Music</option>
       <option value="Language">Language</option>
       <option value="Food">Food</option>
-      <option value="News">News</option>
       <option value="Visa News & Gist">Visa News & Gist</option>
       <option value="News">News</option>
       <option value="Others">Others</option>
@@ -536,6 +547,7 @@ Load More
 
 <input type="file" id="uFile" class="form-control mb-2" accept="video/*">
 <button class="btn btn-danger w-100" onclick="publish()">Publish</button>
+<div id="uploadStatus" class="text-center mt-2 text-warning"></div> 
 </div>
 
 <!-- Profile testing -->
@@ -1634,13 +1646,15 @@ async function runGlobalSearch(query){
     return;
   }
 
-  const [usersRes, roomsRes] = await Promise.all([
-    fetch(`${API_BASE_URL}/users`),
-    fetch(`${API_BASE_URL}/rooms`)
-  ]);
+  const [usersRes, roomsRes, videosRes] = await Promise.all([
+  fetch(`${API_BASE_URL}/users`),
+  fetch(`${API_BASE_URL}/rooms`),
+  fetch(`${API_BASE_URL}/videos/search?q=${query}`)
+]); 
 
   const users = await usersRes.json();
   const rooms = await roomsRes.json();
+  const videos = await videosRes.json(); 
 
   const filteredUsers = users.filter(u =>
     u.username.toLowerCase().includes(query.toLowerCase())
@@ -1650,15 +1664,27 @@ async function runGlobalSearch(query){
     r.name.toLowerCase().includes(query.toLowerCase())
   );
 
-  renderSearchResults(filteredUsers, filteredRooms);
+  renderSearchResults(filteredUsers, filteredRooms, videos);
 } 
 
 // Render search results
-function renderSearchResults(users, rooms){
+function renderSearchResults(users, rooms, videos){ 
 
   const container = document.getElementById("searchResults");
 
   container.innerHTML = `
+
+  <h6 class="text-muted">Videos</h6>
+${videos.map(v => `
+  <div class="p-2 border rounded mb-2" style="cursor:pointer"
+       onclick="showPage('home');">
+
+    <strong>${v.title}</strong><br/>
+    <small>${v.category}</small>
+
+  </div>
+`).join('')}
+
     <h6 class="text-muted">Users</h6>
     ${users.map(u => `
       <div class="d-flex align-items-center gap-2 mb-2 p-2 border rounded">
@@ -2494,15 +2520,6 @@ async function loadInbox(){
 } 
 
 
-/* ===================== CATEGORIES ===================== */
-const categories = [
-  "Business","Tech","Culture","Education","Law",
-  "Travel","Politics","Economy","Health","Innovation","Society", 
-  "Tourism", "Fashion", "Literature", "Diplomacy", "Human Rights", 
-  "Documentaries", "History", "Vlogs", "Climate Change", 
-  "Science", "Podcast", "Others",
-];
-categories.forEach(c=>{uCategory.innerHTML += `<option value="${c}">${c}</option>`});
 
 /* ===================== UPLOAD ===================== */
 async function publish(){
@@ -2521,6 +2538,8 @@ async function publish(){
   formData.append("context", uContext.value);
 
   try {
+
+    document.getElementById("uploadStatus").innerText = "Publishing video..."; 
 
     console.log("🚀 Sending request...");
 
@@ -2547,11 +2566,11 @@ async function publish(){
     console.log("✅ Parsed data:", data);
 
     if(!res.ok){
-      alert("Upload failed: " + text);
+      document.getElementById("uploadStatus").innerText = "Upload failed ❌";
       return;
     }
 
-    alert("Upload success!");
+    document.getElementById("uploadStatus").innerText = "Upload success ✅"; 
 
     await loadVideos();
     await loadMyVideos();
@@ -2682,6 +2701,14 @@ document.getElementById("searchInput").addEventListener("input", function(e) {
   }, 400); // debounce
 }); 
 
+// Feed mode function
+let feedMode = "general";
+
+// Switch feed function
+function switchFeed(mode){
+  feedMode = mode;
+  renderVideos();
+} 
 
 /* ===================== RENDER VIDEO FEED ===================== */
 function renderVideos(){
@@ -2709,13 +2736,31 @@ const feedPosts = posts.map(v => {
 
   let html = "";
 
-  feedPosts.forEach((v,i) => { 
+let filteredPosts = feedPosts;
+
+if(feedMode === "intel"){
+  const interests = JSON.parse(localStorage.getItem("interests") || "[]");
+
+  filteredPosts = feedPosts.filter(v =>
+    interests.includes(v.category)
+  );
+} 
+
+  filteredPosts.forEach((v,i) => {  
+
+    const interests = JSON.parse(localStorage.getItem("interests") || "[]");
+
+if(v.category && !interests.includes(v.category)){
+  interests.push(v.category);
+  localStorage.setItem("interests", JSON.stringify(interests));
+} 
 
     html += `
       <div class="col-md-6">
         <div class="card p-2">
 
-          <video id="video${i}" controls class="w-100">
+          <video id="video${i}" controls class="w-100"
+  ondblclick="pressUnderstand(${v.id})"> 
             <source src="${v.videoUrl}" type="video/mp4"> 
           </video>
 
@@ -4482,7 +4527,12 @@ function renderStories(stories, append = false) {
   stories.forEach(story => {
 
     const div = document.createElement("div");
-    div.onclick = () => openStoryPage(story.id);
+    div.onclick = (e) => {
+      if (e.target.tagName === "BUTTON")
+      return;
+    openStoryPage(story.id);
+    };
+
 div.style.cursor = "pointer";
 
     div.className = "col-md-4 mb-4";
@@ -4505,6 +4555,7 @@ onclick="openProfileByUsername('${story.username}')"
           </div>
 
           <h5>${story.title}</h5>
+<small>${getReadTime(story.content)} min read</small> 
 
           <small class="text-white">
             ${new Date(story.createdAt).toLocaleString()}
@@ -4518,7 +4569,7 @@ onclick="openProfileByUsername('${story.username}')"
 
           ` : ""}
 
-          <p id="content-${story.id}">
+          <p id="content-${story.id}" style="line-height:1.8; margin-top:10px;"> 
             ${story.content.length > 150
               ? story.content.substring(0,150) + "..."
               : story.content}
@@ -4539,6 +4590,8 @@ onclick="openProfileByUsername('${story.username}')"
             <button onclick="toggleLike(${story.id})">
               ${story.isLiked ? "Unlike" : "Like"}
             </button>
+
+            <button onclick="shareStory(${story.id})">Share</button>
 
             ${currentUser && Number(currentUser.id) === Number(story.userId) ? ` 
   <button onclick="deleteStory(${story.id})">Delete</button>
@@ -4848,6 +4901,20 @@ async function editStory(id){
 
   window.editingStoryId = id;
 } 
+
+// Read time function
+function getReadTime(text){
+  const words = text.split(" ").length;
+  return Math.ceil(words / 200); // 200 wpm
+} 
+
+// Share story to other platforms
+function shareStory(id){
+  const url = `${window.location.origin}/?story=${id}`;
+  const text = `Check this story on Vindarr: ${url}`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
 
 
 // Wishes and Pin system
