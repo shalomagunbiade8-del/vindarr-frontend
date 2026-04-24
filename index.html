@@ -956,7 +956,7 @@ Coach Dashboard
     <input 
       id="storySearch"
       class="form-control"
-      placeholder="Search migration stories, experiences..."
+      placeholder="Search stories, experiences..."
       oninput="searchStories(this.value)"
     />
   </div>
@@ -1175,7 +1175,7 @@ Coach Dashboard
 <div class="modal fade" id="commentModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content bg-dark text-white p-3">
-      <h5>Comments <span id="currentTime" class="text-secondary"></span></h5>
+      <h5>Join Discussion <span id="currentTime" class="text-secondary"></span></h5>
       <div id="commentList" style="max-height:300px;overflow-y:auto;" class="mb-2"></div>
       <input id="commentInput" class="form-control mb-2" placeholder="Add comment" onkeydown="submitComment(event)">
       <button class="btn btn-danger w-100" onclick="closeCommentModal()">Close</button>
@@ -1647,8 +1647,8 @@ async function runGlobalSearch(query){
   }
 
   const [usersRes, roomsRes, videosRes] = await Promise.all([
-  fetch(`${API_BASE_URL}/users`),
-  fetch(`${API_BASE_URL}/rooms`),
+  fetch(`${API_BASE_URL}/users/search?q=${query}`),
+fetch(`${API_BASE_URL}/rooms/search?q=${query}`),
   fetch(`${API_BASE_URL}/videos/search?q=${query}`)
 ]); 
 
@@ -1656,15 +1656,8 @@ async function runGlobalSearch(query){
   const rooms = await roomsRes.json();
   const videos = await videosRes.json(); 
 
-  const filteredUsers = users.filter(u =>
-    u.username.toLowerCase().includes(query.toLowerCase())
-  );
-
-  const filteredRooms = rooms.filter(r =>
-    r.name.toLowerCase().includes(query.toLowerCase())
-  );
-
-  renderSearchResults(filteredUsers, filteredRooms, videos);
+  
+  renderSearchResults(users, rooms, videos); 
 } 
 
 // Render search results
@@ -4763,11 +4756,11 @@ async function searchStories(query){
   const res = await fetch(`${API_BASE_URL}/stories/search?q=${query}`);
   const data = await res.json();
 
-  renderSearchResults(data);
+  renderStorySearchResults(data);
 } 
 
 // Render search results
-function renderSearchResults(stories){
+function renderStorySearchResults(stories) {
 
   const container = document.getElementById("storyResults");
   container.innerHTML = "";
