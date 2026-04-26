@@ -1526,8 +1526,6 @@ async function login() {
 
     await loadInbox(); 
 
-    await loadInbox();
-
     await loadRooms();
 
   
@@ -1580,6 +1578,33 @@ async function register() {
     alert(err.message);
   }
 } 
+
+// Autologin function
+async function autoLogin() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    await loadCurrentUser();
+
+    if (currentUser) {
+
+      enterSite();
+
+      await loadProfile();
+      await loadMyVideos();
+      await loadVideos();
+      await loadStories();
+      await loadInbox();
+      await loadRooms();
+
+    }
+
+  } catch (err) {
+    console.error("Auto login failed", err);
+  }
+} 
+
 
 // Notification system functions
 // Toggle notification
@@ -5326,6 +5351,27 @@ document.querySelectorAll('.page')
     if (landing) landing.style.display = "block";
   }
 
+}); 
+
+// PASSWORD TOGGLE (works for login + register)
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("toggle-password")) {
+
+    const targetId = e.target.getAttribute("data-target");
+    const input = document.getElementById(targetId);
+
+    if (!input) return;
+
+    if (input.type === "password") {
+      input.type = "text";
+      e.target.classList.remove("bi-eye-slash");
+      e.target.classList.add("bi-eye");
+    } else {
+      input.type = "password";
+      e.target.classList.remove("bi-eye");
+      e.target.classList.add("bi-eye-slash");
+    }
+  }
 }); 
 
 
