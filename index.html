@@ -498,23 +498,29 @@ Load More
 </div>
 
 <div id="upload" class="page container py-5" style="max-width:600px;">
-<h4>Share knowledge, experience, info, insights</h4>
 
-<select id="postType" class="form-select mb-2">
-  <option value="video">Video</option>
-</select>
+<h4 class="mb-4">Create</h4>
 
+<!-- SELECT TYPE -->
+<div class="d-flex gap-2 mb-4">
+  <button class="btn btn-light w-100" onclick="setUploadType('video')">🎥 Video</button>
+  <button class="btn btn-warning w-100" onclick="setUploadType('ebook')">📚 E-book</button>
+  <button class="btn btn-success w-100" onclick="setUploadType('fashion')">👗 Fashion</button>
+</div>
+
+<!-- FORM -->
 <input id="uTitle" class="form-control mb-2" placeholder="Title">
-<select id="uCategory" class="form-select">
 
+<textarea id="uContext" class="form-control mb-2" placeholder="Description"></textarea>
+
+<select id="uCategory" class="form-select mb-2">
   <option value="">Choose category</option>
-
   <option value="Business">Business</option>
-  <option value="Interview">Interview</option>
-  <option value="Travel">Travel</option>
   <option value="Tech">Tech</option>
-  <option value="Culture">Culture</option>
   <option value="Education">Education</option>
+  option value="Interview">Interview</option>
+  <option value="Travel">Travel</option>
+  <option value="Culture">Culture</option>
   <option value="Law">Law</option>
   <option value="Politics">Politics</option>
   <option value="Economy">Economy</option>
@@ -543,27 +549,23 @@ Load More
       <option value="Scholarship Alert">Scholarship Alert</option>
       <option value="Entrepreneurship">Entrepreneurship</option>
 </select>
-<textarea id="uContext" class="form-control mb-2" placeholder="Explain the learning context"></textarea>
 
+<!-- VIDEO -->
 <input type="file" id="uFile" class="form-control mb-2" accept="video/*">
-<!-- New addition to enable Vmart -->
- <!-- NEW: TYPE -->
-<select id="postType" class="form-select mb-2" onchange="toggleUploadFields()">
-  <option value="video">Video</option>
-  <option value="ebook">E-book</option>
-  <option value="fashion">Fashion</option>
-</select>
 
-<!-- NEW: PRICE -->
+<!-- EBOOK -->
+<input type="file" id="uFileEbook" class="form-control mb-2" accept=".pdf" style="display:none;">
+<input type="file" id="uCoverImage" class="form-control mb-2" accept="image/*" style="display:none;">
+
+<!-- PRICE -->
 <input id="uPrice" class="form-control mb-2" placeholder="Price (₦)" style="display:none;">
 
-<!-- NEW: EBOOK FILE -->
-<input id="uFileEbook" type="file" class="form-control mb-2" accept=".pdf" style="display:none;"> 
-<input id="uCoverImage" type="file" class="form-control mb-2" accept="image/*" style="display:none;"> 
-
 <button class="btn btn-danger w-100" onclick="publish()">Publish</button>
-<div id="uploadStatus" class="text-center mt-2 text-warning"></div> 
-</div>
+
+<div id="uploadStatus" class="text-center mt-2 text-warning"></div>
+
+</div> 
+
 
 <!-- Profile testing -->
 
@@ -2638,7 +2640,7 @@ async function publish(){
 
   const file = uFile.files[0];
 
-  const type = document.getElementById("postType")?.value || "video";
+  const type = currentType; 
   const coverFile = document.getElementById("uCoverImage")?.files[0]; 
 const price = document.getElementById("uPrice")?.value || "";
 const ebookFile = document.getElementById("uFileEbook")?.files[0]; 
@@ -2671,7 +2673,7 @@ if(type === "ebook"){
   formData.append("file", ebookFile);
   formData.append("cover", coverFile);
 } else {
-  formData.append("video", file);
+  formData.append("file", file);
 } 
 
 // EXISTING FIELDS
@@ -5502,33 +5504,40 @@ document.addEventListener("click", function (e) {
   }
 }); 
 
-// Toggle upload fields vm
-function toggleUploadFields(){
-  const type = document.getElementById("postType").value;
 
-  const price = document.getElementById("uPrice");
-  const ebook = document.getElementById("uFileEbook");
+// Set upload fields
+let currentType = "video";
+
+function setUploadType(type){
+  currentType = type;
+
   const video = document.getElementById("uFile");
-  const cover = document.getElementById("uCoverImage"); 
+  const ebook = document.getElementById("uFileEbook");
+  const cover = document.getElementById("uCoverImage");
+  const price = document.getElementById("uPrice");
 
-  if(!price || !ebook || !video) return;
-
-  price.style.display = "none";
+  // Reset
+  video.style.display = "none";
   ebook.style.display = "none";
-  video.style.display = "block";
-  if(cover) cover.style.display = "none"; 
+  cover.style.display = "none";
+  price.style.display = "none";
+
+  if(type === "video"){
+    video.style.display = "block";
+  }
 
   if(type === "ebook"){
-  ebook.style.display = "block";
-  if(cover) cover.style.display = "block";
-  video.style.display = "none";
-  price.style.display = "block";
-} 
+    ebook.style.display = "block";
+    cover.style.display = "block";
+    price.style.display = "block";
+  }
 
   if(type === "fashion"){
+    video.style.display = "block";
     price.style.display = "block";
   }
 } 
+
 
 // Buy e-book
 function buyEbook(id){
