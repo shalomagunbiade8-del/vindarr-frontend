@@ -546,6 +546,21 @@ Load More
 <textarea id="uContext" class="form-control mb-2" placeholder="Explain the learning context"></textarea>
 
 <input type="file" id="uFile" class="form-control mb-2" accept="video/*">
+<!-- New addition to enable Vmart -->
+ <!-- NEW: TYPE -->
+<select id="postType" class="form-select mb-2" onchange="toggleUploadFields()">
+  <option value="video">Video</option>
+  <option value="ebook">E-book</option>
+  <option value="fashion">Fashion</option>
+</select>
+
+<!-- NEW: PRICE -->
+<input id="uPrice" class="form-control mb-2" placeholder="Price (₦)" style="display:none;">
+
+<!-- NEW: EBOOK FILE -->
+<input id="uFileEbook" type="file" class="form-control mb-2" accept=".pdf" style="display:none;"> 
+<input id="uCoverImage" type="file" class="form-control mb-2" accept="image/*" style="display:none;"> 
+
 <button class="btn btn-danger w-100" onclick="publish()">Publish</button>
 <div id="uploadStatus" class="text-center mt-2 text-warning"></div> 
 </div>
@@ -1167,7 +1182,7 @@ Coach Dashboard
 <i class="bi bi-search" onclick="showPage('search')"></i> 
 <i class="bi bi-inbox" onclick="auth('messages')"></i>
 <i class="bi bi-passport" onclick="showPage('visaprep')"></i>
-<!-- <i class="bi bi-people" onclick="startMeetify('General Meetify Session')"></i> -->
+<i class="bi bi-bag" onclick="showPage('market')"></i> 
 <i class="bi bi-person" onclick="auth('profile')"></i>
 </div>
 
@@ -1228,6 +1243,20 @@ Coach Dashboard
          oninput="runGlobalSearch(this.value)">
 
   <div id="searchResults"></div>
+
+</div> 
+
+<!-- Vindarr-Mart  -->
+ <div id="market" class="page container py-5" style="display:none;">
+
+  <h4>🛒 Vindarr Mart</h4>
+
+  <div class="d-flex gap-2 mb-3">
+    <button class="btn btn-light btn-sm" onclick="loadMarket('ebooks')">📚 E-books</button>
+    <button class="btn btn-warning btn-sm" onclick="loadMarket('fashion')">👗 Fashion</button>
+  </div>
+
+  <div id="marketFeed" class="row g-3"></div>
 
 </div> 
 
@@ -1455,6 +1484,71 @@ function showPage(p){
   }
 } 
 
+// Load vmarket
+async function loadMarket(type){
+  try{
+    const res = await fetch(`${API_BASE_URL}/market?type=${type}`);
+    const items = await res.json();
+
+    const feed = document.getElementById("marketFeed");
+    if(!feed) return;
+
+    feed.innerHTML = items.map(item => `
+      <div class="col-md-4">
+        <div class="card p-2 bg-dark text-light">
+
+          ${
+  item.type === "ebook"
+  ? `
+    <img src="${API_BASE_URL + item.coverUrl}" 
+         class="w-100 mb-2" 
+         style="height:200px;object-fit:cover;border-radius:8px;">
+
+    <h6>${item.title}</h6>
+    <p>₦${item.price}</p>
+
+    <button class="btn btn-primary btn-sm"
+      onclick="buyEbook('${item.id}')">
+      Buy Now
+    </button>
+  `
+  : `
+    ${
+      item.file?.endsWith(".mp4")
+      ? `<video src="${API_BASE_URL + item.file}" controls class="w-100"></video>`
+      : `<img src="${API_BASE_URL + item.file}" class="w-100">`
+    }
+
+    <h6>${item.title}</h6>
+    <p>₦${item.price || "Contact seller"}</p>
+
+    <button class="btn btn-success btn-sm"
+      onclick="chatWithSeller('${item.username}')">
+      Message Seller
+    </button>
+  `
+} 
+        </div>
+      </div>
+    `).join('');
+
+  }catch(err){
+    console.error("Market load error:", err);
+  }
+} 
+
+// Chat with the seller
+function chatWithSeller(username){
+  if(typeof showPage === "function"){
+    showPage('messages');
+  }
+
+  setTimeout(() => {
+    if(typeof openChat === "function"){
+      openChat(username, document.createElement("li"));
+    }
+  }, 300);
+}
 
 // Auth function B-E
 function isAuthenticated() {
@@ -2544,16 +2638,50 @@ async function publish(){
 
   const file = uFile.files[0];
 
-  if(!file){
-    alert("Please select a video file");
+  const type = document.getElementById("postType")?.value || "video";
+  const coverFile = document.getElementById("uCoverImage")?.files[0]; 
+const price = document.getElementById("uPrice")?.value || "";
+const ebookFile = document.getElementById("uFileEbook")?.files[0]; 
+
+  if(type === "ebook"){
+  if(!ebookFile){
+    alert("Please select a PDF file");
     return;
   }
+  if(!coverFile){
+    alert("Please select a cover image");
+    return;
+  }
+}
+
+if(type === "fashion" && !file){
+  alert("Upload image or video");
+  return;
+}
+
+if(type === "video" && !file){
+  alert("Please select a video file");
+  return;
+} 
 
   const formData = new FormData();
+
+// FILE HANDLING
+if(type === "ebook"){
+  formData.append("file", ebookFile);
+  formData.append("cover", coverFile);
+} else {
   formData.append("video", file);
-  formData.append("title", uTitle.value);
-  formData.append("category", uCategory.value);
-  formData.append("context", uContext.value);
+} 
+
+// EXISTING FIELDS
+formData.append("title", uTitle.value);
+formData.append("category", uCategory.value);
+formData.append("context", uContext.value);
+
+// NEW FIELDS
+formData.append("type", type);
+formData.append("price", price);
 
   try {
 
@@ -5373,6 +5501,39 @@ document.addEventListener("click", function (e) {
     }
   }
 }); 
+
+// Toggle upload fields vm
+function toggleUploadFields(){
+  const type = document.getElementById("postType").value;
+
+  const price = document.getElementById("uPrice");
+  const ebook = document.getElementById("uFileEbook");
+  const video = document.getElementById("uFile");
+  const cover = document.getElementById("uCoverImage"); 
+
+  if(!price || !ebook || !video) return;
+
+  price.style.display = "none";
+  ebook.style.display = "none";
+  video.style.display = "block";
+  if(cover) cover.style.display = "none"; 
+
+  if(type === "ebook"){
+  ebook.style.display = "block";
+  if(cover) cover.style.display = "block";
+  video.style.display = "none";
+  price.style.display = "block";
+} 
+
+  if(type === "fashion"){
+    price.style.display = "block";
+  }
+} 
+
+// Buy e-book
+function buyEbook(id){
+  alert("E-book purchase flow coming next 🚀");
+} 
 
 
 </script>
