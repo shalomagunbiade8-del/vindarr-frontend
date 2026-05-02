@@ -518,7 +518,7 @@ Load More
   <option value="Business">Business</option>
   <option value="Tech">Tech</option>
   <option value="Education">Education</option>
-  option value="Interview">Interview</option>
+  <option value="Interview">Interview</option> 
   <option value="Travel">Travel</option>
   <option value="Culture">Culture</option>
   <option value="Law">Law</option>
@@ -2687,7 +2687,12 @@ formData.append("price", price);
 
   try {
 
-    document.getElementById("uploadStatus").innerText = "Publishing video..."; 
+    document.getElementById("uploadStatus").innerText =
+  currentType === "video"
+    ? "Publishing video..."
+    : currentType === "ebook"
+    ? "Publishing e-book..."
+    : "Posting fashion item...";  
 
     console.log("🚀 Sending request...");
 
@@ -5506,38 +5511,45 @@ document.addEventListener("click", function (e) {
 
 
 // Set upload fields
-let currentType = "video";
-
 function setUploadType(type){
+  console.log("SWITCHING TO:", type);
+
   currentType = type;
 
   const video = document.getElementById("uFile");
   const ebook = document.getElementById("uFileEbook");
   const cover = document.getElementById("uCoverImage");
   const price = document.getElementById("uPrice");
+  const status = document.getElementById("uploadStatus");
 
-  // Reset
+  // RESET EVERYTHING
   video.style.display = "none";
   ebook.style.display = "none";
   cover.style.display = "none";
   price.style.display = "none";
 
+  // CLEAR STATUS
+  status.innerText = "";
+
+  // SWITCH UI
   if(type === "video"){
     video.style.display = "block";
+    status.innerText = "🎥 Uploading Video";
   }
 
   if(type === "ebook"){
     ebook.style.display = "block";
     cover.style.display = "block";
     price.style.display = "block";
+    status.innerText = "📚 Publishing E-book";
   }
 
   if(type === "fashion"){
     video.style.display = "block";
     price.style.display = "block";
+    status.innerText = "👗 Posting Fashion Item";
   }
 } 
-
 
 // Buy e-book
 function buyEbook(id){
