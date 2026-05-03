@@ -46,54 +46,141 @@
   flex-wrap:wrap;
 }
 
-.chat-message {
-  user-select: none;
+/* Messages */
+/* ===== CHAT LIST ===== */
+
+.chat-list {
+  background:#fff;
+  height:100%;
+  padding:10px;
 }
 
-.msg-options {
-  min-width: 120px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+.chat-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.chat-header h5 {
+  font-weight:600;
+}
+
+.add-user-btn {
+  background:#0aa;
+  color:#fff;
+  border:none;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+}
+
+.chat-search input {
+  width:100%;
+  padding:10px;
+  border-radius:12px;
+  border:none;
+  background:#f2f2f2;
+  margin-top:10px;
+}
+
+.chat-user {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:12px;
+  cursor:pointer;
+}
+
+.chat-user:hover {
+  background:#f5f5f5;
+}
+
+.chat-user img {
+  width:45px;
+  height:45px;
+  border-radius:50%;
+}
+
+.chat-user .info {
+  flex:1;
+}
+
+.chat-user .name {
+  font-weight:600;
+}
+
+.chat-user .msg {
+  font-size:13px;
+  color:#777;
+}
+
+.chat-user .meta {
+  font-size:12px;
+  color:#999;
+}
+
+/* ===== CHAT SCREEN ===== */
+
+.chat-top {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-bottom:1px solid #eee;
+}
+
+.chat-top img {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+}
+
+.chat-user-info {
+  flex:1;
+}
+
+.status {
+  font-size:12px;
+  color:#0a0;
 }
 
 .msg {
-  padding: 8px 12px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  max-width: 75%;
-}
-
-#chatLog .msg {
-  padding: 10px 12px;
-  border-radius: 14px;
-  margin-bottom: 10px;
-  max-width: 75%;
-  font-size: 14px;
-  position: relative;
-  animation: fadeIn .2s ease-in;
+  padding:10px 14px;
+  border-radius:18px;
+  margin-bottom:10px;
+  max-width:70%;
 }
 
 .msg.you {
-  background: linear-gradient(135deg, #ff0000, #cc0000);
-  margin-left: auto;
-  text-align: right;
-  color: #fff;
+  background:#0aa;
+  color:#fff;
+  margin-left:auto;
+  border-bottom-right-radius:4px;
 }
 
 .msg.them {
-  background: #1f1f1f;
-  color: #ddd;
+  background:#f1f1f1;
+  color:#000;
+  border-bottom-left-radius:4px;
 }
 
-.msg .timestamp {
-  font-size: 10px;
-  opacity: 0.6;
-  margin-left: 6px;
+/* ===== INPUT ===== */
+
+.chat-input {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-top:1px solid #eee;
 }
 
-.msg-status {
-  font-size: 11px;
-  opacity: 0.7;
-  margin-top: 3px;
+.chat-input input {
+  flex:1;
+  border:none;
+  background:#f2f2f2;
+  padding:10px;
+  border-radius:20px;
 }
 
 @keyframes fadeIn {
@@ -252,8 +339,6 @@
   color:#fff;
 }
 
-/* CARDS */
-
 
 /* ANIMATION */
 @keyframes fadeIn {
@@ -335,16 +420,6 @@ body{background:var(--black);color:var(--white);}
 .card:hover {
   transform:translateY(-5px);
   box-shadow:0 15px 40px rgba(0,0,0,0.8);
-} 
-
-/* inbox list styling */
-#inboxList li:hover{
-  background-color:#1a1a1a;
-  cursor:pointer;
-}
-
-#inboxList li.active{
-  background-color:#2a2a2a;
 } 
 
   
@@ -605,11 +680,9 @@ Become a Migration Coach
 <!-- Learner booked sessions  -->
  <h3>My Booked Sessions</h3>
 
-<div id="mySessions"></div>
+<div id="mySessions">
 
-<!-- Pinned Boards -->
-<!-- <h6 class="mt-4">Pinned Boards</h6>
-<div id="profileBoards" class="row g-2"></div> -->
+</div>
 
 </div>
 
@@ -673,43 +746,23 @@ Become a Migration Coach
 
 <!-- ✅ MESSAGES -->
 <div id="messages" class="page container py-5">
-  <div id="inbox">
-    <h4>Inbox</h4>
+  <div id="inbox" class="chat-list">
 
-    <!-- ===== GROUP CHAT ===== -->
-<div class="mb-2">
-  <button class="btn btn-danger w-100" onclick="openCreateRoomModal()">
-    + Create Group
-  </button>
-</div>
-
-<ul id="rooms" class="list-group mb-3"></ul>
-
-    <ul id="inboxList" class="list-group">
-      <li class="list-group-item bg-dark text-light d-flex align-items-center gap-2 active">
-  
-  <!-- Avatar (profile click) -->
-  <img src="https://via.placeholder.com/32"
-       class="rounded-circle"
-       width="32" height="32"
-       style="cursor:pointer"
-       onclick="openProfileByUsername('Support')">
-
-  <!-- Name (chat click) -->
-  <span style="cursor:pointer; flex:1"
-        onclick="openChat('Support', this.parentElement)">
-    Support
-  </span>
-
-</li>
-
-    </ul>
+  <div class="chat-header">
+    <h5>Chat</h5>
+    <button class="add-user-btn">+</button>
   </div>
 
-  <div id="chat" style="display:none;">
+  <div class="chat-search">
+    <input type="text" placeholder="Search here...">
+  </div>
 
-  <!-- Back -->
-  <button class="btn btn-sm btn-secondary mb-2" onclick="backToInbox()">← Back</button>
+  <div id="inboxList" class="chat-users"></div>
+
+</div>
+
+
+  <div id="chat" style="display:none;">
 
   <!-- Session / Coach Context (hidden by default) -->
   <div id="chatContext"
@@ -718,19 +771,21 @@ Become a Migration Coach
   </div>
 
   <!-- chat header placement -->
-   <div id="chatHeader" class="d-flex align-items-center gap-2 mb-2 p-2 bg-dark rounded">
+   <div class="chat-top">
+
+  <button onclick="backToInbox()">←</button>
 
   <img id="chatHeaderAvatar"
-       src="https://via.placeholder.com/40"
-       class="rounded-circle"
-       width="40" height="40">
+       src="https://via.placeholder.com/40">
 
-  <div>
-    <div id="chatHeaderName" style="font-weight:bold;"></div>
-    <div id="chatHeaderSub" style="font-size:12px;color:#aaa;"></div>
+  <div class="chat-user-info">
+    <div id="chatHeaderName"></div>
+    <div class="status">Online</div>
   </div>
 
-</div> 
+  <div>📞 📹 ⋮</div>
+
+</div>
 
   <!-- Chat messages -->
   <div id="chatLog"
@@ -744,7 +799,17 @@ Become a Migration Coach
 
 
   <!-- Input row -->
-  <div class="d-flex gap-2">
+  <div class="chat-input">
+
+  <button>😊</button>
+
+  <input id="chatInput"
+         placeholder="Enter your message"
+         onkeydown="if(event.key==='Enter'){sendMsg(event)}">
+
+  <button onclick="sendMsg(event)">➤</button>
+
+</div>
 
     <!-- Attachment -->
     <label class="btn btn-sm btn-outline-light mb-0">
@@ -793,32 +858,6 @@ Become a Migration Coach
 </div>
 
 </div>
-
-<!-- <h5 class="fw-bold mb-3">Popular visa journeys</h5> -->
-
-<!-- <div class="vp-journey-row">
-  <div class="vp-journey-card" onclick="openJourney('US_STUDENT')">
-    <div style="position:relative">
-      <span class="vp-journey-badge">Most applied</span>
-      <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee">
-    </div>
-    <div class="vp-journey-body">
-      <strong>🇺🇸 US Student Visa</strong>
-      <div class="text-muted">F1 • Study in the USA</div>
-    </div>
-  </div>
-
-  <div class="vp-journey-card" onclick="openJourney('CANADA_STUDY')">
-    <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470">
-    <div class="vp-journey-body">
-      <strong>🇨🇦 Canada Study Permit</strong>
-      <div class="text-muted">Students & graduates</div>
-    </div>
-  </div>
-</div> -->
-
-<!-- <h5 class="fw-bold mt-5 mb-3">Verified visa coaches</h5>
-<div id="vpCoachPreview" class="d-flex flex-column gap-3"></div> -->
 
   </div>
 
@@ -932,40 +971,6 @@ Coach Dashboard
   <div id="pendingCoaches"></div>
 </div> 
 
-  <!-- ================= JOURNEY DETAIL ================= -->
-
-  <!-- <div id="vp-journey-detail" class="vp-page">
-    <button class="btn btn-link mb-3" onclick="showVPPage('home')">← Back</button>
-
-
-<div class="vp-journey-hero">
-  <img class="vp-hero-img">
-  <div class="vp-hero-content">
-    <h3 id="journeyTitle"></h3>
-    <p id="journeySub"></p>
-    <button class="vp-primary" onclick="startMockFromJourney()">Prepare for this visa</button>
-    <button class="vp-secondary" onclick="openStoryModal()">Share story</button>
-  </div>
-</div>
-
-<h5 class="fw-bold mt-4">Real stories</h5>
-<div id="vp-story-list" class="vp-story-grid"></div>
-
-  </div> -->
-
-  <!-- ================= MOCK ================= -->
-
-  <!-- <div id="vp-mock" class="vp-page">
-    <button class="btn btn-link" onclick="showVPPage('home')">← Back</button>
-    <h4 class="fw-bold mb-3">AI Mock Interview</h4>
-    <select id="vpVisaType" class="form-select">
-      <option>Student Visa</option>
-      <option>Work Visa</option>
-      <option>Tourist Visa</option>
-    </select>
-    <button class="btn btn-danger w-100 mt-3" onclick="startVPInterview()">Start Interview</button>
-  </div> -->
-
   <!-- ================= STORIES FEED ================= -->
 <div id="vp-stories" class="vp-page">
 
@@ -1009,48 +1014,6 @@ Coach Dashboard
 
 </div> 
 
-
-<!-- ================= WISHES ================= -->
-<!-- <div id="vp-wishes" class="vp-page">
-  <div class="d-flex justify-content-between mb-3">
-    <h5 class="fw-bold">Dream Places</h5>
-    <button class="vp-primary" onclick="openWishUpload()">＋ Upload</button>
-  </div>
-  <div id="vpWishGrid" class="row g-3"></div>
-</div>
-
-================= PIN BOARDS =================
-<div id="vp-boards" class="vp-page">
-  <div class="d-flex justify-content-between mb-3">
-    <h5 class="fw-bold">Your PinBoard</h5>
-    <button class="vp-primary" onclick="createSharedBoard()">
-      ＋ Create Board
-    </button>
-  </div>
-  <div id="vpBoardGrid" class="row g-3"></div>
-</div> -->
-
-<!-- ================= FULL BOARD VIEW ================= -->
-
-<!-- <div id="vp-board-view" class="vp-page">
-
-  <button class="btn btn-link mb-3"
-    onclick="showVPPage('boards')">
-    ← Back to Boards
-  </button>
-
-  <h4 id="vpBoardTitle" class="fw-bold"></h4>
-  <small id="vpBoardOwner" class="text-muted"></small>
-
-  <div class="mt-3 row g-3" id="vpBoardWishList"></div>
-
-  <button class="btn btn-danger mt-3"
-    onclick="launchBoardChat(currentBoardView)">
-    Chat with members
-  </button>
-
-</div> -->
-
 </section>
 
 <!-- ================= STORY MODAL ================= -->
@@ -1066,17 +1029,6 @@ Coach Dashboard
     <button class="vp-secondary w-100" onclick="closeStoryModal()">Cancel</button>
   </div>
 </div>
-
-<!-- Wish upload modal
- <div id="vp-wish-modal" class="vp-modal">
-  <div class="vp-modal-content">
-    <h5>Add Dream Destination</h5>
-    <input id="wish-title" class="form-control mb-2" placeholder="Destination name">
-    <input id="wish-image" type="file" class="form-control mb-2" accept="image/*">
-    <button class="vp-primary w-100 mb-2" onclick="submitWish()">Submit</button>
-    <button class="vp-secondary w-100" onclick="closeWishModal()">Cancel</button>
-  </div>
-</div> -->
 
 
 <!-- Book modal -->
@@ -1105,33 +1057,8 @@ Coach Dashboard
   </div>
 </div>
 
-
-  <!-- </section> -->
 </div>
 
-
-
-<!-- This feature to be implemented and unlocked later -->
-<!-- Meetify Html  -->
-<!-- <div id="meetify" class="page container py-4">
-
-  <div class="card mb-3 p-3 text-center" style="background:#111;">
-    <h4 class="text-danger mb-1">Meetify</h4>
-    <small class="text-muted" id="meetifyContext">
-      Secure live session
-    </small>
-  </div>
-  <div id="meetifyUserList" class="mb-3"></div>
-
-  <div class="video-grid" id="videoGrid"></div> 
-
-  <div class="controls">
-    <button class="btn btn-outline-light" onclick="toggleMute()">Mute</button>
-    <button class="btn btn-outline-light" onclick="toggleCamera()">Camera</button>
-    <button class="btn btn-outline-danger" onclick="leaveMeetify()">Leave</button>
-  </div>
-
-</div> -->
 
 <div id="login" class="page container py-5" style="max-width:400px;">
 <h4>Central Login</h4>
@@ -1200,41 +1127,6 @@ Coach Dashboard
   </div>
 </div>
 
-<!-- Vindarr user discovery -->
-<div id="userModal" class="modal" style="display:none;">
-  <div class="modal-content bg-dark text-light p-3 rounded">
-
-    <h5>Discover Users</h5>
-
-    <input type="text"
-           class="form-control mb-2"
-           placeholder="Search users..."
-           oninput="searchUsers(this.value)">
-
-    <div id="userList"></div>
-
-    <button class="btn btn-success mt-2" onclick="createGroup()">
-      Create Group
-    </button>
-
-  </div>
-</div> 
-
-<!-- ===== CREATE ROOM MODAL ===== -->
-<div id="createRoomModal" class="modal" style="display:none;">
-  <div class="modal-dialog">
-    <div class="modal-content bg-dark text-white p-3">
-      <h5>Create Group Chat</h5>
-
-      <input id="roomName" class="form-control mb-2" placeholder="Group name">
-      <input id="roomDesc" class="form-control mb-3" placeholder="Description">
-
-      <button class="btn btn-success w-100" onclick="createRoom()">Create</button>
-      <button class="btn btn-secondary w-100 mt-2" onclick="closeCreateRoomModal()">Cancel</button>
-    </div>
-  </div>
-</div> 
-
 <!-- Vindarr discover page -->
  <!-- <div id="search" class="page container py-4" style="padding-top: 120px;"> -->
   <div id="search" class="page container" style="padding-top: 100px;">
@@ -1265,8 +1157,6 @@ Coach Dashboard
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Jitsi API script -->
-<!-- <script src="https://meet.jit.si/external_api.js"></script>  -->
 
 <script>
 
@@ -1320,15 +1210,6 @@ let inboxThreads = {};
 let chats = {}; // stores messages per chat username
 let messageIdCounter = 0; // unique ID for each message 
 
-// The meetify conferencing system
-// let meetifySessions = [];
-
-// Wish system structure
-// let wishes = [];
-// let pinBoards = [];
-// let sharedBoards = [];
-// let pinnedImages = [];
-// let currentBoardView = null;
 
 // Notification system
 let notifications = [];
@@ -1839,31 +1720,6 @@ ${videos.map(v => `
   `;
 } 
 
-// join room function
-async function joinRoom(roomId){
-
-  if(!currentUser) return alert("Login required");
-
-  // ✅ CALL BACKEND
-  await fetch(`${API_BASE_URL}/rooms/${roomId}/join`,{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-      username: currentUser.username
-    })
-  });
-
-  // ✅ Refresh UI
-  loadRooms();
-
-  const li = document.querySelector(`#rooms li[data-room='${roomId}']`);
-
-  if(li){
-    openRoom(roomId, li);
-  }
-} 
 
 
 // Add user to group in prep for later expansion
@@ -1928,17 +1784,8 @@ function backToInbox(){
 
 // Get threaded messages
 function getThreadId(){
-
-  if(currentRoom){
-    return "room_" + currentRoom;
-  }
-
-  if(activeChat){
-    return "user_" + activeChat;
-  }
-
-  return null;
-} 
+  return "user_" + activeChat;
+}
 
 /* ---------- SEND MESSAGE ---------- */
 async function sendMsg(e){
@@ -1952,7 +1799,8 @@ async function sendMsg(e){
   } 
 
   if(!chatInput.value && !pendingAttachment) return;
-  if(!activeChat && !currentRoom) return; 
+
+  if(!activeChat) return; 
 
   console.log("CHAT TARGET:", {
   activeChat,
@@ -1962,7 +1810,8 @@ async function sendMsg(e){
   const msgData = {
   senderUsername: currentUser.username,
   receiverUsername: !currentRoom ? activeChat : null, 
-  roomId: currentRoom || null,
+
+  roomId: null,
   text: chatInput.value || null,
   attachmentUrl: null,
   attachmentType: null
@@ -2034,38 +1883,6 @@ renderInbox();
 
   console.log("SENDING:", msgData);
 }
-
-// open room function
-async function openRoom(roomId, el){
-
-  // remove active from all rooms
-  document.querySelectorAll('#rooms li').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-
-  inbox.style.display = 'none';
-  chat.style.display = 'block';
-
-  currentRoom = roomId;
-  activeChat = null;
-
-  // ✅ Update header for group
-document.getElementById("chatHeaderName").innerText = "Group Chat";
-
-document.getElementById("chatHeaderSub").innerText = "Community";
-
-document.getElementById("chatHeaderAvatar").src =
-  "https://cdn-icons-png.flaticon.com/512/681/681494.png"; 
-
-  if(!chatStore[roomId]) chatStore[roomId] = [];
-
-  await loadRoomMessages(roomId);
-
-  socket.emit("joinRoom", Number(roomId));
-
-  renderChat();
-} 
-
-
 
 /* ---------- RENDER CHAT ---------- */
 function renderChat(){
@@ -2363,41 +2180,6 @@ chatStore[key] = messages.map(m => ({
 
 } 
 
-// load room message 
-async function loadRoomMessages(roomId){
-
-  const res = await fetch(`${API_BASE_URL}/messages/room/${roomId}/${currentUser.username}`);
-
-  if(!res.ok){
-    alert("You must join this group first");
-    return;
-  }
-
-  const messages = await res.json();
-
-  const key = "room_" + roomId;
-
-chatStore[key] = messages.map(m => ({ 
-    id: m.id,
-    sender: m.senderUsername === currentUser.username ? "You" : m.senderUsername,
-    text: m.text,
-    time: new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-    attachmentUrl: m.attachmentUrl,
-    attachmentType: m.attachmentType
-  }));
-} 
-
-// Load users for vindarr discovery
-async function loadUsers(){
-  const res = await fetch(`${API_BASE_URL}/users`);
-  const users = await res.json();
-
-  window.allUsers = users;
-
-  renderUsers(users);
-} 
-
-
 // render users for vindarr discovery
 function renderUsers(users){
 
@@ -2427,154 +2209,6 @@ function searchUsers(query){
   renderUsers(filtered);
 } 
 
-// create group function
-async function createGroup(){
-
-  const selected = [...document.querySelectorAll('#userList input:checked')]
-    .map(i => i.value);
-
-  if(selected.length < 2){
-    alert("Select at least 2 users");
-    return;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/rooms`,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      name: "New Group",
-      members: selected
-    })
-  });
-
-  const room = await res.json();
-
-  // ✅ ADD TO UI PROPERLY
-  addRoomToUI(room);
-
-  // ✅ AUTO OPEN THE ROOM
-  const li = document.querySelector(`#rooms li[data-room='${room.id}']`);
-  openRoom(room.id, li);
-} 
-
-
-// open/close modal for room creation
-function openCreateRoomModal(){
-  document.getElementById("createRoomModal").style.display = "block";
-}
-
-function closeCreateRoomModal(){
-  document.getElementById("createRoomModal").style.display = "none";
-} 
-
-// create a room function
-async function createRoom(){
-
-  const name = document.getElementById("roomName").value.trim();
-  const description = document.getElementById("roomDesc").value.trim();
-
-  if(!name){
-    alert("Group name is required");
-    return;
-  }
-
-  const res = await fetch(API_BASE_URL + "/rooms", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + localStorage.getItem("token")
-    },
-    body: JSON.stringify({
-      name,
-      description,
-      members: [currentUser.username] // ✅ CRITICAL FIX
-    })
-  });
-
-  const room = await res.json();
-
-  console.log("ROOM CREATED:", room); // ✅ DEBUG
-
-  closeCreateRoomModal();
-
-  addRoomToUI(room);
-
-  // ✅ AUTO OPEN ROOM
-  const li = document.querySelector(`#rooms li[data-room='${room.id}']`);
-  openRoom(room.id, li);
-} 
-
-
-// load room function
-async function loadRooms(){
-
-  const res = await fetch(API_BASE_URL + "/rooms");
-  const rooms = await res.json();
-
-  const list = document.getElementById("rooms");
-  list.innerHTML = "";
-
-  rooms.forEach(r => {
-    if(r.members.includes(currentUser.username)){
-      addRoomToUI(r); // joined rooms first
-    }
-  });
-
-  rooms.forEach(r => {
-    if(!r.members.includes(currentUser.username)){
-      addRoomToUI(r); // discover section
-    }
-  });
-} 
-
-// add room to ui
-function addRoomToUI(room){
-
-  const list = document.getElementById("rooms");
-
-  if(document.querySelector(`#rooms li[data-room='${room.id}']`)) return;
-
-  const isMember = room.members.includes(currentUser.username);
-
-  const li = document.createElement("li");
-  li.className = "list-group-item bg-dark text-white d-flex align-items-center gap-2";
-  li.setAttribute("data-room", room.id);
-
-  li.innerHTML = `
-    <img src="https://via.placeholder.com/32"
-         class="rounded-circle"
-         width="32">
-
-    <div style="flex:1">
-      <div class="d-flex justify-content-between">
-        <strong>${room.name || "Unnamed Group"}</strong>
-      </div>
-      <div class="small text-muted">
-        ${room.description || "No description"}
-      </div>
-    </div>
-
-    ${
-      isMember
-      ? `<button class="btn btn-sm btn-success">Open</button>`
-      : `<button class="btn btn-sm btn-primary">Join</button>`
-    }
-  `;
-
-  const btn = li.querySelector("button");
-
-  if(isMember){
-    btn.onclick = () => openRoom(room.id, li);
-  } else {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      joinRoom(room.id);
-    };
-  }
-
-  list.prepend(li);
-} 
-
 // Load inbox function
 async function loadInbox(){
 
@@ -2599,7 +2233,18 @@ async function loadInbox(){
 
     const li = document.createElement("li");
 
-    li.className = "list-group-item bg-dark text-light d-flex align-items-center gap-3";
+    li.className = "chat-user";
+
+li.innerHTML = `
+  <img src="https://ui-avatars.com/api/?name=${otherUser}">
+
+  <div class="info">
+    <div class="name">${otherUser}</div>
+    <div class="msg">${m.text || "Attachment"}</div>
+  </div>
+
+  <div class="meta">${time}</div>
+`;
 
     li.setAttribute("data-user", otherUser);
 
@@ -3228,186 +2873,6 @@ function formatTime(seconds){
 render(posts);
 
 
-/* ===================== MEETIFY ===================== */
-
-/**
- * Meetify state
- * Fully tied to logged-in user
- */
-// let meetifyStream = null;
-// let meetifyAudio = true;
-// let meetifyVideo = true;
-// let meetifyUser = null;
-
-// // Jitsi API
-// let jitsiApi = null;
-
-// // Render meetify directory
-// function renderMeetifyDirectory() {
-//   const container =
-//     document.getElementById('meetifyUserList');
-
-//   if (!container || !currentUser) return;
-
-//   const availableUsers =
-//     users.filter(u =>
-//       u.username !== currentUser.username
-//     );
-
-//   if (!availableUsers.length) {
-//     container.innerHTML =
-//       '<p class="text-muted">No users available</p>';
-//     return;
-//   }
-
-//   container.innerHTML =
-//     availableUsers.map(u => `
-//       <div class="card p-2 mb-2 d-flex
-//            flex-row justify-content-between
-//            align-items-center">
-//         <div>
-//           <strong>${u.username}</strong>
-//           <div class="small text-muted">
-//             ${u.role}
-//           </div>
-//         </div>
-
-//         <button class="btn btn-sm btn-danger"
-//           onclick="startDirectCall('${u.username}')">
-//           Call
-//         </button>
-//       </div>
-//     `).join('');
-// }
-
-// // Direct call function
-// function startDirectCall(username) {
-//   startMeetify(
-//     `General Meetify Call • ${username}`
-//   );
-// }
-
-
-// // Start meetify session
-// function startMeetify(contextText = "Secure live session", roomId = null) {
-
-//   console.log("Meetify (Jitsi): start requested");
-
-//   showPage('meetify');
-//   renderMeetifyDirectory();
-
-//   const contextEl = document.getElementById('meetifyContext');
-//   if (contextEl) {
-//     contextEl.innerText = contextText;
-//   }
-
-  // ✅ CHECK JITSI LOADED
-  // if (typeof JitsiMeetExternalAPI === "undefined") {
-  //   alert("Jitsi not loaded. Check script placement.");
-  //   return;
-  // }
-
-  // // ✅ GENERATE ROOM
-  // if (!roomId) {
-  //   roomId = "oraizon-session-" + Date.now();
-  // }
-
-  // const videoGrid = document.getElementById('videoGrid');
-
-  // if (!videoGrid) {
-  //   alert("videoGrid not found");
-  //   return;
-  // }
-
-  // ✅ CLEAR OLD CONTENT
-  // videoGrid.innerHTML = "";
-
-  // ✅ CREATE CONTAINER
-  // const jitsiContainer = document.createElement('div');
-  // jitsiContainer.style.width = "100%";
-  // jitsiContainer.style.height = "500px";
-
-  // videoGrid.appendChild(jitsiContainer);
-
-  // // ✅ DESTROY OLD SESSION
-  // if (jitsiApi) {
-  //   jitsiApi.dispose();
-  // }
-
-  // // ✅ START JITSI
-  // jitsiApi = new JitsiMeetExternalAPI("meet.jit.si", {
-  //   roomName: roomId,
-  //   parentNode: jitsiContainer,
-  //   width: "100%",
-  //   height: 500,
-  //   userInfo: {
-  //     displayName: currentUser?.username || "Guest"
-  //   }
-  // });
-
-//   console.log("Meetify (Jitsi): session started");
-// }
-
-// // Toggle mute
-// function toggleMute() {
-//   if (jitsiApi) {
-//     jitsiApi.executeCommand('toggleAudio');
-//   }
-// }
-
-// // Toggle camera
-// function toggleCamera() {
-//   if (jitsiApi) {
-//     jitsiApi.executeCommand('toggleVideo');
-//   }
-// } 
-
-
-// //  Leave Meetify Session
-// function leaveMeetify() {
-
-//   if (jitsiApi) {
-//     jitsiApi.dispose();
-//     jitsiApi = null;
-//   }
-
-//   showPage('visaprep');
-// }
-
-
-// Visa journey added globaly
-// let currentJourney = null;
-
-// const journeyData = {
-//   US_STUDENT: {
-//     title: "🇺🇸 US Student Visa",
-//     sub: "F1 • Study in the USA",
-//     image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
-//   },
-//   CANADA_STUDY: {
-//     title: "🇨🇦 Canada Study Permit",
-//     sub: "Students & graduates",
-//     image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
-//   }
-// };
-
-// Open journey function
-// function openJourney(journeyKey) {
-//   currentJourney = journeyKey;
-
-//   const data = journeyData[journeyKey];
-//   if (!data) return;
-
-//   document.getElementById('journeyTitle').innerText = data.title;
-//   document.getElementById('journeySub').innerText = data.sub;
-
-//   document.querySelector('.vp-hero-img').src = data.image;
-
-//   showVPPage('journey-detail');
-//   renderStories();
-// }
-
-
 
 /* ===================== VISAPREP MODULE ===================== */
 
@@ -3495,36 +2960,6 @@ function showVPPage(id) {
     document.getElementById("storyContent").innerHTML = "Loading...";
   }
 } 
-
-/* ===================== AI MOCK INTERVIEW ===================== */
-
-// function startVPInterview() {
-//   ensureUserVisaPrepData();
-
-//   showPage('messages');
-
-//   setTimeout(() => {
-//     addToInbox("AI Visa Interviewer");
-//     openChat(
-//       "AI Visa Interviewer",
-//       [...document.querySelectorAll('#inbox li')]
-//         .find(li => li.dataset.user === "AI Visa Interviewer")
-//     );
-//   }, 200);
-// }
-
-// Start mock from journey
-// function startMockFromJourney(){
-
-//   showVPPage('mock');
-
-//   const visaType =
-//     currentJourney === "US_STUDENT"
-//     ? "Student Visa"
-//     : "Student Visa";
-
-//   document.getElementById('vpVisaType').value = visaType;
-// }
 
 
 /* ===================== LIVE VISA INTERVIEW ===================== */
@@ -5069,385 +4504,11 @@ function shareStory(id){
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
 }
 
-
-// Wishes and Pin system
-// Pin board image
-// function pinImage(img){
-//   if(!pinnedImages.includes(img)){
-//     pinnedImages.push(img);
-//     renderBoards();
-//   }
-// }
-
-/* ===================== STORY & WISH MODALS ===================== */
-
-// Submit wish
-// function submitWish(){
-
-//   if(!currentUser){
-//   alert("Login required");
-//   return;
-// } 
-
-
-//   const title = document.getElementById('wish-title').value.trim();
-//   const fileInput = document.getElementById('wish-image');
-
-//   if(!title || !fileInput.files.length){
-//     alert("Add a title and an image");
-//     return;
-//   }
-
-//   const file = fileInput.files[0];
-//   const reader = new FileReader();
-
-//   reader.onload = function(e){
-
-//     wishes.unshift({
-//       id: Date.now(),
-//       title,
-//       image: e.target.result,
-//       author: currentUser.username,
-//       avatar: currentUser.profilePic || "https://i.pravatar.cc/150"
-//     });
-
-//     closeWishModal();
-//     renderWishes();
-//     renderProfileBoards();
-
-//     document.getElementById('wish-title').value = '';
-//     document.getElementById('wish-image').value = '';
-//   };
-
-//   reader.readAsDataURL(file);
-// }
-
-// Render wishes
-// function renderWishes(){
-
-//   const grid = document.getElementById('vpWishGrid');
-//   if(!grid) return;
-
-//   grid.innerHTML = wishes.map(w => `
-//     <div class="col-md-4">
-//       <div class="card p-2">
-
-//         <img src="${w.image}" class="w-100 rounded mb-2">
-
-//         <div class="d-flex align-items-center mb-2">
-
-//           <img src="${w.avatar}"
-//             width="32"
-//             height="32"
-//             class="rounded-circle me-2"
-//             style="cursor:pointer"
-//             onclick="openProfileByUsername('${w.author}')">
-
-//           <strong
-//             style="cursor:pointer"
-//             onclick="openProfileByUsername('${w.author}')">
-//             ${w.author}
-//           </strong>
-
-//         </div>
-
-//         <small>${w.title}</small>
-
-//         <button class="btn btn-sm btn-outline-danger mt-2"
-//           onclick="pinWish(${w.id})">
-//           Pin
-//         </button>
-
-//       </div>
-//     </div>
-//   `).join('');
-// }
-
-
-// Create shared board
-// function createSharedBoard(){
-
-//   if(!currentUser){
-//   alert("Login required");
-//   return;
-// } 
-
-//   const name = prompt("Board name");
-//   if(!name) return;
-
-//   sharedBoards.push({
-//     id: Date.now(),
-//     name,
-//     owner: currentUser.username,
-//     members: [currentUser.username] ,
-//     wishes: []
-//   });
-
-//   renderBoards();
-
-//   alert("Board created successfully!");
-
-//   showVPPage('boards'); // 👈 VERY IMPORTANT
-// }
-
-
-// Auto scyn pin wish
-// function pinWish(wishId){
-
-//   if(!currentUser){
-//     alert("Login required");
-//     showPage('login');
-//     return;
-//   }
-
-//   const board = sharedBoards.find(
-//     b => b.members.includes(currentUser.username)
-//   );
-
-//   if(!board){
-//     alert("Join or create a shared board first");
-//     return;
-//   }
-
-//   const wish = wishes.find(w => w.id === wishId);
-//   if(!wish) return;
-
-//   if(!board.wishes.some(w => w.id === wishId)){
-//     board.wishes.push(wish);
-//   }
-
-//   renderBoards();
-//   showVPPage('boards');
-// } 
-
-// Invite other users for wishes
-// function inviteToBoard(boardId){
-
-//   const username = prompt("Invite username");
-
-//   const board = sharedBoards.find(
-//     b => b.id === boardId
-//   );
-
-//   if(board && !board.members.includes(username)){
-//     board.members.push(username);
-//   }
-// }
-
-// Group chat from wishes page
-// function launchBoardChat(boardId){
-
-//   if(!currentUser){
-//     alert("Login required");
-//     return;
-//   }
-
-//   const board = sharedBoards.find(
-//     b => b.id === boardId
-//   );
-
-//   if(!board) return;
-
-//   board.members.forEach(member => {
-
-//     if(member !== currentUser.username){
-//       addToInbox(member);
-//     }
-
-//   });
-
-//   showPage('messages');
-// } 
-
-// RenderBoards function
-// function renderBoards(){
-
-//   const grid = document.getElementById('vpBoardGrid');
-//   if(!grid) return;
-
-//   grid.innerHTML = sharedBoards.map(b => `
-//     <div class="card p-2"
-//  style="cursor:pointer"
-//  onclick="openBoard(${b.id})"> 
-
-//         <strong>${b.name}</strong>
-
-//         <div class="d-flex flex-wrap gap-2 mt-2">
-
-//           ${
-//             b.wishes.length
-//             ? b.wishes.map(w => `
-//                 <img src="${w.image}"
-//                      width="70"
-//                      height="70"
-//                      class="rounded"
-//                      style="object-fit:cover; cursor:pointer"
-//                      onclick="openProfileByUsername('${w.author}')">
-//               `).join('')
-//             :
-//             `<small class="text-muted">No pinned wishes yet</small>`
-//           }
-
-//         </div>
-
-//         <button class="btn btn-sm btn-outline-light mt-2"
-//           onclick="event.stopPropagation(); inviteToBoard(${b.id})" >
-//           Invite
-//         </button>
-
-//         <button class="btn btn-sm btn-danger mt-2"
-//           onclick="event.stopPropagation(); launchBoardChat(${b.id})" >
-//           Chat
-//         </button>
-
-//       </div>
-//     </div>
-//   `).join('');
-// }
-
-
-// Pin story to board
-// function pinStory(i){
-
-//   if(!currentUser){
-//     alert("Login required");
-//     return;
-//   }
-
-//   const story = travelStories[i];
-//   if(!story) return;
-
-//   pinnedImages.unshift({
-//     ...story,
-//     pinnedBy: currentUser.username
-//   });
-
-//   renderProfileBoards();
-// } 
-
-// Open full board function
-// function openBoard(boardId){
-
-//   const board = sharedBoards.find(
-//     b => b.id === boardId
-//   );
-
-//   if(!board) return;
-
-//   currentBoardView = boardId;
-
-//   document.getElementById('vpBoardTitle').innerText = board.name;
-//   document.getElementById('vpBoardOwner').innerText =
-//     "Created by " + board.owner;
-
-//   const grid = document.getElementById('vpBoardWishList');
-
-//   grid.innerHTML = board.wishes.map(w => `
-//     <div class="col-md-4">
-
-//       <div class="card p-2">
-
-//         <img src="${w.image}"
-//              class="w-100 rounded mb-2">
-
-//         <div class="d-flex align-items-center mb-2">
-
-//           <img src="${w.avatar}"
-//                width="30"
-//                height="30"
-//                class="rounded-circle me-2"
-//                style="cursor:pointer"
-//                onclick="openProfileByUsername('${w.author}')">
-
-//           <strong
-//             style="cursor:pointer"
-//             onclick="openProfileByUsername('${w.author}')">
-//             ${w.author}
-//           </strong>
-
-//         </div>
-
-//         <small>${w.title}</small>
-
-//         ${
-//           board.owner === currentUser.username
-//           ? `
-//             <button class="btn btn-sm btn-outline-danger mt-2"
-//               onclick="removeWishFromBoard(${board.id},${w.id})">
-//               Remove
-//             </button>
-//           `
-//           : ''
-//         }
-
-//       </div>
-
-//     </div>
-//   `).join('');
-
-//   showVPPage('board-view');
-// }
-
-// Remove wish from board
-// function removeWishFromBoard(boardId, wishId){
-
-//   const board = sharedBoards.find(
-//     b => b.id === boardId
-//   );
-
-//   if(!board) return;
-
-//   board.wishes =
-//     board.wishes.filter(w => w.id !== wishId);
-
-//   openBoard(boardId);
-// }
-
 // CloseVpCoach modal
 function closeVPBookModal(){
   document.getElementById('vpBookModal').style.display = 'none';
 }
 
-
-// Open wish upload
-// function openWishUpload(){
-
-//   if(!currentUser){
-//     alert("Login required");
-//     showPage('login');
-//     return;
-//   }
-
-//   document.getElementById('vp-wish-modal').style.display = 'flex';
-// }
-
-//  Close wish modal
-// function closeWishModal(){
-//   document.getElementById('vp-wish-modal').style.display='none';
-// }
-
-// Render pin boards in profile page
-// function renderProfileBoards(){
-
-//   if(!currentUser) return;
-
-//   const el = document.getElementById('profileBoards');
-//   if(!el) return;
-
-//   el.innerHTML = '';
-
-//   pinnedImages
-//     .filter(p => p.pinnedBy === currentUser.username)
-//     .forEach(p => {
-//       el.innerHTML += `
-//         <div class="col-6">
-//           <div class="card p-2">
-//             <small>${p.title}</small>
-//           </div>
-//         </div>
-//       `;
-//     });
-// } 
 
 // Master Initializer
 document.addEventListener("DOMContentLoaded", async () => {
