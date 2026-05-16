@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Earnings</title>
+
+<link rel="stylesheet" href="css/global.css">
+
+</head>
+<body>
+
+<nav class="top-navbar">
+
+<div class="top-left">
+
+<img src="interfacelog.png" width="30">
+
+<span>Earnings</span>
+
+</div>
+
+</nav>
+
+<div class="earnings-page">
+
+<div class="earnings-card">
+
+<h1 id="earningsAmount">
+₦0
+</h1>
+
+<p>Total Earnings</p>
+
+</div>
+
+<div id="transactions"></div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/earnings.js"></script>
+<script src="js/auth.js"></script>
+<script>
+checkAuth();
+</script>
+
+</body>
+</html>

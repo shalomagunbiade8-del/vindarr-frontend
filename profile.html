@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Profile • Vindarr</title>
+
+<link rel="stylesheet"
+href="css/global.css">
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+</head>
+
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-navbar">
+
+  <div class="top-left">
+
+    <img src="interfacelog.png" width="32">
+
+    <span>Vindarr</span>
+
+  </div>
+
+  <div class="top-right">
+
+    <i class="bi bi-gear"></i>
+
+  </div>
+
+</nav>
+
+<!-- PROFILE -->
+<div class="profile-page">
+
+  <!-- COVER -->
+  <div class="profile-cover"></div>
+
+  <!-- USER INFO -->
+  <div class="profile-header">
+
+    <img
+    id="profileAvatar"
+    class="profile-avatar"
+    src="https://i.pravatar.cc/200">
+
+    <h2 id="profileUsername">
+      Loading...
+    </h2>
+
+    <p id="profileBio">
+      Creator on Vindarr
+    </p>
+
+    <!-- STATS -->
+    <div class="profile-stats">
+
+      <div>
+        <strong id="postCount">0</strong>
+        <span>Posts</span>
+      </div>
+
+      <div>
+        <strong id="ebookCount">0</strong>
+        <span>Ebooks</span>
+      </div>
+
+      <div>
+        <strong id="productCount">0</strong>
+        <span>Products</span>
+      </div>
+
+    </div>
+
+    
+
+  </div>
+
+  <!-- PROFILE ACTIONS -->
+<div id="profileActions"></div>
+
+  <!-- TABS -->
+  <div class="profile-tabs">
+
+    <button
+    class="tab-btn active-tab"
+    onclick="switchTab(event,'videos')">
+
+      Videos
+
+    </button>
+
+    <button
+class="tab-btn"
+onclick="switchTab(event,'ebooks')">
+
+      Ebooks
+
+    </button>
+
+    <button
+class="tab-btn"
+onclick="switchTab(event,'products')">
+
+      Products
+
+    </button>
+
+  </div>
+
+  <!-- CONTENT -->
+  <div id="profilePosts"
+  class="profile-grid"></div>
+
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+
+<div
+id="editProfileModal"
+class="edit-profile-modal">
+
+  <div class="edit-profile-box">
+
+    <h3>Edit Profile</h3>
+
+    <input
+      id="editUsername"
+      placeholder="Username"
+      class="edit-input"
+    >
+
+    <textarea
+      id="editBio"
+      placeholder="Bio"
+      class="edit-input"
+    ></textarea>
+
+    <input
+      type="file"
+      id="editAvatar"
+      class="edit-input"
+    >
+
+    <button
+      onclick="saveProfile()"
+      class="save-profile-btn"
+    >
+      Save Profile
+    </button>
+
+    <button
+      onclick="closeEditProfile()"
+      class="close-profile-btn"
+    >
+      Cancel
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+
+  <a href="index.html">
+    <i class="bi bi-house"></i>
+  </a>
+
+  <a href="search.html">
+    <i class="bi bi-search"></i>
+  </a>
+
+  <a href="market.html">
+    <i class="bi bi-bag"></i>
+  </a>
+
+  <a href="messages.html">
+    <i class="bi bi-chat"></i>
+  </a>
+
+  <a href="profile.html"
+  class="active-nav">
+
+    <i class="bi bi-person-fill"></i>
+
+  </a>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/auth.js"></script>
+<script>
+checkAuth();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+/* =========================
+   FEED
+========================= */
+
+#feed{
+  height:100vh;
+  overflow-y:auto;
+
+  scroll-snap-type:y mandatory;
+}
+
+/* =========================
+   VIDEO CARD
+========================= */
+
+.video-card{
+  position:relative;
+
+  width:100%;
+  height:100vh;
+
+  background:black;
+
+  scroll-snap-align:start;
+}
+
+/* =========================
+   VIDEO
+========================= */
+
+.video-card video{
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+}
+
+/* =========================
+   LEFT OVERLAY
+========================= */
+
+.video-overlay-left{
+  position:absolute;
+
+  bottom:100px;
+  left:15px;
+
+  width:70%;
+
+  z-index:20;
+}
+
+.video-overlay-left strong{
+  font-size:1rem;
+}
+
+.video-overlay-left p{
+  font-size:.9rem;
+  margin-top:8px;
+}
+
+/* =========================
+   RIGHT ACTIONS
+========================= */
+
+.video-overlay-right{
+  position:absolute;
+
+  right:12px;
+  bottom:120px;
+
+  z-index:20;
+}
+
+.video-actions-box{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.video-actions-box div{
+  text-align:center;
+  cursor:pointer;
+}
+
+.video-actions-box i{
+  font-size:1.6rem;
+}
+
+.video-actions-box span{
+  font-size:.8rem;
+}
+
+/* =========================
+   COMMENT PANEL
+========================= */
+
+.comment-panel{
+  position:fixed;
+
+  bottom:-100%;
+  left:0;
+
+  width:100%;
+  height:70%;
+
+  background:#111;
+
+  z-index:99999;
+
+  border-top-left-radius:20px;
+  border-top-right-radius:20px;
+
+  transition:.3s;
+
+  display:flex;
+  flex-direction:column;
+}
+
+.comment-panel.active{
+  bottom:0;
+}
+
+.comment-header{
+  padding:15px;
+
+  display:flex;
+  justify-content:space-between;
+
+  border-bottom:1px solid #222;
+}
+
+.comment-list{
+  flex:1;
+  overflow-y:auto;
+
+  padding:15px;
+}
+
+.comment-input-box{
+  padding:15px;
+
+  border-top:1px solid #222;
+}
+
+.comment-input-box input{
+  width:100%;
+
+  background:#1a1a1a;
+
+  border:none;
+  outline:none;
+
+  padding:12px;
+
+  border-radius:30px;
+
+  color:white;
+}
