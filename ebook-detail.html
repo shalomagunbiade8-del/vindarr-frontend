@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Ebook Reader</title>
+
+<link rel="stylesheet" href="css/global.css">
+
+</head>
+
+<body>
+
+<div class="ebook-reader-page">
+
+  <div class="ebook-topbar">
+
+    <button onclick="goBack()">
+      ← Back
+    </button>
+
+    <h2 id="ebookTitle">
+      Ebook
+    </h2>
+
+  </div>
+
+  <iframe
+    id="ebookFrame"
+    class="ebook-frame"
+  ></iframe>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/ebook-detail.js"></script>
+
+</body>
+</html>

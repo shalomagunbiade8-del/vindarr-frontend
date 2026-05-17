@@ -12,7 +12,7 @@ async function loadLibrary(){
 
   try{
 
-    const res = await fetch(`${API_BASE_URL}/library/my-library`,{
+    const res = await fetch(`${API_BASE_URL}/library/me`,{
       headers:{
         Authorization:`Bearer ${token}`
       }
@@ -71,7 +71,7 @@ function renderLibrary(){
       <div class="library-card">
 
         <img
-          src="${API_BASE_URL + (book.coverUrl || "")}"
+          src="${API_BASE_URL + (book.coverImage || "")}"
           class="library-cover"
         >
 
