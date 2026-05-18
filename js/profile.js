@@ -4,8 +4,8 @@ let currentTab = "videos";
 const params =
 new URLSearchParams(window.location.search);
 
-const profileUserId =
-params.get("id");
+const profileUsername =
+params.get("user");
 
 let isOwnProfile = false;
 
@@ -21,7 +21,7 @@ async function loadProfile(){
 
     // CURRENT USER
     const meRes =
-  await fetch(`${API_BASE_URL}/users/me`,{
+await fetch(`${API_BASE_URL}/profile/me`,{
         headers:{
           Authorization:`Bearer ${token}`
         }
@@ -31,9 +31,9 @@ async function loadProfile(){
 
     // VISITING PROFILE?
     const endpoint =
-      profileUserId
-      ? `${API_BASE_URL}/users/${profileUserId}`
-      : `${API_BASE_URL}/users/me`;
+  profileUsername
+  ? `${API_BASE_URL}/profile/${profileUsername}`
+  : `${API_BASE_URL}/profile/me`;
 
     const res =
       await fetch(endpoint,{
@@ -46,7 +46,7 @@ async function loadProfile(){
       await res.json();
 
     isOwnProfile =
-      me.id === user.id;
+  me.username === user.username;
 
     // PROFILE INFO
     document.getElementById("profileUsername")
@@ -116,7 +116,7 @@ function renderProfileActions(user){
 
         <button
           class="message-profile-btn"
-          onclick="messageUser('${user.id}')">
+          onclick="messageUser('${user.username}')">
 
           Message
 
@@ -131,10 +131,10 @@ function renderProfileActions(user){
 }
 
 
-function messageUser(userId){
+function messageUser(username){
 
   window.location.href =
-    `chat.html?user=${userId}`;
+    `chat.html?user=${username}`;
 
 }
 
@@ -343,7 +343,7 @@ async function saveProfile(){
   const avatarFile =
     document.getElementById("editAvatar").files[0];
 
-  // UPLOAD TO CLOUDINARY
+  // UPLOAD AVATAR
   if(avatarFile){
 
     const avatarData = new FormData();
@@ -364,6 +364,26 @@ async function saveProfile(){
     avatarUrl = uploadJson.avatar;
   }
 
+  // BUILD PAYLOAD
+  const payload = {
+
+    username:
+      document.getElementById(
+        "editUsername"
+      ).value,
+
+    bio:
+      document.getElementById(
+        "editBio"
+      ).value
+
+  };
+
+  // ONLY SEND AVATAR IF EXISTS
+  if(avatarUrl){
+    payload.avatar = avatarUrl;
+  }
+
   try{
 
     const res = await fetch(
@@ -376,21 +396,24 @@ async function saveProfile(){
           Authorization:`Bearer ${token}`
         },
 
-        body: JSON.stringify({
-          username:
-            document.getElementById("editUsername").value,
-
-          bio:
-            document.getElementById("editBio").value,
-
-          avatar: avatarUrl
-        })
+        body: JSON.stringify(payload)
       }
     );
 
     const data = await res.json();
 
     if(res.ok){
+
+      // UPDATE LOCAL STORAGE
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data)
+      );
+
+      localStorage.setItem(
+        "username",
+        data.username
+      );
 
       alert("Profile updated");
 
@@ -400,7 +423,10 @@ async function saveProfile(){
 
     }else{
 
-      alert(data.message || "Update failed");
+      alert(
+        data.message ||
+        "Update failed"
+      );
 
     }
 
@@ -413,6 +439,7 @@ async function saveProfile(){
   }
 
 }
+
 
 function closeEditProfile(){
 
