@@ -37,9 +37,9 @@ function renderStory(story){
 
     <img
       src="${
-        story.image
-        ? API_BASE_URL + story.image
-        : ''
+        story.imageUrl
+        ? story.imageUrl
+        : 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop'
       }"
       class="story-banner"
     >
@@ -60,7 +60,7 @@ function renderStory(story){
 
       <div class="story-body">
 
-        ${story.content || ''}
+        ${(story.content || '').replace(/\n/g, '<br>')}
 
       </div>
 

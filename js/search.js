@@ -115,10 +115,10 @@ function renderResults(data){
 
               <img
                 src="${
-                  user.avatar
-                  ? API_BASE_URL + user.avatar
-                  : 'https://i.pravatar.cc/100'
-                }"
+  user.avatar
+  ? user.avatar
+  : 'https://i.pravatar.cc/100'
+}"
               >
 
               <div>
@@ -163,7 +163,7 @@ function renderResults(data){
             >
 
               <video
-                src="${API_BASE_URL + (video.videoUrl || video.file || "")}"
+                src="${video.videoUrl || video.file || ""}"
                 muted
               ></video>
 
@@ -211,7 +211,7 @@ function renderResults(data){
             >
 
               <img
-                src="${API_BASE_URL + (book.coverImage || "")}"
+                src="${book.coverImage || ""}"
               >
 
               <h4>${book.title}</h4>
@@ -256,14 +256,14 @@ function renderResults(data){
                 ?
                 `
                 <video
-                  src="${API_BASE_URL + (product.videoUrl || product.file)}"
+                  src="${product.videoUrl || product.file}"
                   muted
                 ></video>
                 `
                 :
                 `
                 <img
-                  src="${API_BASE_URL + (product.coverImage || "")}"
+                  src="${product.coverImage || ""}"
                 >
                 `
               }

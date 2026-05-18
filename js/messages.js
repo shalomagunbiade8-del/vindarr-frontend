@@ -41,34 +41,42 @@ function renderInbox(chats){
     return;
   }
 
-  inbox.innerHTML = chats.map(chat => `
+  const currentUsername =
+    localStorage.getItem("username");
 
-    <div
-      class="inbox-card"
-      onclick="openChat('${chat.user.id}')"
-    >
+  inbox.innerHTML = chats.map(chat => {
 
-      <img
-        src="${
-          chat.user.avatar
-          ? API_BASE_URL + chat.user.avatar
-          : 'https://i.pravatar.cc/100'
-        }"
+    const otherUser =
+      chat.senderUsername === currentUsername
+      ? chat.receiverUsername
+      : chat.senderUsername;
+
+    return `
+
+      <div
+        class="inbox-card"
+        onclick="openChat('${otherUser}')"
       >
 
-      <div class="inbox-content">
+        <img
+          src="https://i.pravatar.cc/100"
+        >
 
-        <h4>${chat.user.username}</h4>
+        <div class="inbox-content">
 
-        <p>
-          ${chat.lastMessage || "Start conversation"}
-        </p>
+          <h4>${otherUser}</h4>
+
+          <p>
+            ${chat.text || "Attachment"}
+          </p>
+
+        </div>
 
       </div>
 
-    </div>
+    `;
 
-  `).join("");
+  }).join("");
 
 }
 

@@ -17,7 +17,7 @@ async function loadStories(){
     const data =
     await res.json();
 
-    stories = data || [];
+    stories = data.data || [];
 
     renderStories();
 
@@ -34,7 +34,11 @@ function renderStories(){
   const container =
   document.getElementById("storiesFeed");
 
-  if(!stories.length){
+  // IMPORTANT
+  const storyList =
+    stories.data || stories || [];
+
+  if(!storyList.length){
 
     container.innerHTML = `
 
@@ -58,14 +62,14 @@ function renderStories(){
   }
 
   container.innerHTML =
-  stories.map(story => `
+  storyList.map(story => `
 
     <div class="story-card">
 
       <img
         src="${
-          story.image
-          ? API_BASE_URL + story.image
+          story.imageUrl
+          ? story.imageUrl
           : 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop'
         }"
         class="story-image"
@@ -79,8 +83,8 @@ function renderStories(){
 
             <img
               src="${
-                story.userAvatar
-                ? API_BASE_URL + story.userAvatar
+                story.avatar
+                ? story.avatar
                 : 'https://i.pravatar.cc/100'
               }"
             >
@@ -117,7 +121,7 @@ function renderStories(){
 
         <button
           class="read-story-btn"
-          onclick="openStory('${story._id}')"
+          onclick="openStory('${story.id}')"
         >
 
           Read Story
@@ -152,6 +156,14 @@ function closeStoryModal(){
   document.getElementById(
     "storyModal"
   ).style.display = "none";
+
+}
+
+if(!token){
+
+  alert("Login required");
+
+  return;
 
 }
 

@@ -20,23 +20,14 @@ async function loadChat(){
       }
     );
 
-    const data = await res.json();
+    const messages = await res.json();
 
-    receiver = data.user;
-
+    // SET USERNAME
     document.getElementById(
       "chatUsername"
-    ).innerText =
-    receiver.username;
+    ).innerText = userId;
 
-    document.getElementById(
-      "chatAvatar"
-    ).src =
-    receiver.avatar
-    ? API_BASE_URL + receiver.avatar
-    : "https://i.pravatar.cc/100";
-
-    renderMessages(data.messages);
+    renderMessages(messages);
 
   }catch(err){
 
@@ -48,6 +39,9 @@ async function loadChat(){
 
 function renderMessages(messages){
 
+  const currentUsername =
+    localStorage.getItem("username");
+
   const container =
   document.getElementById("chatMessages");
 
@@ -55,10 +49,14 @@ function renderMessages(messages){
 
     <div class="
       message-bubble
-      ${msg.isMine ? 'mine' : 'theirs'}
+      ${
+        msg.senderUsername === currentUsername
+        ? 'mine'
+        : 'theirs'
+      }
     ">
 
-      ${msg.text}
+      ${msg.text || ''}
 
     </div>
 
@@ -91,9 +89,9 @@ async function sendMessage(){
         },
 
         body:JSON.stringify({
-          receiverId:userId,
-          text
-        })
+  receiverUsername:userId,
+  text
+})
       }
     );
 
