@@ -286,7 +286,9 @@ src="${
     ? post.videoUrl
     : API_BASE_URL + post.videoUrl
 }"
-muted></video>
+controls
+playsinline
+></video>
 
           `
 

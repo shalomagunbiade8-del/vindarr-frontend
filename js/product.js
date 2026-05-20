@@ -50,7 +50,7 @@ function renderProduct(product) {
 
  const media =
   product.videoUrl ||
-  product.file ||
+  product.fileUrl ||
   product.coverUrl ||
   '';
 
@@ -109,13 +109,13 @@ const mediaUrl =
     : 'https://i.pravatar.cc/100'
 }"
 
-  onclick="openCreatorProfile('${product.creatorId}')"
+  onclick="openCreatorProfile('${product.creatorUsername}')"
 >
 
 <div>
 
   <strong
-    onclick="openCreatorProfile('${product.creatorId}')"
+    onclick="openCreatorProfile('${product.creatorUsername}')"
     style="cursor:pointer"
   >
     @${product.creatorUsername || 'creator'}
@@ -248,10 +248,10 @@ function chatSeller() {
 
 }
 
-function openCreatorProfile(userId){
+function openCreatorProfile(username){
 
   window.location.href =
-    `profile.html?id=${userId}`;
+    `profile.html?user=${username}`;
 
 }
 

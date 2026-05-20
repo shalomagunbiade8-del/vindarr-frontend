@@ -94,11 +94,11 @@ function renderVideos() {
 
         <!-- VIDEO -->
         <video
-          id="video${i}"
-          src="${mediaUrl}"
-          muted
-          loop
-          playsinline
+  id="video${i}"
+  src="${mediaUrl}"
+  loop
+  playsinline
+  controls
           onclick="handleVideoTap(${i}, ${v.id})"
         ></video>
 
@@ -119,13 +119,13 @@ function renderVideos() {
 }"
 
   class="creator-avatar"
-  onclick="openCreatorProfile('${v.creatorId}')"
+  onclick="openCreatorProfile('${v.creatorUsername}')"
 >
             <div>
 
   <div
     class="creator-name"
-    onclick="openCreatorProfile('${v.creatorId}')"
+    onclick="openCreatorProfile('${v.creatorUsername}')"
   >
     @${v.creatorUsername || "creator"}
   </div>
@@ -277,10 +277,10 @@ function handleVideoTap(index, videoId) {
 // OPEN CREATOR PROFILE
 // ===============================
 
-function openCreatorProfile(userId){
+function openCreatorProfile(username){
 
   window.location.href =
-    `profile.html?id=${userId}`;
+    `profile.html?user=${username}`;
 
 }
 
