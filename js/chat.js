@@ -12,7 +12,7 @@ async function loadChat(){
   try{
 
     const res = await fetch(
-      `${API_BASE_URL}/messages/${userId}`,
+      `${API_BASE_URL}/messages/chat/${userId}`,
       {
         headers:{
           Authorization:`Bearer ${token}`

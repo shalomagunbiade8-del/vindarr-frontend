@@ -9,10 +9,14 @@ async function loadStories(){
 
   try{
 
-    const res =
-    await fetch(
-      `${API_BASE_URL}/stories`
-    );
+    const res = await fetch(
+  `${API_BASE_URL}/stories`,
+  {
+    headers:{
+      Authorization:`Bearer ${token}`
+    }
+  }
+);
 
     const data =
     await res.json();

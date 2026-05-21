@@ -263,8 +263,12 @@ function renderResults(data){
                 :
                 `
                 <img
-                  src="${product.coverImage || ""}"
-                >
+  src="${
+    product.coverUrl ||
+    product.coverImage ||
+    'https://placehold.co/600x400?text=Product'
+  }"
+>
                 `
               }
 
@@ -329,7 +333,7 @@ function openEbook(id){
 function openProduct(id){
 
   window.location.href =
-    `product-detail.html?id=${id}`;
+    `product.html?id=${id}`;
 
 }
 

@@ -12,6 +12,12 @@ let lastTap = 0;
 
 const feed = document.getElementById("feed");
 
+// Index video opening
+const params =
+new URLSearchParams(window.location.search);
+
+const videoId = params.get("video");
+
 // ===============================
 // LOAD VIDEOS
 // ===============================
@@ -57,6 +63,25 @@ async function loadVideos(reset = true) {
 
 }
 
+// After the video loads
+if(videoId){
+
+  const target =
+    document.getElementById(`video-${videoId}`);
+
+  if(target){
+
+    target.scrollIntoView({
+      behavior:"smooth",
+      block:"center"
+    });
+
+    target.classList.add("highlight-video");
+
+  }
+
+}
+
 // ===============================
 // RENDER VIDEOS
 // ===============================
@@ -81,7 +106,10 @@ function renderVideos() {
   posts.forEach((v, i) => {
 
     const media =
-      v.videoUrl || v.file || "";
+  v.videoUrl ||
+  v.fileUrl ||
+  v.coverUrl ||
+  "";
 
     const mediaUrl =
   media?.startsWith("http")
@@ -93,14 +121,32 @@ function renderVideos() {
       <div class="video-card">
 
         <!-- VIDEO -->
-        <video
-  id="video${i}"
-  src="${mediaUrl}"
-  loop
-  playsinline
-  controls
-          onclick="handleVideoTap(${i}, ${v.id})"
-        ></video>
+        ${
+  v.type === "video"
+
+  ? `
+
+    <video
+      id="video${i}"
+      src="${mediaUrl}"
+      loop
+      playsinline
+      controls
+      onclick="handleVideoTap(${i}, ${v.id})"
+    ></video>
+
+  `
+
+  : `
+
+    <img
+      src="${mediaUrl}"
+      class="feed-image"
+      onclick="openProduct('${v.id}')"
+    >
+
+  `
+}
 
         <!-- LEFT INFO -->
         <div class="video-overlay-left">
@@ -501,3 +547,11 @@ window.addEventListener("scroll", async () => {
 // ===============================
 
 loadVideos();
+
+// Open product from feed
+function openProduct(id){
+
+  window.location.href =
+    `product.html?id=${id}`;
+
+}

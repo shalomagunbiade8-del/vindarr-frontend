@@ -244,7 +244,7 @@ function chatSeller() {
   if(!currentProduct) return;
 
   window.location.href =
-    `chat.html?user=${currentProduct.creatorId}`;
+  `chat.html?user=${currentProduct.creatorUsername}`;
 
 }
 
