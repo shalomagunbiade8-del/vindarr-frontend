@@ -129,6 +129,11 @@ async function login(){
       JSON.stringify(data.user)
     );
 
+    localStorage.setItem(
+  "username",
+  data.user.username
+);
+
     // REDIRECT
     window.location.href =
     "index.html";
@@ -150,8 +155,10 @@ function logout(){
 
   localStorage.removeItem("user");
 
+  localStorage.removeItem("username");
+
   window.location.href =
-  "login.html";
+    "login.html";
 
 }
 
