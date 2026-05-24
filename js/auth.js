@@ -151,14 +151,10 @@ async function login(){
 // LOGOUT
 function logout(){
 
-  localStorage.removeItem("token");
-
-  localStorage.removeItem("user");
-
-  localStorage.removeItem("username");
+  localStorage.clear();
 
   window.location.href =
-    "login.html";
+  "login.html";
 
 }
 

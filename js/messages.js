@@ -1,5 +1,11 @@
 const token = localStorage.getItem("token");
 
+const currentUser =
+JSON.parse(localStorage.getItem("user"));
+
+const currentUsername =
+currentUser?.username;
+
 async function loadInbox(){
 
   try{
@@ -14,6 +20,8 @@ async function loadInbox(){
     );
 
     const chats = await res.json();
+
+    console.log("INBOX:", chats);
 
     renderInbox(chats);
 
@@ -30,6 +38,15 @@ function renderInbox(chats){
   const inbox =
   document.getElementById("inboxList");
 
+  if(!Array.isArray(chats)){
+
+    inbox.innerHTML =
+    `<p>Failed to load inbox</p>`;
+
+    return;
+
+  }
+
   if(!chats.length){
 
     inbox.innerHTML = `
@@ -40,9 +57,6 @@ function renderInbox(chats){
 
     return;
   }
-
-  const currentUsername =
-    localStorage.getItem("username");
 
   inbox.innerHTML = chats.map(chat => {
 

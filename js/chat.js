@@ -1,11 +1,15 @@
 const token = localStorage.getItem("token");
 
+const currentUser =
+JSON.parse(localStorage.getItem("user"));
+
+const currentUsername =
+currentUser?.username;
+
 const params =
 new URLSearchParams(window.location.search);
 
 const userId = params.get("user");
-
-let receiver = null;
 
 async function loadChat(){
 
@@ -22,7 +26,8 @@ async function loadChat(){
 
     const messages = await res.json();
 
-    // SET USERNAME
+    console.log("CHAT DATA:", messages);
+
     document.getElementById(
       "chatUsername"
     ).innerText = userId;
@@ -39,11 +44,19 @@ async function loadChat(){
 
 function renderMessages(messages){
 
-  const currentUsername =
-    localStorage.getItem("username");
-
   const container =
   document.getElementById("chatMessages");
+
+  if(!Array.isArray(messages)){
+
+    console.log(messages);
+
+    container.innerHTML =
+    `<p>Error loading messages</p>`;
+
+    return;
+
+  }
 
   container.innerHTML = messages.map(msg => `
 
@@ -72,13 +85,14 @@ async function sendMessage(){
   const input =
   document.getElementById("chatInput");
 
-  const text = input.value.trim();
+  const text =
+  input.value.trim();
 
   if(!text) return;
 
   try{
 
-    await fetch(
+    const res = await fetch(
       `${API_BASE_URL}/messages`,
       {
         method:"POST",
@@ -89,15 +103,19 @@ async function sendMessage(){
         },
 
         body:JSON.stringify({
-  receiverUsername:userId,
-  text
-})
+          receiverUsername:userId,
+          text
+        })
       }
     );
 
+    const data = await res.json();
+
+    console.log("SEND RESULT:", data);
+
     input.value = "";
 
-    loadChat();
+    await loadChat();
 
   }catch(err){
 
