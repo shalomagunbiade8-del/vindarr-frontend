@@ -1,3 +1,5 @@
+console.log("CHAT JS LOADED");
+
 const token = localStorage.getItem("token");
 
 const currentUser =
@@ -9,21 +11,33 @@ currentUser?.username;
 const params =
 new URLSearchParams(window.location.search);
 
-const userId = params.get("user");
+const receiverUsername =
+params.get("user");
 
-if(!token){
-  window.location.href = "login.html";
-}
+const chatContainer =
+document.getElementById("chatMessages");
 
+const input =
+document.getElementById("chatInput");
+
+const sendBtn =
+document.getElementById("sendBtn");
+
+document.getElementById(
+  "chatUsername"
+).innerText = receiverUsername;
+
+
+// ===============================
 // LOAD CHAT
+// ===============================
+
 async function loadChat(){
 
   try{
 
-    console.log("LOADING CHAT WITH:", userId);
-
     const res = await fetch(
-      `${API_BASE_URL}/messages/chat/${userId}`,
+      `${API_BASE_URL}/messages/chat/${receiverUsername}`,
       {
         headers:{
           Authorization:`Bearer ${token}`
@@ -31,119 +45,78 @@ async function loadChat(){
       }
     );
 
-    console.log("CHAT STATUS:", res.status);
+    const messages =
+    await res.json();
 
-    if(!res.ok){
-
-      const errText = await res.text();
-
-      console.log("CHAT ERROR:", errText);
-
-      document.getElementById(
-        "chatMessages"
-      ).innerHTML =
-      `<p>Failed to load chat</p>`;
-
-      return;
-    }
-
-    const messages = await res.json();
-
-    console.log("CHAT DATA:", messages);
-
-    document.getElementById(
-      "chatUsername"
-    ).innerText = userId;
+    console.log("CHAT:", messages);
 
     renderMessages(messages);
 
   }catch(err){
 
-    console.error("LOAD CHAT ERROR:", err);
+    console.error(err);
 
   }
 
 }
 
-// RENDER
-function renderMessages(messages){
 
-  const container =
-  document.getElementById("chatMessages");
+// ===============================
+// RENDER MESSAGES
+// ===============================
+
+function renderMessages(messages){
 
   if(!Array.isArray(messages)){
 
-    console.log("NOT ARRAY:", messages);
-
-    container.innerHTML =
-    `<p>Error loading messages</p>`;
+    chatContainer.innerHTML =
+    `<p>Failed to load messages</p>`;
 
     return;
 
   }
 
-  if(messages.length === 0){
-
-    container.innerHTML =
-    `<p class="empty-state">No messages yet</p>`;
-
-    return;
-  }
-
-  container.innerHTML = messages.map(msg => `
+  chatContainer.innerHTML =
+  messages.map(msg => `
 
     <div class="
       message-bubble
       ${
         msg.senderUsername === currentUsername
-        ? 'mine'
-        : 'theirs'
+        ? "mine"
+        : "theirs"
       }
     ">
 
-      ${msg.text || ''}
+      ${msg.text || ""}
 
     </div>
 
   `).join("");
 
-  container.scrollTop =
-  container.scrollHeight;
+  chatContainer.scrollTop =
+  chatContainer.scrollHeight;
 
 }
 
-// SEND
-async function sendMessage(){
 
-  const input =
-  document.getElementById("chatInput");
+// ===============================
+// SEND MESSAGE
+// ===============================
+
+async function sendMessage(){
 
   const text =
   input.value.trim();
 
-  console.log("USER ID:", userId);
-  console.log("TEXT:", text);
-
-  if(!userId){
-
-    alert("No receiver found");
-
-    return;
-  }
-
-  if(!text){
-
-    alert("Enter message");
-
-    return;
-  }
+  if(!text) return;
 
   const payload = {
-    receiverUsername: userId,
-    text: text
+    receiverUsername,
+    text
   };
 
-  console.log("PAYLOAD:", payload);
+  console.log("SENDING:", payload);
 
   try{
 
@@ -161,9 +134,8 @@ async function sendMessage(){
       }
     );
 
-    console.log("SEND STATUS:", res.status);
-
-    const data = await res.json();
+    const data =
+    await res.json();
 
     console.log("SEND RESPONSE:", data);
 
@@ -180,10 +152,38 @@ async function sendMessage(){
 
   }catch(err){
 
-    console.error("SEND ERROR:", err);
+    console.error(err);
 
   }
 
 }
+
+
+// ===============================
+// EVENTS
+// ===============================
+
+sendBtn.addEventListener(
+  "click",
+  sendMessage
+);
+
+input.addEventListener(
+  "keypress",
+  function(e){
+
+    if(e.key === "Enter"){
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+// ===============================
+// INIT
+// ===============================
 
 loadChat();
