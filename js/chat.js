@@ -121,14 +121,31 @@ async function sendMessage(){
   const text =
   input.value.trim();
 
-  if(!text) return;
+  console.log("USER ID:", userId);
+  console.log("TEXT:", text);
+
+  if(!userId){
+
+    alert("No receiver found");
+
+    return;
+  }
+
+  if(!text){
+
+    alert("Enter message");
+
+    return;
+  }
+
+  const payload = {
+    receiverUsername: userId,
+    text: text
+  };
+
+  console.log("PAYLOAD:", payload);
 
   try{
-
-    console.log("SENDING:", {
-      receiverUsername:userId,
-      text
-    });
 
     const res = await fetch(
       `${API_BASE_URL}/messages`,
@@ -140,10 +157,7 @@ async function sendMessage(){
           Authorization:`Bearer ${token}`
         },
 
-        body:JSON.stringify({
-          receiverUsername:userId,
-          text
-        })
+        body: JSON.stringify(payload)
       }
     );
 
@@ -151,11 +165,11 @@ async function sendMessage(){
 
     const data = await res.json();
 
-    console.log("SEND RESULT:", data);
+    console.log("SEND RESPONSE:", data);
 
     if(!res.ok){
 
-      alert(data.message || "Failed to send");
+      alert(data.message || "Send failed");
 
       return;
     }
