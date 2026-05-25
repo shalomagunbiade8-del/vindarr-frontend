@@ -11,9 +11,16 @@ new URLSearchParams(window.location.search);
 
 const userId = params.get("user");
 
+if(!token){
+  window.location.href = "login.html";
+}
+
+// LOAD CHAT
 async function loadChat(){
 
   try{
+
+    console.log("LOADING CHAT WITH:", userId);
 
     const res = await fetch(
       `${API_BASE_URL}/messages/chat/${userId}`,
@@ -23,6 +30,22 @@ async function loadChat(){
         }
       }
     );
+
+    console.log("CHAT STATUS:", res.status);
+
+    if(!res.ok){
+
+      const errText = await res.text();
+
+      console.log("CHAT ERROR:", errText);
+
+      document.getElementById(
+        "chatMessages"
+      ).innerHTML =
+      `<p>Failed to load chat</p>`;
+
+      return;
+    }
 
     const messages = await res.json();
 
@@ -36,12 +59,13 @@ async function loadChat(){
 
   }catch(err){
 
-    console.error(err);
+    console.error("LOAD CHAT ERROR:", err);
 
   }
 
 }
 
+// RENDER
 function renderMessages(messages){
 
   const container =
@@ -49,13 +73,21 @@ function renderMessages(messages){
 
   if(!Array.isArray(messages)){
 
-    console.log(messages);
+    console.log("NOT ARRAY:", messages);
 
     container.innerHTML =
     `<p>Error loading messages</p>`;
 
     return;
 
+  }
+
+  if(messages.length === 0){
+
+    container.innerHTML =
+    `<p class="empty-state">No messages yet</p>`;
+
+    return;
   }
 
   container.innerHTML = messages.map(msg => `
@@ -80,6 +112,7 @@ function renderMessages(messages){
 
 }
 
+// SEND
 async function sendMessage(){
 
   const input =
@@ -91,6 +124,11 @@ async function sendMessage(){
   if(!text) return;
 
   try{
+
+    console.log("SENDING:", {
+      receiverUsername:userId,
+      text
+    });
 
     const res = await fetch(
       `${API_BASE_URL}/messages`,
@@ -109,9 +147,18 @@ async function sendMessage(){
       }
     );
 
+    console.log("SEND STATUS:", res.status);
+
     const data = await res.json();
 
     console.log("SEND RESULT:", data);
+
+    if(!res.ok){
+
+      alert(data.message || "Failed to send");
+
+      return;
+    }
 
     input.value = "";
 
@@ -119,7 +166,7 @@ async function sendMessage(){
 
   }catch(err){
 
-    console.error(err);
+    console.error("SEND ERROR:", err);
 
   }
 

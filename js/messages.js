@@ -6,9 +6,15 @@ JSON.parse(localStorage.getItem("user"));
 const currentUsername =
 currentUser?.username;
 
+if(!token){
+  window.location.href = "login.html";
+}
+
 async function loadInbox(){
 
   try{
+
+    console.log("LOADING INBOX");
 
     const res = await fetch(
       `${API_BASE_URL}/messages/inbox`,
@@ -19,15 +25,31 @@ async function loadInbox(){
       }
     );
 
+    console.log("INBOX STATUS:", res.status);
+
+    if(!res.ok){
+
+      const errText = await res.text();
+
+      console.log("INBOX ERROR:", errText);
+
+      document.getElementById(
+        "inboxList"
+      ).innerHTML =
+      `<p>Failed to load inbox</p>`;
+
+      return;
+    }
+
     const chats = await res.json();
 
-    console.log("INBOX:", chats);
+    console.log("INBOX DATA:", chats);
 
     renderInbox(chats);
 
   }catch(err){
 
-    console.error(err);
+    console.error("INBOX LOAD ERROR:", err);
 
   }
 
@@ -41,13 +63,13 @@ function renderInbox(chats){
   if(!Array.isArray(chats)){
 
     inbox.innerHTML =
-    `<p>Failed to load inbox</p>`;
+    `<p>Inbox failed</p>`;
 
     return;
 
   }
 
-  if(!chats.length){
+  if(chats.length === 0){
 
     inbox.innerHTML = `
       <div class="empty-state">
