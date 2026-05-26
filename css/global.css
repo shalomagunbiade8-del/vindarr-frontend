@@ -1722,3 +1722,83 @@ STORIES
   text-align:center;
   padding:120px 20px;
 }
+
+.story-delete-btn{
+  border:none;
+  background:#2b0000;
+  color:#ff4d4d;
+  padding:10px 14px;
+  border-radius:12px;
+  margin-left:10px;
+}
+
+.story-edit-btn{
+  border:none;
+  background:#111d33;
+  color:#6aa8ff;
+  padding:10px 14px;
+  border-radius:12px;
+  margin-left:10px;
+}
+
+/* =========================
+STORY COMMENTS
+========================= */
+
+.story-comments-section{
+  max-width:900px;
+  margin:auto;
+  padding:40px 24px 100px;
+}
+
+.story-comments-title{
+  font-size:2rem;
+  margin-bottom:24px;
+}
+
+.story-comment-create{
+  margin-bottom:30px;
+}
+
+.story-comment-input{
+  width:100%;
+  min-height:120px;
+  background:#111;
+  border:none;
+  border-radius:18px;
+  padding:18px;
+  color:white;
+  resize:none;
+  margin-bottom:14px;
+}
+
+.story-comment-btn{
+  border:none;
+  background:#ff003c;
+  color:white;
+  padding:14px 20px;
+  border-radius:14px;
+  font-weight:700;
+}
+
+.story-comments-list{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.story-comment{
+  background:#111;
+  padding:18px;
+  border-radius:18px;
+}
+
+.story-comment-user{
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.story-comment-text{
+  color:#ccc;
+  line-height:1.7;
+}

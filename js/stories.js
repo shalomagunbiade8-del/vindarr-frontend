@@ -39,8 +39,7 @@ function renderStories(){
   document.getElementById("storiesFeed");
 
   // IMPORTANT
-  const storyList =
-    stories.data || stories || [];
+  const storyList = stories || [];
 
   if(!storyList.length){
 
@@ -122,6 +121,36 @@ function renderStories(){
           }...
 
         </p>
+
+        <div class="story-actions">
+
+  <button onclick="likeStory(${story.id})">
+
+    ❤️ ${story.likesCount || 0}
+
+  </button>
+
+  ${
+    getCurrentUser()?.id === story.userId
+    ? `
+      <button
+        onclick="deleteStory(${story.id})"
+        class="story-delete-btn"
+      >
+        Delete
+      </button>
+
+      <button
+  onclick="editStory(${story.id})"
+  class="story-edit-btn"
+>
+  Edit
+</button>
+    `
+    : ''
+  }
+
+</div>
 
         <button
           class="read-story-btn"
@@ -246,5 +275,125 @@ function formatDate(date){
       year:"numeric"
     }
   );
+
+}
+
+
+async function likeStory(id){
+
+  try{
+
+    await fetch(
+      `${API_BASE_URL}/stories/${id}/like`,
+      {
+        method:"POST",
+
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      }
+    );
+
+    loadStories();
+
+  }catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+async function deleteStory(id){
+
+  const confirmDelete =
+  confirm(
+    "Delete this story?"
+  );
+
+  if(!confirmDelete) return;
+
+  try{
+
+    const res =
+    await fetch(
+      `${API_BASE_URL}/stories/${id}`,
+      {
+        method:"DELETE",
+
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      }
+    );
+
+    if(res.ok){
+
+      loadStories();
+
+    }
+
+  }catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+async function editStory(id){
+
+  const story =
+  stories.find(s => s.id === id);
+
+  if(!story) return;
+
+  const newTitle =
+  prompt(
+    "Edit title",
+    story.title
+  );
+
+  if(!newTitle) return;
+
+  const newContent =
+  prompt(
+    "Edit content",
+    story.content
+  );
+
+  if(!newContent) return;
+
+  try{
+
+    const res =
+    await fetch(
+      `${API_BASE_URL}/stories/${id}`,
+      {
+        method:"PATCH",
+
+        headers:{
+          "Content-Type":"application/json",
+          Authorization:`Bearer ${token}`
+        },
+
+        body:JSON.stringify({
+          title:newTitle,
+          content:newContent
+        })
+      }
+    );
+
+    if(res.ok){
+
+      loadStories();
+
+    }
+
+  }catch(err){
+
+    console.error(err);
+
+  }
 
 }

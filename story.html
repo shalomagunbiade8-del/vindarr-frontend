@@ -31,6 +31,34 @@ href="css/global.css">
 <div id="storyPage"
 class="story-page"></div>
 
+<!-- COMMENTS -->
+<div class="story-comments-wrapper">
+
+  <h2 class="comments-title">
+    Comments
+  </h2>
+
+  <div class="comment-create">
+
+    <textarea
+      id="commentInput"
+      placeholder="Write a comment..."
+      class="story-textarea"
+    ></textarea>
+
+    <button
+      onclick="postComment()"
+      class="publish-story-btn"
+    >
+      Post Comment
+    </button>
+
+  </div>
+
+  <div id="commentsContainer"></div>
+
+</div>
+
 <script src="js/config.js"></script>
 <script src="js/story.js"></script>
 
