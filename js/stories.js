@@ -120,7 +120,7 @@ function renderStories(){
             story.content
             ? story.content.substring(0,180)
             : ''
-          }...
+          }
 
         </p>
 
@@ -207,28 +207,36 @@ async function publishStory(){
   const title =
   document.getElementById(
     "storyTitle"
-  ).value;
+  ).value.trim();
 
   const content =
   document.getElementById(
     "storyContent"
-  ).value;
+  ).value.trim();
 
   const image =
   document.getElementById(
     "storyImage"
   ).files[0];
 
+  if(!title || !content){
+
+    alert("Title and content required");
+
+    return;
+
+  }
+
   const formData =
   new FormData();
 
-  formData.append("title",title);
+  formData.append("title", title);
 
-  formData.append("content",content);
+  formData.append("content", content);
 
   if(image){
 
-    formData.append("image",image);
+    formData.append("image", image);
 
   }
 
@@ -248,17 +256,45 @@ async function publishStory(){
       }
     );
 
-    if(res.ok){
+    const data =
+    await res.json();
 
-      closeStoryModal();
+    console.log(data);
 
-      loadStories();
+    if(!res.ok){
+
+      alert(
+        data.message ||
+        "Failed to publish story"
+      );
+
+      return;
 
     }
+
+    alert("Story published");
+
+    closeStoryModal();
+
+    document.getElementById(
+      "storyTitle"
+    ).value = "";
+
+    document.getElementById(
+      "storyContent"
+    ).value = "";
+
+    document.getElementById(
+      "storyImage"
+    ).value = "";
+
+    loadStories();
 
   }catch(err){
 
     console.error(err);
+
+    alert("Network error");
 
   }
 
