@@ -1,3 +1,5 @@
+console.log("stories.js loaded");
+
 const token =
 localStorage.getItem("token");
 
@@ -196,7 +198,7 @@ if(!token){
 
   alert("Login required");
 
-  return;
+  window.location.href = "login.html";
 
 }
 
