@@ -124,28 +124,28 @@ function renderComments(comments){
 
         <img
           src="${
-            comment.avatar ||
-            'https://i.pravatar.cc/100'
-          }"
+  comment.author?.avatar ||
+  'https://i.pravatar.cc/100'
+}"
           class="story-comment-avatar"
         >
 
         <div>
 
           <div class="story-comment-user">
-            @${comment.username}
-          </div>
+  @${comment.author?.username || 'user'}
+</div>
 
-          <div class="story-comment-date">
-            ${formatDate(comment.createdAt)}
-          </div>
+<div class="story-comment-date">
+  ${formatDate(comment.createdAt || new Date())}
+</div>
 
         </div>
 
       </div>
 
       <div class="story-comment-body">
-        ${comment.content}
+        ${comment.text}
       </div>
 
     </div>
@@ -180,9 +180,10 @@ async function postComment(){
         },
 
         body:JSON.stringify({
-          content,
-          storyId
-        })
+  text: content,
+  storyId
+})
+        
       }
     );
 
