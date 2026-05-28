@@ -1762,6 +1762,38 @@ STORY COMMENTS
   border-radius:18px;
 }
 
+.story-comment-top{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.story-comment-avatar{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
+  flex-shrink:0;
+}
+
+.story-comment-user{
+  font-weight:700;
+  font-size:0.95rem;
+  margin-bottom:2px;
+}
+
+.story-comment-date{
+  font-size:0.8rem;
+  color:#888;
+}
+
+.story-comment-body{
+  color:#ddd;
+  line-height:1.7;
+  font-size:0.95rem;
+}
+
 .story-comment-user{
   font-weight:700;
   margin-bottom:10px;
