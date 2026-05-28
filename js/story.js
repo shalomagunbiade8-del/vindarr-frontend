@@ -124,28 +124,24 @@ function renderComments(comments){
 
         <img
           src="${
-  comment.author?.avatar ||
-  'https://i.pravatar.cc/100'
-}"
+            comment.author?.avatar ||
+            'https://i.pravatar.cc/100'
+          }"
           class="story-comment-avatar"
         >
 
         <div>
 
           <div class="story-comment-user">
-  @${comment.author?.username || 'user'}
-</div>
-
-<div class="story-comment-date">
-  ${formatDate(comment.createdAt || new Date())}
-</div>
+            @${comment.author?.username || 'user'}
+          </div>
 
         </div>
 
       </div>
 
       <div class="story-comment-body">
-        ${comment.text}
+        ${comment.text || ''}
       </div>
 
     </div>
@@ -161,10 +157,18 @@ async function postComment(){
     "commentInput"
   );
 
-  const content =
+  const text =
   input.value.trim();
 
-  if(!content) return;
+  if(!text){
+
+    alert("Comment required");
+
+    return;
+
+  }
+
+  console.log("Sending comment...");
 
   try{
 
@@ -180,24 +184,39 @@ async function postComment(){
         },
 
         body:JSON.stringify({
-  text: content,
-  storyId
-})
-        
+          text,
+          storyId:Number(storyId)
+        })
       }
     );
 
-    if(res.ok){
+    const data =
+    await res.json();
 
-      input.value = "";
+    console.log("COMMENT RESPONSE:", data);
 
-      loadComments();
+    if(!res.ok){
+
+      alert(
+        data.message ||
+        "Failed to post comment"
+      );
+
+      return;
 
     }
+
+    alert("Comment posted");
+
+    input.value = "";
+
+    loadComments();
 
   }catch(err){
 
     console.error(err);
+
+    alert("Network error");
 
   }
 
