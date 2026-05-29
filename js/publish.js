@@ -172,11 +172,15 @@ async function publish(){
 
     if(!res.ok){
 
-      status.innerHTML = "Upload failed ❌";
+      status.innerHTML =
+  data.message ||
+  "Upload failed ❌";
 
-      console.log(data);
+console.log(data);
 
-      return;
+alert(JSON.stringify(data));
+
+return;
 
     }
 
