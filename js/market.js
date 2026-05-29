@@ -97,17 +97,38 @@ function renderProducts(posts) {
       <div class="product-card"
 onclick="openProduct(${product.id})">
 
-        <video
-          src="${
-  (product.videoUrl || product.file || '')?.startsWith('http')
-    ? (product.videoUrl || product.file || '')
-    : API_BASE_URL + (product.videoUrl || product.file || '')
-}"
-          autoplay
-          muted
-          loop
-          playsinline
-        ></video>
+       ${
+  (product.fileUrl || "").includes(".mp4") ||
+  (product.fileUrl || "").includes(".mov") ||
+  (product.fileUrl || "").includes(".webm")
+
+  ? `
+
+    <video
+      src="${
+        product.fileUrl?.startsWith("http")
+          ? product.fileUrl
+          : API_BASE_URL + product.fileUrl
+      }"
+      autoplay
+      loop
+      playsinline
+    ></video>
+
+  `
+
+  : `
+
+    <img
+      src="${
+        product.fileUrl?.startsWith("http")
+          ? product.fileUrl
+          : API_BASE_URL + product.fileUrl
+      }"
+    >
+
+  `
+}
 
         <div class="product-content">
 

@@ -122,7 +122,13 @@ function renderVideos() {
 
         <!-- VIDEO -->
         ${
-  v.type === "video"
+  (
+    v.type === "video" ||
+
+    mediaUrl.includes(".mp4") ||
+    mediaUrl.includes(".mov") ||
+    mediaUrl.includes(".webm")
+  )
 
   ? `
 

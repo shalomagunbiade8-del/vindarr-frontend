@@ -19,7 +19,9 @@ async function loadBook(){
       .innerText = book.title || "Ebook";
 
     document.getElementById("ebookFrame")
-      .src = API_BASE_URL + book.file;
+  .src = book.fileUrl?.startsWith("http")
+    ? book.fileUrl
+    : API_BASE_URL + book.fileUrl;
 
   }catch(err){
 
