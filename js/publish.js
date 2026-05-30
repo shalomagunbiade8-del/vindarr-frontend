@@ -101,7 +101,10 @@ async function publish(){
     document.getElementById("uCategory").value;
 
   const price =
-    document.getElementById("uPrice").value;
+  document.getElementById("uPrice")
+    .value
+    .replace(/,/g,'')
+    .replace(/₦/g,'');
 
   const file =
     document.getElementById("uFile").files[0];
@@ -135,6 +138,14 @@ async function publish(){
   formData.append("context", context);
   formData.append("category", category);
   formData.append("type", currentType);
+
+if(
+  currentType !== "video" &&
+  (!price || isNaN(Number(price)))
+){
+  alert("Enter a valid price");
+  return;
+}
 
   if(price){
     formData.append("price", price);
