@@ -308,17 +308,26 @@ src="${
 
         <div class="profile-card-overlay">
 
-          <h4>${post.title || ""}</h4>
+  <h4>${post.title || ""}</h4>
 
-          ${
-            post.price
+  ${
+    post.price
+    ? `
+      <span>
+        ₦${Number(post.price).toLocaleString()}
+      </span>
 
-            ? `<span>₦${post.price}</span>`
+      <button
+        class="buy-btn"
+        onclick="buyItem('${post.id}')"
+      >
+        Buy Now
+      </button>
+    `
+    : ""
+  }
 
-            : ""
-          }
-
-        </div>
+</div>
 
       </div>
 
@@ -334,6 +343,13 @@ src="${
    INIT
 ========================= */
 loadProfile();
+
+function buyItem(id){
+
+  window.location.href =
+    `product.html?id=${id}`;
+
+}
 
 async function saveProfile(){
 
