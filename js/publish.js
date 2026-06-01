@@ -76,6 +76,23 @@ function setType(type){
 
   }
 
+  // VINDARR ESSENTIAL
+if(type === "essential"){
+
+  document.getElementById("essentialBtn")
+    .classList.add("active");
+
+  fileInput.accept =
+    "image/*,video/*";
+
+  coverInput.style.display =
+    "none";
+
+  priceInput.style.display =
+    "block";
+
+}
+
 }
 
 /* =========================

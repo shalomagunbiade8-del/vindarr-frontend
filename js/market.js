@@ -17,7 +17,9 @@ async function loadMarket() {
 
     renderEbooks(posts);
 
-    renderProducts(posts);
+renderProducts(posts);
+
+renderEssentials(posts);
 
   } catch (err) {
 
@@ -142,6 +144,81 @@ onclick="openProduct(${product.id})">
 
           <div class="product-price">
             ${formatPrice(product.price || 0)}
+          </div>
+
+        </div>
+
+      </div>
+
+    `).join("");
+
+}
+
+function renderEssentials(posts) {
+
+  const essentials =
+    posts.filter(
+      p => p.type === "essential"
+    );
+
+  const grid =
+    document.getElementById(
+      "essentialsGrid"
+    );
+
+  if (!grid) return;
+
+  grid.innerHTML =
+    essentials.map(item => `
+
+      <div
+        class="product-card"
+        onclick="openProduct(${item.id})">
+
+        ${
+          (item.fileUrl || "").includes(".mp4") ||
+          (item.fileUrl || "").includes(".mov") ||
+          (item.fileUrl || "").includes(".webm")
+
+          ?
+
+          `
+          <video
+            src="${
+              item.fileUrl?.startsWith("http")
+                ? item.fileUrl
+                : API_BASE_URL + item.fileUrl
+            }"
+            autoplay
+            loop
+            playsinline>
+          </video>
+          `
+
+          :
+
+          `
+          <img
+            src="${
+              item.fileUrl?.startsWith("http")
+                ? item.fileUrl
+                : API_BASE_URL + item.fileUrl
+            }">
+          `
+        }
+
+        <div class="product-content">
+
+          <div class="product-title">
+            ${item.title}
+          </div>
+
+          <div>
+            @${item.creatorUsername}
+          </div>
+
+          <div class="product-price">
+            ${formatPrice(item.price || 0)}
           </div>
 
         </div>

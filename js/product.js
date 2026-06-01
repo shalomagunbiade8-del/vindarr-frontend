@@ -71,15 +71,31 @@ const mediaUrl =
           <img src="${mediaUrl}">
         `
 
-        : `
-          <video
-            src="${mediaUrl}"
-            autoplay
-            muted
-            loop
-            controls
-          ></video>
-        `
+        : (
+
+    mediaUrl.includes(".mp4") ||
+    mediaUrl.includes(".mov") ||
+    mediaUrl.includes(".webm")
+
+    ?
+
+    `
+    <video
+      src="${mediaUrl}"
+      autoplay
+      loop
+      controls>
+    </video>
+    `
+
+    :
+
+    `
+    <img
+      src="${mediaUrl}">
+    `
+
+)
       }
 
     </div>
