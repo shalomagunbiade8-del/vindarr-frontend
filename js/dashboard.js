@@ -100,15 +100,14 @@ function renderDashboardPosts(){
           ?
           `
           <video
-            src="${API_BASE_URL + (post.videoUrl || post.file || "")}"
-            muted
+  src="${post.videoUrl || post.file || ''}"
           ></video>
           `
           :
           `
           <img
-            src="${API_BASE_URL + (post.coverImage || post.thumbnail || "")}"
-          >
+  src="${post.coverUrl || post.thumbnail || ''}"
+>
           `
         }
 
