@@ -13,8 +13,8 @@ async function loadBook(){
   try{
 
     const res =
-      await fetch(
-        `${API_BASE_URL}/videos/${id}/read`,
+  await fetch(
+    `${API_BASE_URL}/library/ebook/${id}`,
         {
           headers:{
             Authorization:`Bearer ${token}`
@@ -43,9 +43,9 @@ async function loadBook(){
       book.title;
 
     document.getElementById(
-      "ebookFrame"
-    ).src =
-      `${book.fileUrl}#toolbar=0`
+  "ebookFrame"
+).src =
+  `${book.fileUrl}#toolbar=0&navpanes=0&scrollbar=0`
 
   }catch(err){
 

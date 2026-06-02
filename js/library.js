@@ -71,7 +71,11 @@ function renderLibrary(){
       <div class="library-card">
 
         <img
-          src="${API_BASE_URL + (book.coverImage || "")}"
+          src="${
+  book.coverImage?.startsWith("http")
+    ? book.coverImage
+    : API_BASE_URL + book.coverImage
+}"
           class="library-cover"
         >
 
