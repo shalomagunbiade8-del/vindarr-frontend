@@ -34,7 +34,9 @@ async function verifyPayment(){
     );
 
     const data =
-    await res.json();
+await res.json();
+
+console.log(data);
 
     if(data.success){
 
@@ -49,7 +51,10 @@ async function verifyPayment(){
 
     }else{
 
-      alert("Verification failed");
+      alert(
+  data.message ||
+  "Verification failed"
+);
 
     }
 
@@ -57,7 +62,10 @@ async function verifyPayment(){
 
     console.error(err);
 
-    alert("Verification failed");
+    alert(
+  data.message ||
+  "Verification failed"
+);
 
   }
 
