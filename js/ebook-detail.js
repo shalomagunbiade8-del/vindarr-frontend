@@ -5,52 +5,56 @@ const id = params.get("id");
 
 loadBook();
 
-async function loadBook(){
+async function loadBook() {
 
   const token =
     localStorage.getItem("token");
 
-  try{
+  try {
 
     const res =
-  await fetch(
-    `${API_BASE_URL}/library/ebook/${id}`,
+      await fetch(
+        `${API_BASE_URL}/library/ebook/${id}`,
         {
-          headers:{
-            Authorization:`Bearer ${token}`
+          headers: {
+            Authorization: `Bearer ${token}`
           }
         }
       );
 
-    if(!res.ok){
-
-      alert(
-        "You must purchase this ebook first"
-      );
-
-      window.location.href =
-        "library.html";
-
-      return;
-    }
+    console.log(
+      "STATUS:",
+      res.status
+    );
 
     const book =
       await res.json();
 
-    document.getElementById(
-      "ebookTitle"
-    ).innerText =
-      book.title;
+    console.log(
+      "BOOK:",
+      book
+    );
 
-    console.log("BOOK", book);
+    if (!book.fileUrl) {
 
-window.open(
-  book.fileUrl,
-  "_self"
-);
+      alert(
+        "No PDF URL found"
+      );
+
+      return;
+    }
+
+    window.location.href =
+      book.fileUrl;
+
+  } catch (err) {
+
+    console.error(
+      "EBOOK ERROR:",
+      err
+    );
 
   }
-
 }
 
 function goBack(){
