@@ -44,7 +44,14 @@ async function loadBook() {
       return;
     }
 
-    window.location.href =
+    document.getElementById(
+      "ebookTitle"
+    ).innerText =
+      book.title;
+
+    document.getElementById(
+      "ebookFrame"
+    ).src =
       book.fileUrl;
 
   } catch (err) {
