@@ -42,14 +42,12 @@ async function loadBook(){
     ).innerText =
       book.title;
 
-    document.getElementById(
-  "ebookFrame"
-).src =
-  `${book.fileUrl}#toolbar=0&navpanes=0&scrollbar=0`
+    console.log("BOOK", book);
 
-  }catch(err){
-
-    console.error(err);
+window.open(
+  book.fileUrl,
+  "_self"
+);
 
   }
 
