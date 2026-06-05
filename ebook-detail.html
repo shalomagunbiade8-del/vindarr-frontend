@@ -4,8 +4,10 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>Ebook Reader</title>
 
@@ -29,14 +31,15 @@ content="width=device-width, initial-scale=1.0">
 
   </div>
 
-  <iframe
+  <div id="viewerContainer">
+
+  <embed
     id="ebookFrame"
-    style="
-      width:100%;
-      height:calc(100vh - 60px);
-      border:none;
-    "
-  ></iframe>
+    type="application/pdf"
+    class="ebook-frame"
+  >
+
+</div>
 
 </div>
 

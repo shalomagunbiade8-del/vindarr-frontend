@@ -1842,3 +1842,46 @@ STORY COMMENTS
   color:#ccc;
   line-height:1.7;
 } 
+
+
+/* Ebook Reader style */
+.ebook-reader-page{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  background:#0d0d0d;
+}
+
+.ebook-topbar{
+  height:70px;
+  display:flex;
+  align-items:center;
+  gap:15px;
+  padding:0 20px;
+  background:#111;
+  border-bottom:1px solid #222;
+}
+
+.ebook-topbar button{
+  background:#d10000;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.ebook-topbar h2{
+  color:#fff;
+  font-size:1rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.ebook-frame{
+  flex:1;
+  width:100%;
+  border:none;
+  background:#fff;
+}

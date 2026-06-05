@@ -1,5 +1,5 @@
 const params =
-new URLSearchParams(window.location.search);
+  new URLSearchParams(window.location.search);
 
 const id = params.get("id");
 
@@ -10,60 +10,44 @@ async function loadBook() {
   const token =
     localStorage.getItem("token");
 
-  try {
-
-    const res =
-      await fetch(
-        `${API_BASE_URL}/library/ebook/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+  const res =
+    await fetch(
+      `${API_BASE_URL}/library/ebook/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      );
-
-    console.log(
-      "STATUS:",
-      res.status
+      }
     );
 
-    const book =
-      await res.json();
+  const book =
+    await res.json();
 
-    console.log(
-      "BOOK:",
-      book
-    );
+  console.log("BOOK:", book);
 
-    if (!book.fileUrl) {
+  document.getElementById(
+    "ebookTitle"
+  ).innerText =
+    book.title;
 
-      alert(
-        "No PDF URL found"
-      );
+  console.log(
+  "PDF URL:",
+  book.fileUrl
+);
 
-      return;
-    }
+const viewer =
+  document.getElementById(
+    "ebookFrame"
+  );
 
-    document.getElementById(
-      "ebookTitle"
-    ).innerText =
-      book.title;
+viewer.src =
+  book.fileUrl;
 
-    document.getElementById(
-      "ebookFrame"
-    ).src =
-      book.fileUrl;
+viewer.onerror = () => {
 
-  } catch (err) {
+  console.log(
+    "PDF FAILED TO LOAD"
+  );
 
-    console.error(
-      "EBOOK ERROR:",
-      err
-    );
-
-  }
-}
-
-function goBack(){
-  history.back();
+};
 }
