@@ -28,6 +28,16 @@ async function loadBook() {
   const book =
     await res.json();
 
+    console.log(
+  "BOOK FROM API:",
+  JSON.stringify(book, null, 2)
+);
+
+console.log(
+  "FILE URL FROM API:",
+  book.fileUrl
+);
+
   console.log("BOOK:", book);
 
   document.getElementById(
@@ -47,6 +57,11 @@ const viewer =
 
 viewer.src =
   `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(book.fileUrl)}`;
+
+  console.log(
+  "VIEWER URL:",
+  viewer.src
+);
 
 viewer.onerror = () => {
 
