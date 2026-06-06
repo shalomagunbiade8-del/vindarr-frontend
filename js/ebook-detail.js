@@ -20,6 +20,11 @@ async function loadBook() {
       }
     );
 
+    if (!res.ok) {
+  console.error("Failed to load ebook");
+  return;
+}
+
   const book =
     await res.json();
 
@@ -41,7 +46,7 @@ const viewer =
   );
 
 viewer.src =
-  book.fileUrl;
+  `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(book.fileUrl)}`;
 
 viewer.onerror = () => {
 
@@ -50,4 +55,10 @@ viewer.onerror = () => {
   );
 
 };
+
+function goBack() {
+  history.back();
+}
+
+
 }
