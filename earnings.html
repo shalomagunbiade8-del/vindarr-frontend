@@ -28,6 +28,44 @@ content="width=device-width, initial-scale=1.0">
 
 <div class="earnings-page">
 
+    <div class="earnings-card">
+
+  <h1 id="walletBalance">
+    ₦0
+  </h1>
+
+  <p>Wallet Balance</p>
+
+</div>
+
+<div class="earnings-card">
+
+  <h3>Bank Details</h3>
+
+  <input
+    id="bankName"
+    placeholder="Bank Name"
+  >
+
+  <input
+    id="accountNumber"
+    placeholder="Account Number"
+  >
+
+  <input
+    id="accountName"
+    placeholder="Account Name"
+  >
+
+  <button
+    id="saveBankBtn"
+    class="earn-btn"
+  >
+    Save Bank Details
+  </button>
+
+</div>
+
 <div class="earnings-card">
 
 <h1 id="earningsAmount">
@@ -36,9 +74,24 @@ content="width=device-width, initial-scale=1.0">
 
 <p>Total Earnings</p>
 
+<button
+  id="withdrawBtn"
+  class="earn-btn"
+>
+  Withdraw Earnings
+</button>
+
 </div>
 
 <div id="transactions"></div>
+
+<h2>
+  Withdrawal History
+</h2>
+
+<div
+  id="withdrawalHistory"
+></div>
 
 </div>
 
