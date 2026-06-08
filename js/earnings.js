@@ -136,8 +136,10 @@ function formatDate(date){
 
 }
 
-document.addEventListener(
-  "click",
+document
+  .getElementById("saveBankBtn")
+  .addEventListener(
+    "click",
   async (e) => {
 
     if (
@@ -152,6 +154,12 @@ document.addEventListener(
     if (!amount) return;
 
     try {
+
+      console.log({
+  bankName,
+  accountNumber,
+  accountName,
+});
 
       const res =
         await fetch(
@@ -323,8 +331,10 @@ function renderWithdrawals(){
 
 }
 
-document.addEventListener(
-  "click",
+document
+  .getElementById("saveBankBtn")
+  .addEventListener(
+    "click",
   async (e) => {
 
     if(
