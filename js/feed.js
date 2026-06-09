@@ -64,23 +64,7 @@ async function loadVideos(reset = true) {
 }
 
 // After the video loads
-if(videoId){
 
-  const target =
-    document.getElementById(`video-${videoId}`);
-
-  if(target){
-
-    target.scrollIntoView({
-      behavior:"smooth",
-      block:"center"
-    });
-
-    target.classList.add("highlight-video");
-
-  }
-
-}
 
 // ===============================
 // RENDER VIDEOS
@@ -118,7 +102,10 @@ function renderVideos() {
 
     html += `
 
-      <div class="video-card">
+     <div
+  class="video-card"
+  id="video-${v.id}"
+>
 
         <!-- VIDEO -->
         ${
@@ -226,15 +213,18 @@ function renderVideos() {
           }
 
           ${
-            v.type === "fashion"
-            ? `
-              <div class="video-action">
-                🛒
-                <span>Shop</span>
-              </div>
-            `
-            : ""
-          }
+  (
+    v.type === "fashion" ||
+    v.type === "essential"
+  )
+  ? `
+      <div class="video-action">
+        🛒
+        <span>Shop</span>
+      </div>
+    `
+  : ""
+}
 
         </div>
 
@@ -247,6 +237,32 @@ function renderVideos() {
   feed.innerHTML = html;
 
   setupVideoObserver();
+
+  if(videoId){
+
+  setTimeout(() => {
+
+    const target =
+      document.getElementById(
+        `video-${videoId}`
+      );
+
+    if(target){
+
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      target.classList.add(
+        "highlight-video"
+      );
+
+    }
+
+  }, 300);
+
+}
 
 }
 

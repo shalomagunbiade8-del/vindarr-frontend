@@ -76,12 +76,16 @@ function renderResults(data){
   const creators =
     data.creators || [];
 
-  if(
-    !videos.length &&
-    !ebooks.length &&
-    !products.length &&
-    !creators.length
-  ){
+    const stories =
+  data.stories || [];
+
+ if(
+  !videos.length &&
+  !ebooks.length &&
+  !products.length &&
+  !creators.length &&
+  !stories.length
+){
 
     searchResults.innerHTML = `
       <div class="search-empty">
@@ -233,6 +237,50 @@ function renderResults(data){
     }
 
     ${
+stories.length
+?
+`
+<div class="search-section">
+
+  <h3 class="search-title">
+    Stories
+  </h3>
+
+  <div class="search-product-grid">
+
+    ${stories.map(story => `
+
+      <div
+        class="search-product-card"
+        onclick="openStory('${story.id}')"
+      >
+
+        <img
+          src="${
+            story.imageUrl ||
+            'https://placehold.co/600x400'
+          }"
+        >
+
+        <h4>${story.title}</h4>
+
+        <p>
+          @${story.username}
+        </p>
+
+      </div>
+
+    `).join('')}
+
+  </div>
+
+</div>
+`
+:
+''
+}
+
+    ${
       products.length
       ?
       `
@@ -326,7 +374,7 @@ function openVideo(id){
 function openEbook(id){
 
   window.location.href =
-    `ebook-detail.html?id=${id}`;
+    `product.html?id=${id}`;
 
 }
 
@@ -341,5 +389,12 @@ function openCreator(username){
 
   window.location.href =
     `profile.html?user=${username}`;
+
+}
+
+function openStory(id){
+
+  window.location.href =
+    `story.html?id=${id}`;
 
 }
