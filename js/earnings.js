@@ -137,81 +137,70 @@ function formatDate(date){
 }
 
 document
-  .getElementById("saveBankBtn")
+  .getElementById("withdrawBtn")
   .addEventListener(
     "click",
-  async (e) => {
+    async () => {
 
-    if (
-      e.target.id !== "withdrawBtn"
-    ) return;
-
-    const amount =
-      prompt(
-        "Enter withdrawal amount"
-      );
-
-    if (!amount) return;
-
-    try {
-
-      console.log({
-  bankName,
-  accountNumber,
-  accountName,
-});
-
-      const res =
-        await fetch(
-          `${API_BASE_URL}/payouts/withdraw`,
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                `Bearer ${token}`,
-            },
-
-            body: JSON.stringify({
-              amount:
-                Number(amount),
-            }),
-          }
+      const amount =
+        prompt(
+          "Enter withdrawal amount"
         );
 
-      const data =
-        await res.json();
+      if (!amount) return;
 
-      if (!res.ok) {
+      try {
+
+        const res =
+          await fetch(
+            `${API_BASE_URL}/payouts/withdraw`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                Authorization:
+                  `Bearer ${token}`,
+              },
+
+              body: JSON.stringify({
+                amount:
+                  Number(amount),
+              }),
+            }
+          );
+
+        const data =
+          await res.json();
+
+        if (!res.ok) {
+
+          alert(
+            data.message ||
+            "Withdrawal failed"
+          );
+
+          return;
+        }
 
         alert(
-          data.message ||
+          "Withdrawal request submitted"
+        );
+
+        loadWallet();
+        loadWithdrawals();
+
+      } catch (err) {
+
+        alert(
           "Withdrawal failed"
         );
 
-        return;
       }
 
-      alert(
-        `Withdrawal request submitted`
-      );
-
-      loadEarnings();
-
-    } catch (err) {
-
-      console.error(err);
-
-      alert(
-        "Withdrawal failed"
-      );
-
     }
-
-  }
 );
 
 async function loadWallet(){
