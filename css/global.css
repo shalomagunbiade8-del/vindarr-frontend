@@ -234,6 +234,12 @@ FEED
   font-size:14px;
 }
 
+.read-more{
+  color:#0d6efd;
+  cursor:pointer;
+  font-weight:600;
+}
+
 /* ===============================
 COMMENTS
 =============================== */

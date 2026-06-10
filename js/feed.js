@@ -170,8 +170,42 @@ function renderVideos() {
   </div>
 
   <div class="video-caption">
-    ${v.context || ""}
-  </div>
+
+  ${
+    (v.context || "").length > 120
+
+      ? `
+        <span
+          id="caption-short-${v.id}"
+        >
+          ${v.context.slice(0,120)}...
+          <span
+            class="read-more"
+            onclick="expandCaption(${v.id})"
+          >
+            Read more
+          </span>
+        </span>
+
+        <span
+          id="caption-full-${v.id}"
+          style="display:none"
+        >
+          ${v.context}
+          <span
+            class="read-more"
+            onclick="collapseCaption(${v.id})"
+          >
+            Show less
+          </span>
+        </span>
+      `
+
+      : v.context || ""
+
+  }
+
+</div>
 
 </div>
           </div>
@@ -575,5 +609,29 @@ function openProduct(id){
 
   window.location.href =
     `product.html?id=${id}`;
+
+}
+
+function expandCaption(id){
+
+  document.getElementById(
+    `caption-short-${id}`
+  ).style.display = "none";
+
+  document.getElementById(
+    `caption-full-${id}`
+  ).style.display = "inline";
+
+}
+
+function collapseCaption(id){
+
+  document.getElementById(
+    `caption-short-${id}`
+  ).style.display = "inline";
+
+  document.getElementById(
+    `caption-full-${id}`
+  ).style.display = "none";
 
 }

@@ -1,13 +1,20 @@
+let currentMarketType = "all";
+
 // ===============================
 // LOAD MARKET ITEMS
 // ===============================
 
-async function loadMarket() {
+async function loadMarket(type = "all") {
 
   try {
 
-    const res =
-      await fetch(`${API_BASE_URL}/videos/market`);
+    const url =
+  type === "all"
+    ? `${API_BASE_URL}/videos/market`
+    : `${API_BASE_URL}/videos/market?type=${type}`;
+
+const res =
+  await fetch(url);
 
     const data =
       await res.json();
@@ -15,11 +22,59 @@ async function loadMarket() {
     const posts =
       data.data || data;
 
-    renderEbooks(posts);
+    const ebooksSection =
+  document.getElementById("ebooksGrid")
+    ?.closest(".market-section");
 
-renderProducts(posts);
+const productsSection =
+  document.getElementById("productsGrid")
+    ?.closest(".market-section");
 
-renderEssentials(posts);
+const essentialsSection =
+  document.getElementById("essentialsGrid")
+    ?.closest(".market-section");
+
+if(type === "all"){
+
+  ebooksSection.style.display = "";
+  productsSection.style.display = "";
+  essentialsSection.style.display = "";
+
+  renderEbooks(posts);
+  renderProducts(posts);
+  renderEssentials(posts);
+
+}
+
+else if(type === "ebook"){
+
+  ebooksSection.style.display = "";
+  productsSection.style.display = "none";
+  essentialsSection.style.display = "none";
+
+  renderEbooks(posts);
+
+}
+
+else if(type === "fashion"){
+
+  ebooksSection.style.display = "none";
+  productsSection.style.display = "";
+  essentialsSection.style.display = "none";
+
+  renderProducts(posts);
+
+}
+
+else if(type === "essential"){
+
+  ebooksSection.style.display = "none";
+  productsSection.style.display = "none";
+  essentialsSection.style.display = "";
+
+  renderEssentials(posts);
+
+}
 
   } catch (err) {
 
@@ -228,6 +283,40 @@ function renderEssentials(posts) {
     `).join("");
 
 }
+
+
+// Click handlers
+document
+  .querySelectorAll(".market-tab")
+  .forEach(tab => {
+
+    tab.addEventListener(
+      "click",
+      () => {
+
+        document
+          .querySelectorAll(".market-tab")
+          .forEach(btn =>
+            btn.classList.remove(
+              "active-category"
+            )
+          );
+
+        tab.classList.add(
+          "active-category"
+        );
+
+        currentMarketType =
+          tab.dataset.type;
+
+        loadMarket(
+          currentMarketType
+        );
+
+      }
+    );
+
+  });
 
 // ===============================
 // INITIALIZE
