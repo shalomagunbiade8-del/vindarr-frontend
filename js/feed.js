@@ -10,6 +10,10 @@ let loadingMore = false;
 let activeVideo = null;
 let lastTap = 0;
 
+let hasMore = true;
+
+let loadTrigger = null;
+
 const feed = document.getElementById("feed");
 
 // Index video opening
@@ -36,7 +40,9 @@ async function loadVideos(reset = true) {
 
     const result = await res.json();
 
-    const videos = result.data || result;
+   const videos = result.data || [];
+
+hasMore = result.hasMore ?? false;
 
     if (reset) {
 
@@ -296,6 +302,20 @@ function renderVideos() {
 
   }, 300);
 
+}
+
+if (hasMore) {
+
+  const sentinel =
+    document.createElement("div");
+
+  sentinel.id = "loadMoreTrigger";
+
+  sentinel.style.height = "1px";
+
+  feed.appendChild(sentinel);
+
+  setupLoadMoreObserver();
 }
 
 }
@@ -575,30 +595,6 @@ async function submitComment(e) {
 }
 
 // ===============================
-// INFINITE SCROLL
-// ===============================
-
-window.addEventListener("scroll", async () => {
-
-  const nearBottom =
-    window.innerHeight + window.scrollY >=
-    document.body.offsetHeight - 500;
-
-  if (nearBottom && !loadingMore) {
-
-    loadingMore = true;
-
-    page++;
-
-    await loadVideos(false);
-
-    loadingMore = false;
-
-  }
-
-});
-
-// ===============================
 // INITIAL LOAD
 // ===============================
 
@@ -633,5 +629,50 @@ function collapseCaption(id){
   document.getElementById(
     `caption-full-${id}`
   ).style.display = "none";
+
+}
+
+function setupLoadMoreObserver() {
+
+  if (loadTrigger) {
+    loadTrigger.disconnect();
+  }
+
+  const trigger =
+    document.getElementById(
+      "loadMoreTrigger"
+    );
+
+  if (!trigger) return;
+
+  loadTrigger =
+    new IntersectionObserver(
+      async entries => {
+
+        const entry = entries[0];
+
+        if (
+          entry.isIntersecting &&
+          !loadingMore &&
+          hasMore
+        ) {
+
+          loadingMore = true;
+
+          page++;
+
+          await loadVideos(false);
+
+          loadingMore = false;
+
+        }
+
+      },
+      {
+        rootMargin: "1000px",
+      }
+    );
+
+  loadTrigger.observe(trigger);
 
 }
