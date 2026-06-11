@@ -41,19 +41,24 @@ function renderCheckout(product){
   document.getElementById("checkoutContainer");
 
   const media =
-    product.coverUrl ||
-    product.file ||
-    product.videoUrl ||
-    '';
+  product.coverUrl ||
+  product.fileUrl ||
+  product.videoUrl ||
+  '';
+
+const mediaUrl =
+  media?.startsWith("http")
+    ? media
+    : API_BASE_URL + media;
 
   container.innerHTML = `
 
     <div class="checkout-card">
 
       <img
-        src="${media}"
-        class="checkout-image"
-      >
+  src="${mediaUrl}"
+  class="checkout-image"
+/>
 
       <h2>
         ${product.title}
