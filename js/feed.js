@@ -95,13 +95,23 @@ function renderVideos() {
 
   posts.forEach((v, i) => {
 
-    const media =
-  v.videoUrl ||
-  v.fileUrl ||
-  v.coverUrl ||
-  "";
+    let media = "";
 
-    const mediaUrl =
+if (v.type === "ebook") {
+
+  media = v.coverUrl;
+
+} else {
+
+  media =
+    v.videoUrl ||
+    v.fileUrl ||
+    v.coverUrl ||
+    "";
+
+}
+
+const mediaUrl =
   media?.startsWith("http")
     ? media
     : `${API_BASE_URL}${media}`;
