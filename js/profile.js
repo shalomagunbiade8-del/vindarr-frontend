@@ -115,12 +115,18 @@ function renderProfileActions(user){
       <div class="profile-actions">
 
         <button
-          class="message-profile-btn"
-          onclick="messageUser('${user.username}')">
+ onclick="addCreatorToPurview(${user.id})"
+ class="edit-profile-btn"
+>
++ Add To Purview
+</button>
 
-          Message
-
-        </button>
+<button
+ class="message-profile-btn"
+ onclick="messageUser('${user.username}')"
+>
+Message
+</button>
 
       </div>
 
@@ -465,4 +471,27 @@ function closeEditProfile(){
     "editProfileModal"
   ).style.display = "none";
 
+}
+
+async function addCreatorToPurview(
+ creatorId
+){
+
+ const token =
+   localStorage.getItem("token");
+
+ await fetch(
+   `${API_BASE_URL}/purview/${creatorId}`,
+   {
+     method:"POST",
+     headers:{
+       Authorization:
+       `Bearer ${token}`
+     }
+   }
+ );
+
+ alert(
+   "Creator added to Purview"
+ );
 }

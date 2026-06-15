@@ -158,7 +158,7 @@ FEED
 =============================== */
 
 #feed{
-  margin-top:65px;
+ margin-top:110px;
   margin-bottom:65px;
   height:calc(100vh - 130px);
   overflow-y:scroll;
@@ -2118,3 +2118,155 @@ STORY COMMENTS
     font-size:22px;
   }
 }
+
+/* ===============================
+FEED TABS
+=============================== */
+
+.feed-tabs{
+position:fixed;
+top:65px;
+left:0;
+right:0;
+z-index:999;
+display:flex;
+background:#000;
+border-bottom:1px solid #222;
+}
+
+.feed-tabs button{
+flex:1;
+background:none;
+border:none;
+color:#888;
+padding:14px;
+font-size:15px;
+font-weight:600;
+cursor:pointer;
+}
+
+.active-feed-tab{
+color:#fff !important;
+border-bottom:2px solid #d10000;
+}
+
+/* ===============================
+PURVIEW BUTTON
+=============================== */
+
+.purview-btn{
+color:#fff;
+}
+
+.purview-btn:hover{
+transform:scale(1.08);
+}
+
+.purview-btn span{
+font-size:12px;
+}
+
+/* ===============================
+PURVIEW PAGE
+=============================== */
+
+.purview-page{
+padding-top:90px;
+padding-bottom:90px;
+}
+
+.purview-section-title{
+font-size:18px;
+font-weight:700;
+margin:20px;
+}
+
+/* ===============================
+CREATOR ROW
+=============================== */
+
+.purview-creators{
+display:flex;
+gap:15px;
+overflow-x:auto;
+padding:0 20px 20px;
+}
+
+.purview-creators::-webkit-scrollbar{
+display:none;
+}
+
+.purview-creator{
+min-width:80px;
+text-align:center;
+cursor:pointer;
+}
+
+.purview-creator img{
+width:65px;
+height:65px;
+border-radius:50%;
+object-fit:cover;
+border:2px solid #d10000;
+}
+
+.purview-creator span{
+display:block;
+margin-top:8px;
+font-size:12px;
+color:#ddd;
+}
+
+/* ===============================
+PURVIEW FEED
+=============================== */
+
+.purview-feed{
+padding:15px;
+display:grid;
+grid-template-columns:
+repeat(2,1fr);
+gap:12px;
+}
+
+.purview-card{
+background:#111;
+border-radius:18px;
+overflow:hidden;
+}
+
+.purview-card img,
+.purview-card video{
+width:100%;
+height:220px;
+object-fit:cover;
+}
+
+.purview-card-info{
+padding:10px;
+}
+
+.purview-card-info h4{
+font-size:14px;
+margin-bottom:5px;
+}
+
+.purview-card-info p{
+font-size:12px;
+color:#aaa;
+}
+
+/* ===============================
+EMPTY PURVIEW
+=============================== */
+
+.empty-purview{
+text-align:center;
+padding:80px 20px;
+color:#888;
+}
+
+.empty-purview h3{
+margin-bottom:10px;
+}
+

@@ -231,6 +231,14 @@ const mediaUrl =
         <!-- RIGHT ACTIONS -->
         <div class="video-overlay-right">
 
+        <div
+ class="video-action purview-btn"
+ onclick="addToPurview(${v.creatorId})"
+>
+➕
+<span>Purview</span>
+</div>
+
           <div
             class="video-action"
             onclick="pressUnderstand(${v.id})"
@@ -684,5 +692,55 @@ function setupLoadMoreObserver() {
     );
 
   loadTrigger.observe(trigger);
+
+}
+
+async function addToPurview(
+  creatorId
+){
+
+  const token =
+    localStorage.getItem("token");
+
+  if(!token){
+    alert("Login required");
+    return;
+  }
+
+  const ok =
+    confirm(
+      "Want to add creator to Purview?"
+    );
+
+  if(!ok) return;
+
+  try{
+
+    await fetch(
+      `${API_BASE_URL}/purview/${creatorId}`,
+      {
+        method:"POST",
+        headers:{
+          Authorization:
+          `Bearer ${token}`
+        }
+      }
+    );
+
+    alert(
+      "Creator added to Purview"
+    );
+
+  }catch(err){
+
+    console.error(err);
+
+  }
+}
+
+function openPurviewPage(){
+
+  window.location.href =
+    "purview.html";
 
 }
