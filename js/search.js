@@ -367,7 +367,7 @@ function renderEmptySearch(){
 function openVideo(id){
 
   window.location.href =
-    `index.html?video=${id}`;
+    `video.html?id=${id}`;
 
 }
 

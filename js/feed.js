@@ -259,6 +259,14 @@ const mediaUrl =
             </span>
           </div>
 
+          <div
+  class="video-action"
+  onclick="shareContent(${v.id})"
+>
+  📤
+  <span>Share</span>
+</div>
+
           ${
             v.type === "ebook"
             ? `
@@ -742,5 +750,57 @@ function openPurviewPage(){
 
   window.location.href =
     "purview.html";
+
+}
+
+function shareContent(id){
+
+  const url =
+    `${window.location.origin}/index.html?video=${id}`;
+
+  const shareText =
+    encodeURIComponent(
+      `Check this out on Vindarr\n${url}`
+    );
+
+  const menu = `
+
+<div class="share-sheet">
+
+<button onclick="
+window.open(
+'https://wa.me/?text=${shareText}'
+)">
+WhatsApp
+</button>
+
+<button onclick="
+window.open(
+'https://t.me/share/url?url=${encodeURIComponent(url)}'
+)">
+Telegram
+</button>
+
+<button onclick="
+window.open(
+'https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}'
+)">
+X
+</button>
+
+<button onclick="
+navigator.clipboard.writeText('${url}')
+">
+Copy Link
+</button>
+
+</div>
+
+`;
+
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    menu
+  );
 
 }

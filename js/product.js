@@ -172,6 +172,13 @@ const mediaUrl =
 
   </button>
 
+  <button
+  class="share-btn"
+  onclick="shareProduct()"
+>
+  Share
+</button>
+
 </div>
 
 <!-- REVIEWS -->
@@ -458,6 +465,37 @@ async function submitReview(){
       loadReviews();
 
       loadProduct();
+
+    }
+
+  }catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+async function shareProduct(){
+
+  const url =
+    window.location.href;
+
+  try{
+
+    if(navigator.share){
+
+      await navigator.share({
+        title:
+          currentProduct.title,
+        url
+      });
+
+    }else{
+
+      navigator.clipboard.writeText(url);
+
+      alert("Link copied");
 
     }
 

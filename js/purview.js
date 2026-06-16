@@ -172,10 +172,19 @@ let html = "";
 
 posts.forEach(post => {
 
-const media =
-  post.videoUrl ||
-  post.fileUrl ||
-  post.coverUrl;
+let media = "";
+
+if(post.type === "ebook"){
+
+  media = post.coverUrl;
+
+}else{
+
+  media =
+    post.videoUrl ||
+    post.fileUrl ||
+    post.coverUrl;
+}
 
 const mediaUrl =
   media?.startsWith("http")
@@ -184,7 +193,13 @@ const mediaUrl =
 
 html += `
 
-  <div class="purview-card">
+  <div
+  class="purview-card"
+  onclick="openPurviewItem(
+    '${post.id}',
+    '${post.type}'
+  )"
+>
 
     ${
       (
@@ -206,7 +221,9 @@ html += `
 
       `
       <img
-        src="${mediaUrl}">
+  src="${mediaUrl}"
+  onclick="openPurviewItem('${post.id}')"
+>
       `
     }
 
@@ -230,6 +247,32 @@ html += `
 });
 
 feed.innerHTML = html;
+
+}
+
+function openPurviewItem(id, type){
+
+  if(
+    type === "ebook" ||
+    type === "fashion" ||
+    type === "essential"
+  ){
+
+    window.location.href =
+      `product.html?id=${id}`;
+
+    return;
+  }
+
+  window.location.href =
+    `index.html?video=${id}`;
+
+}
+
+function openPurviewItem(id){
+
+  window.location.href =
+    `product.html?id=${id}`;
 
 }
 
