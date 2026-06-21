@@ -55,6 +55,16 @@ function renderStory(story){
 
       <div class="story-author">
 
+      <div class="story-share">
+
+  <button
+    onclick="shareCurrentStory()"
+  >
+    📤 Share Story
+  </button>
+
+</div>
+
         By @${story.username || 'creator'}
 
       </div>
@@ -233,5 +243,37 @@ function formatDate(date){
       year:"numeric"
     }
   );
+
+}
+
+async function shareCurrentStory(){
+
+  const shareUrl =
+    `${window.location.origin}/story.html?id=${storyId}`;
+
+  try{
+
+    if(navigator.share){
+
+      await navigator.share({
+        title:"Vindarr Story",
+        url:shareUrl
+      });
+
+    }else{
+
+      await navigator.clipboard.writeText(
+        shareUrl
+      );
+
+      alert("Story link copied");
+
+    }
+
+  }catch(err){
+
+    console.error(err);
+
+  }
 
 }

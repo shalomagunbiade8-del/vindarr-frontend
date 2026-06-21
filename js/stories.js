@@ -4,26 +4,49 @@ const token =
 localStorage.getItem("token");
 
 let stories = [];
+let page = 1;
+let loadingMore = false;
+let hasMore = true;
 
 loadStories();
 
-async function loadStories(){
+async function loadStories(reset = true){
 
   try{
 
-    const res = await fetch(
-  `${API_BASE_URL}/stories`,
-  {
-    headers:{
-      Authorization:`Bearer ${token}`
+    if(reset){
+      page = 1;
     }
-  }
-);
 
-    const data =
-    await res.json();
+    const res = await fetch(
+      `${API_BASE_URL}/stories?page=${page}`,
+      {
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      }
+    );
 
-    stories = data.data || [];
+    const result = await res.json();
+
+    const newStories =
+      result.data || [];
+
+    if(reset){
+
+      stories = newStories;
+
+    }else{
+
+      stories = [
+        ...stories,
+        ...newStories
+      ];
+
+    }
+
+    hasMore =
+      newStories.length > 0;
 
     renderStories();
 
@@ -34,6 +57,7 @@ async function loadStories(){
   }
 
 }
+
 
 function renderStories(){
 
@@ -132,6 +156,12 @@ function renderStories(){
 
   </button>
 
+  <button
+  onclick="shareStory(${story.id})"
+>
+  📤 Share
+</button>
+
   ${
     getCurrentUser()?.id === story.userId
     ? `
@@ -168,6 +198,54 @@ function renderStories(){
     </div>
 
   `).join("");
+
+  container.innerHTML += `
+  <div
+    id="storiesLoadMore"
+    style="height:1px;"
+  ></div>
+`;
+
+setupStoriesLoadMore();
+
+}
+
+function setupStoriesLoadMore(){
+
+  const trigger =
+    document.getElementById(
+      "storiesLoadMore"
+    );
+
+  if(!trigger) return;
+
+  const observer =
+    new IntersectionObserver(
+      async entries => {
+
+        if(
+          entries[0].isIntersecting &&
+          !loadingMore &&
+          hasMore
+        ){
+
+          loadingMore = true;
+
+          page++;
+
+          await loadStories(false);
+
+          loadingMore = false;
+
+        }
+
+      },
+      {
+        rootMargin:"500px"
+      }
+    );
+
+  observer.observe(trigger);
 
 }
 
@@ -425,6 +503,38 @@ async function editStory(id){
     if(res.ok){
 
       loadStories();
+
+    }
+
+  }catch(err){
+
+    console.error(err);
+
+  }
+
+}
+
+async function shareStory(id){
+
+  const shareUrl =
+    `${window.location.origin}/story.html?id=${id}`;
+
+  try{
+
+    if(navigator.share){
+
+      await navigator.share({
+        title:"Vindarr Story",
+        url:shareUrl
+      });
+
+    }else{
+
+      await navigator.clipboard.writeText(
+        shareUrl
+      );
+
+      alert("Story link copied");
 
     }
 
