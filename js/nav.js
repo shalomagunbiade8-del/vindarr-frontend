@@ -16,15 +16,39 @@ function toggleMenu() {
 // ===============================
 // NOTIFICATIONS
 // ===============================
+function openNotifications(){
 
-function toggleNotifications() {
+  window.location.href =
+  "notifications.html";
 
-  const dropdown =
-    document.getElementById("notifDropdown");
+}
 
-  if (!dropdown) return;
+async function loadUnreadCount(){
 
-  dropdown.classList.toggle("show-notifications");
+const token =
+localStorage.getItem("token");
+
+const res =
+await fetch(
+
+`${API_BASE_URL}/notifications/unread`,
+
+{
+headers:{
+Authorization:
+`Bearer ${token}`
+}
+}
+
+);
+
+const data =
+await res.json();
+
+document.getElementById(
+"notifBadge"
+).innerText =
+data.unread || '';
 
 }
 
