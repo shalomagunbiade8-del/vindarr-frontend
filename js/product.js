@@ -26,6 +26,7 @@ async function loadProduct() {
     currentProduct =
   await res.json();
 
+
 renderProduct(currentProduct);
 loadReviews();
 
@@ -110,6 +111,15 @@ const mediaUrl =
       <div class="product-price">
         ${formatPrice(product.price || 0)}
       </div>
+
+
+      <div class="trust-row">
+
+<span>✔ Verified Creator</span>
+
+<span>✔ Secure Checkout</span>
+
+</div>
 
       <!-- CREATOR -->
       <div class="product-creator">
@@ -239,6 +249,22 @@ const mediaUrl =
 
   <!-- REVIEWS LIST -->
   <div id="reviewsList"></div>
+  
+
+
+  <h3 class="section-title">
+
+More from this creator
+
+</h3>
+
+<div id="creatorProducts"
+
+class="creator-products">
+
+Loading...
+
+</div>
 
 </div>
     </div>

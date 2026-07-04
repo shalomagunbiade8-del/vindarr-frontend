@@ -27,12 +27,25 @@ MARKET PAGE
 
 /* CATEGORIES */
 
-.market-categories{
+/* .market-categories{
   display:flex;
   gap:10px;
   overflow-x:auto;
   padding:0 15px 15px;
+} */
+
+.market-categories{
+
+position:sticky;
+
+top:70px;
+
+z-index:50;
+
+background:black;
+
 }
+
 
 .market-categories button{
   border:none;
@@ -135,4 +148,53 @@ MARKET PAGE
 .product-price{
   color:red;
   margin-top:8px;
+}
+
+/* new add */
+.market-hero{
+
+margin:15px;
+
+padding:30px;
+
+border-radius:20px;
+
+background:
+
+linear-gradient(135deg,#b30000,#000);
+
+}
+
+.market-hero h2{
+
+font-size:28px;
+
+}
+
+.market-hero p{
+
+margin-top:8px;
+
+color:#ddd;
+
+}
+
+.product-card,
+.ebook-card{
+
+transition:.25s;
+
+cursor:pointer;
+
+}
+
+.product-card:hover,
+.ebook-card:hover{
+
+transform:translateY(-6px);
+
+box-shadow:
+
+0 20px 45px rgba(255,0,0,.25);
+
 }
