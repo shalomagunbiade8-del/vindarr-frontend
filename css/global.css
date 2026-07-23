@@ -2450,33 +2450,456 @@ color:#888;
 margin-bottom:10px;
 }
 
-/* Single video */
+
+
+/* ==========================================
+   VINDARR VIDEO PAGE
+   Full Replacement
+========================================== */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html,
+body{
+  width:100%;
+  min-height:100%;
+  overflow-x:hidden;
+  overflow-y:auto;
+  background:#000;
+  font-family:Inter,sans-serif;
+}
+
+#videoPage{
+  width:100%;
+}
+
+/* ==========================================
+VIDEO CONTAINER
+========================================== */
 
 .single-video{
 
-max-width:700px;
+  position:relative;
 
-margin:auto;
+  width:100%;
+  min-height:100vh;
 
-padding:20px;
+  background:#000;
 
 }
+
+/* ==========================================
+VIDEO
+========================================== */
 
 .single-video video{
 
-width:100%;
+  position:absolute;
 
-border-radius:16px;
+  top:0;
+  left:0;
+
+  width:100%;
+  height:100vh;
+
+  object-fit:cover;
+
+}
+
+/* Dark gradient */
+
+.video-overlay{
+
+  position:absolute;
+
+  inset:0;
+
+  background:
+
+  linear-gradient(
+
+    rgba(0,0,0,.05),
+
+    rgba(0,0,0,.25),
+
+    rgba(0,0,0,.60)
+
+  );
 
 }
 
-.single-video h2{
+/* ==========================================
+TOP BUTTONS
+========================================== */
 
-margin-top:20px;
+.video-top{
 
-font-size:1.3rem;
+  position:absolute;
+
+  top:20px;
+
+  left:18px;
+
+  right:18px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  z-index:50;
 
 }
+
+.top-circle{
+
+  width:50px;
+
+  height:50px;
+
+  border-radius:50%;
+
+  backdrop-filter:blur(18px);
+
+  background:rgba(255,255,255,.35);
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  color:#111;
+
+  font-size:22px;
+
+  cursor:pointer;
+
+}
+
+/* ==========================================
+RIGHT ACTIONS
+========================================== */
+
+.video-actions{
+
+  position:absolute;
+
+  right:14px;
+
+  bottom:150px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:18px;
+
+  z-index:50;
+
+}
+
+.action-item{
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  gap:5px;
+
+}
+
+.action-btn{
+
+  width:58px;
+
+  height:58px;
+
+  border-radius:50%;
+
+  border:none;
+
+  color:#fff;
+
+  font-size:22px;
+
+  cursor:pointer;
+
+  background:rgba(255,255,255,.18);
+
+  backdrop-filter:blur(20px);
+
+}
+
+.action-item span{
+
+  color:#fff;
+
+  font-size:13px;
+
+}
+
+/* ==========================================
+BOTTOM INFO
+========================================== */
+
+.video-info{
+
+  position:absolute;
+
+  left:16px;
+
+  right:90px;
+
+  bottom:115px;
+
+  color:#fff;
+
+  z-index:40;
+
+}
+
+.creator-row{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  margin-bottom:14px;
+
+}
+
+.creator-avatar{
+
+  width:50px;
+
+  height:50px;
+
+  border-radius:50%;
+
+  object-fit:cover;
+
+  border:2px solid white;
+
+}
+
+.creator-name{
+
+  font-size:17px;
+
+  font-weight:700;
+
+}
+
+.verified{
+
+  color:#4da6ff;
+
+  margin-left:4px;
+
+}
+
+.follow-btn{
+
+  margin-left:auto;
+
+  border:1px solid white;
+
+  color:white;
+
+  background:transparent;
+
+  padding:8px 18px;
+
+  border-radius:30px;
+
+  font-size:15px;
+
+  cursor:pointer;
+
+}
+
+.video-description{
+
+  line-height:1.5;
+
+  font-size:16px;
+
+  margin-bottom:15px;
+
+}
+
+.audio-pill{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  padding:10px 16px;
+
+  border-radius:30px;
+
+  background:rgba(255,255,255,.18);
+
+  backdrop-filter:blur(20px);
+
+  font-size:14px;
+
+}
+
+/* ===============================
+READ MORE
+=============================== */
+
+.description-text{
+
+    margin-top:8px;
+
+    line-height:1.45;
+
+    color:#fff;
+
+    transition:.25s;
+
+}
+
+.description-text.collapsed{
+
+    display:-webkit-box;
+
+    -webkit-box-orient:vertical;
+
+    overflow:hidden;
+
+}
+
+.read-more{
+
+    display:inline-block;
+
+    margin-top:8px;
+
+    color:#ddd;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+.read-more:hover{
+
+    color:white;
+
+}
+
+/* ==========================================
+COMMENT BAR
+========================================== */
+
+.comment-bar{
+
+  position:absolute;
+
+  left:15px;
+
+  right:15px;
+
+  bottom:20px;
+
+  display:flex;
+
+  gap:12px;
+
+  z-index:50;
+
+}
+
+.comment-input{
+
+  flex:1;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  background:white;
+
+  border-radius:40px;
+
+  padding:14px 18px;
+
+}
+
+.comment-input input{
+
+  flex:1;
+
+  border:none;
+
+  outline:none;
+
+  font-size:15px;
+
+}
+
+.comment-icon{
+
+  font-size:22px;
+
+}
+
+.send-btn{
+
+  width:60px;
+
+  height:60px;
+
+  border:none;
+
+  border-radius:50%;
+
+  background:white;
+
+  font-size:24px;
+
+  cursor:pointer;
+
+}
+
+
+
+/* ==========================================
+DESKTOP
+========================================== */
+
+@media(min-width:900px){
+
+.single-video{
+
+max-width:430px;
+
+margin:auto;
+
+}
+
+}
+
 
 
 /* ==========================
@@ -2704,6 +3127,115 @@ EMPTY STATE
   font-size:11px;
 
   font-weight:700;
+
+}
+
+
+/* ===============================
+UP NEXT
+=============================== */
+
+.up-next-section{
+
+margin-top:40px;
+
+padding:0 20px;
+
+}
+
+.section-title{
+
+font-size:20px;
+
+font-weight:700;
+
+margin-bottom:18px;
+
+}
+
+.up-next-list{
+
+display:flex;
+
+flex-direction:column;
+
+gap:18px;
+
+}
+
+.up-next-card{
+
+display:flex;
+
+gap:14px;
+
+cursor:pointer;
+
+}
+
+.up-next-thumb{
+
+width:140px;
+
+height:80px;
+
+border-radius:14px;
+
+overflow:hidden;
+
+flex-shrink:0;
+
+background:#111;
+
+}
+
+.up-next-thumb video{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
+
+}
+
+.up-next-info{
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:center;
+
+}
+
+.up-next-title{
+
+font-size:15px;
+
+font-weight:700;
+
+margin-bottom:6px;
+
+}
+
+.up-next-creator{
+
+color:#999;
+
+font-size:13px;
+
+margin-bottom:6px;
+
+}
+
+.up-next-understands{
+
+color:#ff4040;
+
+font-size:12px;
+
+font-weight:600;
 
 }
 
