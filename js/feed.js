@@ -353,7 +353,6 @@ function renderVideos() {
                   src="${escapeHtml(mediaUrl)}"
                   class="feed-video"
                   loop
-                  muted
                   playsinline
                   preload="metadata"
                   onclick="handleVideoTap(${i}, ${v.id}, event)"
