@@ -1,66 +1,1083 @@
-/* =========================
-   COMMENT PANEL
-========================= */
+/* =========================================
+   VINDARR IMMERSIVE VIDEO FEED
+========================================= */
 
-.comment-panel{
+
+/* =========================================
+   RESET
+========================================= */
+
+html,
+body{
+
+  width:100%;
+  height:100%;
+
+  margin:0;
+  padding:0;
+
+  overflow:hidden;
+
+  background:#000;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+}
+
+
+/* =========================================
+   FEED
+========================================= */
+
+#feed{
+
   position:fixed;
 
-  bottom:-100%;
-  left:0;
+  inset:0;
+
+  width:100vw;
+  height:100vh;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  background:#000;
+
+  scroll-snap-type:y mandatory;
+
+  scroll-behavior:smooth;
+
+  overscroll-behavior-y:contain;
+
+  scrollbar-width:none;
+
+  z-index:1;
+
+}
+
+
+#feed::-webkit-scrollbar{
+
+  display:none;
+
+}
+
+
+/* =========================================
+   VIDEO CARD
+========================================= */
+
+.video-card{
+
+  position:relative;
+
+  width:100vw;
+  height:100vh;
+
+  min-height:100vh;
+
+  overflow:hidden;
+
+  background:#000;
+
+  scroll-snap-align:start;
+
+  scroll-snap-stop:always;
+
+}
+
+
+/* =========================================
+   VIDEO
+========================================= */
+
+.feed-video{
+
+  position:absolute;
+
+  inset:0;
 
   width:100%;
-  height:70%;
+  height:100%;
 
-  background:#111;
+  object-fit:cover;
 
-  z-index:99999;
+  background:#000;
 
-  border-top-left-radius:20px;
-  border-top-right-radius:20px;
-
-  transition:.3s;
-
-  display:flex;
-  flex-direction:column;
 }
 
-.comment-panel.active{
-  bottom:0;
+
+/* =========================================
+   IMAGE
+========================================= */
+
+.feed-image{
+
+  position:absolute;
+
+  inset:0;
+
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+
+  background:#000;
+
 }
 
-.comment-header{
-  padding:15px;
+
+/* =========================================
+   GRADIENT
+========================================= */
+
+.feed-video-gradient{
+
+  position:absolute;
+
+  inset:0;
+
+  pointer-events:none;
+
+  background:
+
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,.28) 0%,
+      rgba(0,0,0,0) 20%,
+      rgba(0,0,0,.05) 50%,
+      rgba(0,0,0,.78) 100%
+    );
+
+  z-index:5;
+
+}
+
+
+/* =========================================
+   TOP CONTROLS
+========================================= */
+
+.feed-top-bar,
+.video-card-top{
+
+  position:absolute;
+
+  top:18px;
+
+  left:18px;
+
+  right:18px;
 
   display:flex;
+
+  align-items:center;
+
   justify-content:space-between;
 
-  border-bottom:1px solid #222;
+  z-index:100;
+
 }
 
-.comment-list{
+
+/* =========================================
+   GLASS BUTTON
+========================================= */
+
+.feed-top-button,
+.glass-circle{
+
+  position:relative;
+
+  width:50px;
+  height:50px;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  border:0;
+
+  border-radius:50%;
+
+  background:
+    rgba(255,255,255,.38);
+
+  backdrop-filter:
+    blur(18px);
+
+  -webkit-backdrop-filter:
+    blur(18px);
+
+  color:#111;
+
+  font-size:21px;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 4px 20px rgba(0,0,0,.12);
+
+}
+
+
+.feed-top-button:active,
+.glass-circle:active{
+
+  transform:scale(.94);
+
+}
+
+
+/* =========================================
+   NOTIFICATION BADGE
+========================================= */
+
+.notification-badge{
+
+  position:absolute;
+
+  top:8px;
+  right:8px;
+
+  width:8px;
+  height:8px;
+
+  background:#d10000;
+
+  border-radius:50%;
+
+  display:none;
+
+}
+
+
+/* =========================================
+   RIGHT ACTIONS
+========================================= */
+
+.video-overlay-right{
+
+  position:absolute;
+
+  right:15px;
+
+  bottom:145px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  gap:16px;
+
+  z-index:30;
+
+}
+
+
+/* =========================================
+   ACTION BUTTON
+========================================= */
+
+.video-action{
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:5px;
+
+  width:58px;
+
+  min-height:58px;
+
+  padding:4px 0;
+
+  border:0;
+
+  background:transparent;
+
+  color:#fff;
+
+  cursor:pointer;
+
+  text-align:center;
+
+  text-shadow:
+    0 2px 6px rgba(0,0,0,.75);
+
+}
+
+
+.video-action i{
+
+  font-size:25px;
+
+  line-height:1;
+
+}
+
+
+.video-action span{
+
+  font-size:12px;
+
+  font-weight:600;
+
+  line-height:1.1;
+
+}
+
+
+.video-action:active{
+
+  transform:scale(.9);
+
+}
+
+
+.video-action.saved i{
+
+  color:#fff;
+
+}
+
+
+/* =========================================
+   LEFT INFORMATION
+========================================= */
+
+.video-overlay-left{
+
+  position:absolute;
+
+  left:16px;
+
+  right:85px;
+
+  bottom:105px;
+
+  z-index:30;
+
+  color:#fff;
+
+}
+
+
+/* =========================================
+   CREATOR ROW
+========================================= */
+
+.creator-row{
+
+  display:flex;
+
+  align-items:flex-start;
+
+  gap:10px;
+
+}
+
+
+.creator-avatar{
+
+  width:48px;
+  height:48px;
+
+  min-width:48px;
+
+  object-fit:cover;
+
+  border-radius:50%;
+
+  border:2px solid rgba(255,255,255,.9);
+
+  cursor:pointer;
+
+}
+
+
+.creator-content{
+
   flex:1;
+
+  min-width:0;
+
+}
+
+
+.creator-line{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  flex-wrap:wrap;
+
+}
+
+
+/* =========================================
+   CREATOR NAME
+========================================= */
+
+.creator-name{
+
+  color:#fff;
+
+  font-size:16px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  text-shadow:
+    0 2px 6px rgba(0,0,0,.75);
+
+}
+
+
+.verified-icon{
+
+  margin-left:3px;
+
+  color:#4da6ff;
+
+  font-size:13px;
+
+}
+
+
+/* =========================================
+   FOLLOW
+========================================= */
+
+.follow-btn{
+
+  padding:7px 16px;
+
+  border:1px solid rgba(255,255,255,.9);
+
+  border-radius:25px;
+
+  background:transparent;
+
+  color:#fff;
+
+  font-size:13px;
+
+  font-weight:600;
+
+  cursor:pointer;
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
+
+}
+
+
+.follow-btn:active{
+
+  transform:scale(.95);
+
+}
+
+
+.follow-btn.following{
+
+  background:
+    rgba(255,255,255,.2);
+
+}
+
+
+/* =========================================
+   DESCRIPTION
+========================================= */
+
+.video-caption{
+
+  margin-top:10px;
+
+  max-width:550px;
+
+  color:#fff;
+
+  font-size:15px;
+
+  line-height:1.45;
+
+  text-shadow:
+    0 2px 7px rgba(0,0,0,.9);
+
+}
+
+
+/* =========================================
+   COLLAPSED DESCRIPTION
+========================================= */
+
+.description-text.collapsed{
+
+  display:-webkit-box;
+
+  -webkit-box-orient:vertical;
+
+  -webkit-line-clamp:2;
+
+  overflow:hidden;
+
+  max-height:44px;
+
+}
+
+
+/* =========================================
+   EXPANDED DESCRIPTION
+========================================= */
+
+.description-text.expanded{
+
+  max-height:125px;
+
   overflow-y:auto;
 
-  padding:15px;
+  padding-right:5px;
+
 }
 
-.comment-input-box{
-  padding:15px;
 
-  border-top:1px solid #222;
+.description-text.expanded::-webkit-scrollbar{
+
+  width:3px;
+
 }
 
-.comment-input-box input{
-  width:100%;
 
-  background:#1a1a1a;
+.description-text.expanded::-webkit-scrollbar-thumb{
 
-  border:none;
-  outline:none;
+  background:
+    rgba(255,255,255,.5);
 
-  padding:12px;
+  border-radius:5px;
+
+}
+
+
+/* =========================================
+   READ MORE
+========================================= */
+
+.read-more{
+
+  display:inline;
+
+  margin-left:5px;
+
+  padding:0;
+
+  border:0;
+
+  background:none;
+
+  color:#ddd;
+
+  font-size:13px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  text-shadow:
+    0 2px 5px rgba(0,0,0,.9);
+
+}
+
+
+.read-more:hover{
+
+  color:#fff;
+
+}
+
+
+/* =========================================
+   AUDIO
+========================================= */
+
+.audio-pill{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  max-width:100%;
+
+  margin-top:10px;
+
+  padding:8px 13px;
 
   border-radius:30px;
 
-  color:white;
+  background:
+    rgba(255,255,255,.18);
+
+  backdrop-filter:
+    blur(16px);
+
+  -webkit-backdrop-filter:
+    blur(16px);
+
+  color:#fff;
+
+  font-size:12px;
+
+}
+
+
+.audio-pill span{
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+}
+
+
+/* =========================================
+   COMMENT BAR
+========================================= */
+
+.feed-comment-bar{
+
+  position:absolute;
+
+  left:16px;
+
+  right:78px;
+
+  bottom:18px;
+
+  height:57px;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  padding:0 18px;
+
+  border:0;
+
+  border-radius:32px;
+
+  background:#fff;
+
+  color:#111;
+
+  text-align:left;
+
+  cursor:pointer;
+
+  z-index:40;
+
+}
+
+
+.feed-comment-bar:active{
+
+  transform:scale(.98);
+
+}
+
+
+.comment-face{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-size:21px;
+
+}
+
+
+.comment-placeholder{
+
+  font-size:14px;
+
+  color:#555;
+
+}
+
+
+/* =========================================
+   SHARE CIRCLE
+========================================= */
+
+.feed-share-button{
+
+  position:absolute;
+
+  right:15px;
+
+  bottom:17px;
+
+  width:58px;
+  height:58px;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  border:0;
+
+  border-radius:50%;
+
+  background:#fff;
+
+  color:#111;
+
+  font-size:21px;
+
+  cursor:pointer;
+
+  z-index:45;
+
+}
+
+
+.feed-share-button:active{
+
+  transform:scale(.92);
+
+}
+
+
+/* =========================================
+   EMPTY FEED
+========================================= */
+
+.empty-feed{
+
+  width:100vw;
+  height:100vh;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+  justify-content:center;
+
+  background:#000;
+
+  color:#fff;
+
+  text-align:center;
+
+  padding:30px;
+
+}
+
+
+.empty-feed i{
+
+  font-size:45px;
+
+  margin-bottom:15px;
+
+}
+
+
+.empty-feed h3{
+
+  margin:0 0 8px;
+
+}
+
+
+.empty-feed p{
+
+  color:#aaa;
+
+}
+
+
+.empty-feed button{
+
+  margin-top:15px;
+
+  padding:10px 20px;
+
+  border:0;
+
+  border-radius:25px;
+
+  background:#d10000;
+
+  color:#fff;
+
+}
+
+
+/* =========================================
+   LOAD MORE
+========================================= */
+
+#loadMoreTrigger{
+
+  width:100%;
+
+  height:1px;
+
+}
+
+
+/* =========================================
+   NOTIFICATIONS PANEL
+========================================= */
+
+.notif-dropdown{
+
+  position:fixed;
+
+  top:78px;
+
+  left:15px;
+
+  right:15px;
+
+  max-width:500px;
+
+  max-height:65vh;
+
+  margin:auto;
+
+  padding:18px;
+
+  background:
+    rgba(20,20,20,.95);
+
+  color:#fff;
+
+  border:1px solid
+    rgba(255,255,255,.12);
+
+  border-radius:22px;
+
+  backdrop-filter:
+    blur(25px);
+
+  -webkit-backdrop-filter:
+    blur(25px);
+
+  box-shadow:
+    0 15px 50px rgba(0,0,0,.45);
+
+  opacity:0;
+
+  visibility:hidden;
+
+  transform:
+    translateY(-10px);
+
+  transition:.2s;
+
+  z-index:9999;
+
+}
+
+
+.notif-dropdown.active{
+
+  opacity:1;
+
+  visibility:visible;
+
+  transform:
+    translateY(0);
+
+}
+
+
+.notification-header{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  margin-bottom:15px;
+
+}
+
+
+.notification-header h3{
+
+  margin:0;
+
+  font-size:18px;
+
+}
+
+
+.notification-header button{
+
+  border:0;
+
+  background:none;
+
+  color:#fff;
+
+  font-size:18px;
+
+  cursor:pointer;
+
+}
+
+
+/* =========================================
+   HIGHLIGHT
+========================================= */
+
+.highlight-video{
+
+  outline:
+    2px solid
+    rgba(255,255,255,.8);
+
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media(max-width:600px){
+
+  .video-overlay-left{
+
+    bottom:100px;
+
+  }
+
+
+  .video-overlay-right{
+
+    right:10px;
+
+    bottom:140px;
+
+    gap:14px;
+
+  }
+
+
+  .video-action{
+
+    width:52px;
+
+  }
+
+
+  .video-action i{
+
+    font-size:23px;
+
+  }
+
+
+  .video-action span{
+
+    font-size:11px;
+
+  }
+
+
+  .video-caption{
+
+    font-size:14px;
+
+  }
+
+
+  .feed-comment-bar{
+
+    left:14px;
+
+    right:75px;
+
+    bottom:15px;
+
+  }
+
+
+  .feed-share-button{
+
+    right:12px;
+
+    bottom:14px;
+
+  }
+
+}
+
+
+/* =========================================
+   DESKTOP
+========================================= */
+
+@media(min-width:900px){
+
+  .video-card{
+
+    width:430px;
+
+    margin:0 auto;
+
+  }
+
+
+  #feed{
+
+    background:#050505;
+
+  }
+
+
+  .video-card{
+
+    box-shadow:
+      0 0 40px
+      rgba(0,0,0,.6);
+
+  }
+
 }

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Saved · Vindarr</title>
+
+  <link
+    rel="stylesheet"
+    href="css/global.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  >
+
+</head>
+
+
+<body class="saved-page">
+
+
+<header class="saved-header">
+
+  <button
+    onclick="history.back()"
+    class="saved-back"
+  >
+
+    <i class="bi bi-arrow-left"></i>
+
+  </button>
+
+
+  <h1>
+    Saved
+  </h1>
+
+
+  <div style="width:42px"></div>
+
+</header>
+
+
+
+<main
+  id="savedGrid"
+  class="saved-grid"
+>
+
+  <div class="saved-loading">
+
+    Loading saved content...
+
+  </div>
+
+</main>
+
+
+
+<script src="js/config.js"></script>
+
+<script>
+
+async function loadSavedVideos(){
+
+  const savedIds =
+    JSON.parse(
+      localStorage.getItem(
+        "savedVideos"
+      ) || "[]"
+    );
+
+
+  const container =
+    document.getElementById(
+      "savedGrid"
+    );
+
+
+  if(!savedIds.length){
+
+    container.innerHTML = `
+
+      <div class="saved-empty">
+
+        <i class="bi bi-bookmark"></i>
+
+        <h2>
+          Nothing saved yet
+        </h2>
+
+        <p>
+          Save videos from your Vindarr feed
+          and they'll appear here.
+        </p>
+
+        <button
+          onclick="location.href='index.html'"
+        >
+          Explore Videos
+        </button>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  const results = [];
+
+
+  for(
+    const id of savedIds
+  ){
+
+    try{
+
+      const res =
+        await fetch(
+          `${API_BASE_URL}/videos/${id}`
+        );
+
+
+      if(
+        res.ok
+      ){
+
+        const video =
+          await res.json();
+
+        results.push(
+          video
+        );
+
+      }
+
+    }catch(err){
+
+      console.error(
+        err
+      );
+
+    }
+
+  }
+
+
+  if(!results.length){
+
+    container.innerHTML = `
+
+      <div class="saved-empty">
+
+        <i class="bi bi-bookmark-x"></i>
+
+        <h2>
+          Saved content unavailable
+        </h2>
+
+        <p>
+          Some saved videos may have been removed.
+        </p>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    results.map(
+      video => {
+
+        const media =
+          video.videoUrl ||
+          video.fileUrl ||
+          video.coverUrl ||
+          "";
+
+
+        const mediaUrl =
+          media.startsWith("http")
+            ? media
+            : API_BASE_URL + media;
+
+
+        const avatar =
+          video.creatorAvatar
+            ? (
+                video.creatorAvatar.startsWith("http")
+                  ? video.creatorAvatar
+                  : API_BASE_URL +
+                    video.creatorAvatar
+              )
+            : "https://i.pravatar.cc/100";
+
+
+        return `
+
+          <article
+            class="saved-card"
+            onclick="openSavedVideo(${video.id})"
+          >
+
+            <div class="saved-thumbnail">
+
+              <video
+                src="${mediaUrl}"
+                muted
+                playsinline
+                preload="metadata"
+              ></video>
+
+            </div>
+
+
+            <div class="saved-content">
+
+              <h3>
+                ${escapeSaved(video.title || "Untitled")}
+              </h3>
+
+
+              <div class="saved-creator">
+
+                <img
+                  src="${avatar}"
+                  alt=""
+                >
+
+                <span>
+                  @${escapeSaved(video.creatorUsername || "creator")}
+                </span>
+
+              </div>
+
+
+              <div class="saved-understands">
+
+                ${Number(
+                  video.understandCount || 0
+                ).toLocaleString()}
+                Understands
+
+              </div>
+
+            </div>
+
+          </article>
+
+        `;
+
+      }
+    ).join("");
+
+}
+
+
+function openSavedVideo(id){
+
+  window.location.href =
+    `video.html?id=${id}`;
+
+}
+
+
+function escapeSaved(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+loadSavedVideos();
+
+</script>
+
+</body>
+
+</html>

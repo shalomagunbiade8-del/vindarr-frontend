@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <link
+    rel="icon"
+    href="./interfacelog.png"
+    type="image/png"
+  >
+
+  <title>Menu · Vindarr</title>
+
+  <link
+    rel="stylesheet"
+    href="css/global.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  >
+
+</head>
+
+
+<body class="vindarr-menu-page">
+
+
+<div class="menu-page">
+
+
+  <!-- HEADER -->
+
+  <header class="menu-page-header">
+
+    <button
+      class="menu-back"
+      onclick="history.back()"
+    >
+
+      <i class="bi bi-arrow-left"></i>
+
+    </button>
+
+
+    <h1>
+      Menu
+    </h1>
+
+
+    <div style="width:42px"></div>
+
+  </header>
+
+
+
+  <!-- PROFILE -->
+
+  <section class="menu-profile">
+
+    <img
+      src="https://i.pravatar.cc/100"
+      id="menuAvatar"
+      class="menu-profile-avatar"
+      alt="Profile"
+    >
+
+
+    <div>
+
+      <strong id="menuUsername">
+        Vindarr
+      </strong>
+
+      <span>
+        Explore your Vindarr
+      </span>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- MAIN MENU -->
+
+  <section class="menu-section">
+
+
+     <!-- HOME -->
+
+    <a
+      href="index.html"
+      class="menu-item"
+    >
+
+      <div class="menu-icon">
+        <i class="bi bi-house"></i>
+      </div>
+
+      <div class="menu-text">
+        <strong>Home</strong>
+        <span>Vindarr For You</span>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- MALL -->
+
+    <a
+      href="market.html"
+      class="menu-item"
+    >
+
+      <div class="menu-icon">
+        <i class="bi bi-bag"></i>
+      </div>
+
+      <div class="menu-text">
+        <strong>Mall</strong>
+        <span>Shop products and fashion</span>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- MESSAGES -->
+
+    <a
+      href="messages.html"
+      class="menu-item"
+    >
+
+      <div class="menu-icon">
+        <i class="bi bi-chat"></i>
+      </div>
+
+      <div class="menu-text">
+        <strong>Messages</strong>
+        <span>Your conversations</span>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- PROFILE -->
+
+    <a
+      href="profile.html"
+      class="menu-item"
+    >
+
+      <div class="menu-icon">
+        <i class="bi bi-person"></i>
+      </div>
+
+      <div class="menu-text">
+        <strong>Profile</strong>
+        <span>View your profile</span>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- PURVIEW -->
+
+    <a
+      href="purview.html"
+      class="menu-item"
+    >
+
+      <div class="menu-icon">
+        <i class="bi bi-person-plus"></i>
+      </div>
+
+      <div class="menu-text">
+        <strong>Purview</strong>
+        <span>Creators you follow</span>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- SAVED -->
+
+    <button
+      class="menu-item"
+      onclick="openSavedPage()"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-bookmark-fill"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Saved
+        </strong>
+
+        <small>
+          Videos and content you've saved
+        </small>
+
+      </span>
+
+      <i class="bi bi-chevron-right"></i>
+
+    </button>
+
+
+
+    <!-- NOTIFICATIONS -->
+
+    <button
+      class="menu-item"
+      onclick="openNotificationsPage()"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-bell"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Notifications
+        </strong>
+
+        <small>
+          Updates and activity
+        </small>
+
+      </span>
+
+      <i class="bi bi-chevron-right"></i>
+
+    </button>
+
+
+
+    <!-- STORIES -->
+
+    <a
+      class="menu-item"
+      href="stories.html"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-circle-play"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Stories
+        </strong>
+
+        <small>
+          Discover real stories
+        </small>
+
+      </span>
+
+      <i class="bi bi-chevron-right"></i>
+
+    </a>
+
+
+
+    <!-- LIBRARY -->
+
+    <a
+      class="menu-item"
+      href="library.html"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-book"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Library
+        </strong>
+
+        <small>
+          Your books and purchases
+        </small>
+
+      </span>
+
+      <i class="bi bi-chevron-right"></i>
+
+    </a>
+
+
+
+    <!-- PUBLISH -->
+
+    <a
+      class="menu-item"
+      href="publish.html"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-plus-square"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Publish
+        </strong>
+
+        <small>
+          Publish your content
+        </small>
+
+      </span>
+
+      <i class="bi bi-chevron-right"></i>
+
+    </a>
+
+
+
+    <!-- CREATOR DASHBOARD -->
+
+    <a
+      class="menu-item"
+      href="dashboard.html"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-grid"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Creator Dashboard
+        </strong>
+
+        <small>
+          Manage your content
+        </small>
+
+      </span>
+
+      <i class="bi bi-chevron-right"></i>
+
+    </a>
+
+
+
+    <!-- EARNINGS -->
+
+    <a
+      class="menu-item"
+      href="earnings.html"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-wallet2"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Earnings
+        </strong>
+
+        <small>
+          Track your earnings
+        </small>
+
+      </span>
+
+      <i class="bi bi-chevron-right"></i>
+
+    </a>
+
+
+
+  </section>
+
+
+
+  <!-- ACCOUNT -->
+
+  <section class="menu-section">
+
+
+    <button
+      class="menu-item logout-item"
+      onclick="logoutFromMenu()"
+    >
+
+      <span class="menu-icon">
+
+        <i class="bi bi-box-arrow-right"></i>
+
+      </span>
+
+      <span class="menu-item-text">
+
+        <strong>
+          Logout
+        </strong>
+
+        <small>
+          Sign out of Vindarr
+        </small>
+
+      </span>
+
+    </button>
+
+
+  </section>
+
+
+</div>
+
+
+
+<script src="js/config.js"></script>
+
+<script src="js/auth.js"></script>
+
+
+<script>
+
+function openSavedPage(){
+
+  window.location.href =
+    "saved.html";
+
+}
+
+
+function openNotificationsPage(){
+
+  window.location.href =
+    "notifications.html";
+
+}
+
+
+function logoutFromMenu(){
+
+  if(
+    typeof logout === "function"
+  ){
+
+    logout();
+
+  }else{
+
+    localStorage.removeItem(
+      "token"
+    );
+
+    window.location.href =
+      "login.html";
+
+  }
+
+}
+
+</script>
+
+
+</body>
+
+</html>
