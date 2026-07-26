@@ -3,236 +3,134 @@
 
 <head>
 
-  <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
 
-  <title>Vindarr Market</title>
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-  <!-- GLOBAL CSS -->
-  <link rel="stylesheet"
-    href="css/global.css">
+<title>Vindarr Market</title>
 
-  <!-- MARKET CSS -->
-  <link rel="stylesheet"
-    href="css/market.css">
+<link
+rel="icon"
+href="interfacelog.png">
 
-  <!-- ICONS -->
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link
+rel="stylesheet"
+href="css/global.css">
+
+<link
+rel="stylesheet"
+href="css/market.css">
+
+<link
+rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 </head>
 
 <body>
 
-<!-- ===============================
-TOP NAVBAR
-=============================== -->
+<!-- ===========================
+MARKET FEED
+=========================== -->
 
-<nav class="top-navbar">
+<div id="marketFeed">
 
-  <div class="top-left"
-    onclick="goHome()">
+    <div id="marketFeedList">
 
-    <img src="interfacelog.png"
-      width="30">
-
-    <span>Vindarr</span>
-
-  </div>
-
-  <div class="top-right">
-
-    <i class="bi bi-search"></i>
-
-    <div class="menu-wrapper">
-
-      <i class="bi bi-list"
-        onclick="toggleMenu()"></i>
-
-      <div id="topMenu"
-        class="top-menu">
-
-        <a href="stories.html">
-          Stories
-        </a>
-
-        <a href="publish.html">
-          Publish Ebook
-        </a>
-
-        <a href="library.html">
-          Library
-        </a>
-
-        <a href="dashboard.html">
-          Creator Dashboard
-        </a>
-
-        <a href="earnings.html">
-          Earnings
-        </a>
-
-        <a href="#"
-          onclick="logout()">
-          Logout
-        </a>
-
-      </div>
+        <!-- market.js renders every fullscreen item here -->
 
     </div>
-
-  </div>
-
-</nav>
-
-<!-- ===============================
-MARKET CONTAINER
-=============================== -->
-
-<div class="market-page">
-
-  <!-- SEARCH -->
-  <div class="market-search">
-
-    <input
-      type="text"
-      placeholder="Search ebooks & products">
-
-  </div>
-
-  <!-- new add  -->
-   <div class="market-hero">
-
-<h2>
-
-Discover Amazing Products & Ebooks
-
-</h2>
-
-<p>
-
-Support creators • Discover • Shop
-
-</p>
 
 </div>
 
-  <!-- CATEGORIES -->
-  <div class="market-categories">
+<!-- ===========================
+TOP CATEGORY BAR
+=========================== -->
 
-  <button
-    class="active-category market-tab"
-    data-type="all">
-    All
-  </button>
+<div class="market-top-overlay">
 
-  <button
-    class="market-tab"
-    data-type="ebook">
-    Ebooks
-  </button>
+    <div class="market-categories">
 
-  <button
-    class="market-tab"
-    data-type="fashion">
-    Fashion
-  </button>
+        <button
+        class="market-tab active-category"
+        data-type="all">
 
-  <button
-    class="market-tab"
-    data-type="essential">
-    Essentials
-  </button>
+            All
+
+        </button>
+
+        <button
+        class="market-tab"
+        data-type="ebook">
+
+            Ebooks
+
+        </button>
+
+        <button
+        class="market-tab"
+        data-type="fashion">
+
+            Fashion
+
+        </button>
+
+        <button
+        class="market-tab"
+        data-type="essential">
+
+            Essentials
+
+        </button>
+
+    </div>
+
+    <div class="market-top-icons">
+
+        <button
+        onclick="window.location.href='search.html'">
+
+            <i class="bi bi-search"></i>
+
+        </button>
+
+        <button
+        onclick="window.location.href='notifications.html'">
+
+            <i class="bi bi-bell"></i>
+
+        </button>
+
+        <button
+        onclick="window.location.href='menu.html'">
+
+            <i class="bi bi-list"></i>
+
+        </button>
+
+    </div>
 
 </div>
 
-  <!-- FEATURED BOOKS -->
-  <section class="market-section">
+<!-- ===========================
+LOADING SCREEN
+=========================== -->
 
-    <div class="section-header">
+<div
+id="marketLoading"
+class="market-loading">
 
-      <h2>Trending Ebooks</h2>
-
-      <span>See all</span>
-
-    </div>
-
-    <div id="ebooksGrid"
-      class="ebooks-grid">
+    <div class="spinner-border text-light">
 
     </div>
-
-  </section>
-
-  <!-- PRODUCTS -->
-  <section class="market-section">
-
-    <div class="section-header">
-
-      <h2>Trending Fashion</h2>
-
-      <span>See all</span>
-
-    </div>
-
-    <div id="productsGrid"
-      class="products-grid">
-
-    </div>
-
-  </section>
-
-  <!-- ESSENTIALS -->
-<section class="market-section">
-
-  <div class="section-header">
-
-    <h2>Vindarr Essentials</h2>
-
-    <span>See all</span>
-
-  </div>
-
-  <div
-    id="essentialsGrid"
-    class="products-grid">
-
-  </div>
-
-</section>
 
 </div>
 
-<!-- ===============================
-BOTTOM NAV
-=============================== -->
-
-<div class="bottom-nav">
-
-  <a href="index.html">
-    <i class="bi bi-house"></i>
-  </a>
-
-  <a href="search.html">
-    <i class="bi bi-search"></i>
-  </a>
-
-  <a href="market.html">
-    <i class="bi bi-bag"></i>
-  </a>
-
-  <a href="messages.html">
-    <i class="bi bi-chat"></i>
-  </a>
-
-  <a href="profile.html">
-    <i class="bi bi-person"></i>
-  </a>
-
-</div>
-
-<!-- JS -->
+<!-- ===========================
+SCRIPTS
+=========================== -->
 
 <script src="js/config.js"></script>
 
@@ -245,9 +143,11 @@ BOTTOM NAV
 <script src="js/market.js"></script>
 
 <script>
+
 checkAuth();
+
 </script>
 
-
 </body>
+
 </html>

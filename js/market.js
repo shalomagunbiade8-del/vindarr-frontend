@@ -1,336 +1,1093 @@
+// =====================================
+// VINDARR MARKET
+// PART 1
+// Variables + Initialization + Load Feed
+// =====================================
+
+
 let currentMarketType = "all";
 
-// ===============================
-// LOAD MARKET ITEMS
-// ===============================
+let marketItems = [];
 
-async function loadMarket(type = "all") {
+let currentItem = null;
 
-  try {
+let loading = false;
 
-    const url =
-  type === "all"
-    ? `${API_BASE_URL}/videos/market`
-    : `${API_BASE_URL}/videos/market?type=${type}`;
+// -------------------------------------
+// DOM
+// -------------------------------------
 
-const res =
-  await fetch(url);
+const marketContainer =
+document.getElementById("marketFeedList");
 
-    const data =
-      await res.json();
+const loadingScreen =
+document.getElementById("marketLoading");
 
-    const posts =
-      data.data || data;
+// =====================================
+// LOADING
+// =====================================
 
-    const ebooksSection =
-  document.getElementById("ebooksGrid")
-    ?.closest(".market-section");
+function showLoading(){
 
-const productsSection =
-  document.getElementById("productsGrid")
-    ?.closest(".market-section");
+    if(loadingScreen){
 
-const essentialsSection =
-  document.getElementById("essentialsGrid")
-    ?.closest(".market-section");
+        loadingScreen.style.display = "flex";
 
-if(type === "all"){
-
-  ebooksSection.style.display = "";
-  productsSection.style.display = "";
-  essentialsSection.style.display = "";
-
-  renderEbooks(posts);
-  renderProducts(posts);
-  renderEssentials(posts);
+    }
 
 }
 
-else if(type === "ebook"){
+function hideLoading(){
 
-  ebooksSection.style.display = "";
-  productsSection.style.display = "none";
-  essentialsSection.style.display = "none";
+    if(loadingScreen){
 
-  renderEbooks(posts);
+        loadingScreen.style.display = "none";
 
-}
-
-else if(type === "fashion"){
-
-  ebooksSection.style.display = "none";
-  productsSection.style.display = "";
-  essentialsSection.style.display = "none";
-
-  renderProducts(posts);
+    }
 
 }
 
-else if(type === "essential"){
+// =====================================
+// LOAD MARKET
+// =====================================
 
-  ebooksSection.style.display = "none";
-  productsSection.style.display = "none";
-  essentialsSection.style.display = "";
+async function loadMarket(){
 
-  renderEssentials(posts);
+    if(loading) return;
 
-}
+    loading = true;
 
-  } catch (err) {
+    showLoading();
 
-    console.error(err);
+    try{
 
-  }
+        let url =
+        `${API_BASE_URL}/videos/market`;
 
-}
+        if(currentMarketType !== "all"){
 
-// ===============================
-// EBOOKS
-// ===============================
+            url += `?type=${encodeURIComponent(currentMarketType)}`;
 
-function renderEbooks(posts) {
-
-  const ebooks =
-    posts.filter(p => p.type === "ebook");
-
-  const grid =
-    document.getElementById("ebooksGrid");
-
-  if (!grid) return;
-
-  grid.innerHTML =
-    ebooks.map(book => `
-
-      <div class="ebook-card"
-onclick="openProduct(${book.id})">
-
-        <img
-  src="${
-    book.coverUrl?.startsWith("http")
-      ? book.coverUrl
-      : API_BASE_URL + book.coverUrl
-  }"
->
-
-        <div class="ebook-content">
-
-          <div class="ebook-title">
-            ${book.title || 'Untitled'}
-          </div>
-
-          <div>
-            @${book.creatorUsername || 'creator'}
-          </div>
-
-          <div class="ebook-price">
-            ${formatPrice(book.price || 0)}
-          </div>
-
-        </div>
-
-      </div>
-
-    `).join("");
-
-}
-
-// ===============================
-// PRODUCTS
-// ===============================
-
-function renderProducts(posts) {
-
-  const products =
-    posts.filter(p => p.type === "fashion");
-
-  const grid =
-    document.getElementById("productsGrid");
-
-  if (!grid) return;
-
-  grid.innerHTML =
-    products.map(product => `
-
-      <div class="product-card"
-onclick="openProduct(${product.id})">
-
-       ${
-  (product.fileUrl || "").includes(".mp4") ||
-  (product.fileUrl || "").includes(".mov") ||
-  (product.fileUrl || "").includes(".webm")
-
-  ? `
-
-    <video
-      src="${
-        product.fileUrl?.startsWith("http")
-          ? product.fileUrl
-          : API_BASE_URL + product.fileUrl
-      }"
-      autoplay
-      loop
-      playsinline
-    ></video>
-
-  `
-
-  : `
-
-    <img
-      src="${
-        product.fileUrl?.startsWith("http")
-          ? product.fileUrl
-          : API_BASE_URL + product.fileUrl
-      }"
-    >
-
-  `
-}
-
-        <div class="product-content">
-
-          <div class="product-title">
-            ${product.title || 'Product'}
-          </div>
-
-          <div>
-            @${product.creatorUsername || 'seller'}
-          </div>
-
-          <div class="product-price">
-            ${formatPrice(product.price || 0)}
-          </div>
-
-        </div>
-
-      </div>
-
-    `).join("");
-
-}
-
-function renderEssentials(posts) {
-
-  const essentials =
-    posts.filter(
-      p => p.type === "essential"
-    );
-
-  const grid =
-    document.getElementById(
-      "essentialsGrid"
-    );
-
-  if (!grid) return;
-
-  grid.innerHTML =
-    essentials.map(item => `
-
-      <div
-        class="product-card"
-        onclick="openProduct(${item.id})">
-
-        ${
-          (item.fileUrl || "").includes(".mp4") ||
-          (item.fileUrl || "").includes(".mov") ||
-          (item.fileUrl || "").includes(".webm")
-
-          ?
-
-          `
-          <video
-            src="${
-              item.fileUrl?.startsWith("http")
-                ? item.fileUrl
-                : API_BASE_URL + item.fileUrl
-            }"
-            autoplay
-            loop
-            playsinline>
-          </video>
-          `
-
-          :
-
-          `
-          <img
-            src="${
-              item.fileUrl?.startsWith("http")
-                ? item.fileUrl
-                : API_BASE_URL + item.fileUrl
-            }">
-          `
         }
 
-        <div class="product-content">
+        const response =
+        await fetch(url);
 
-          <div class="product-title">
-            ${item.title}
-          </div>
+        if(!response.ok){
 
-          <div>
-            @${item.creatorUsername}
-          </div>
+            throw new Error("Unable to load market.");
 
-          <div class="product-price">
-            ${formatPrice(item.price || 0)}
-          </div>
+        }
+
+        const result =
+        await response.json();
+
+        marketItems =
+        Array.isArray(result)
+
+            ? result
+
+            : Array.isArray(result.data)
+
+                ? result.data
+
+                : [];
+
+        if(!marketItems.length){
+
+            marketContainer.innerHTML = `
+
+            <div class="video-error">
+
+                <h2>No products found</h2>
+
+                <p>
+
+                    There are no products in this category.
+
+                </p>
+
+            </div>
+
+            `;
+
+            hideLoading();
+
+            loading = false;
+
+            return;
+
+        }
+
+        currentItem = marketItems[0];
+
+        renderMarket();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        marketContainer.innerHTML = `
+
+        <div class="video-error">
+
+            <h2>
+
+                Unable to load marketplace
+
+            </h2>
+
+            <p>
+
+                Please try again later.
+
+            </p>
+
+            <button onclick="loadMarket()">
+
+                Retry
+
+            </button>
 
         </div>
 
-      </div>
+        `;
 
-    `).join("");
+    }
+
+    hideLoading();
+
+    loading = false;
 
 }
 
+// =====================================
+// REFRESH
+// =====================================
 
-// Click handlers
+async function refreshMarket(){
+
+    marketItems = [];
+    console.log(marketItems);
+
+    currentItem = null;
+
+    await loadMarket();
+
+}
+
+// =====================================
+// CATEGORY SWITCHING
+// =====================================
+
 document
-  .querySelectorAll(".market-tab")
-  .forEach(tab => {
+.querySelectorAll(".market-tab")
+.forEach(button=>{
 
-    tab.addEventListener(
-      "click",
-      () => {
+    button.onclick = ()=>{
 
         document
-          .querySelectorAll(".market-tab")
-          .forEach(btn =>
-            btn.classList.remove(
-              "active-category"
-            )
-          );
 
-        tab.classList.add(
-          "active-category"
+        .querySelectorAll(".market-tab")
+
+        .forEach(tab=>{
+
+            tab.classList.remove(
+
+                "active-category"
+
+            );
+
+        });
+
+        button.classList.add(
+
+            "active-category"
+
         );
 
         currentMarketType =
-          tab.dataset.type;
+        button.dataset.type;
 
-        loadMarket(
-          currentMarketType
-        );
+        refreshMarket();
 
-      }
-    );
+    };
 
-  });
+});
 
-// ===============================
+// =====================================
 // INITIALIZE
-// ===============================
+// =====================================
 
-loadMarket();
+window.addEventListener(
 
-// ===============================
-// OPEN PRODUCT
-// ===============================
+    "DOMContentLoaded",
 
-function openProduct(id) {
+    ()=>{
 
-  window.location.href =
+        loadMarket();
+
+    }
+
+);
+
+
+// =====================================
+// VINDARR MARKET
+// PART 2
+// Render Fullscreen Product Feed
+// =====================================
+
+function renderMarket(){
+
+    if(!marketContainer) return;
+
+    if(!marketContainer){
+    console.error("marketFeedList not found");
+    return;
+}
+
+    marketContainer.innerHTML = "";
+
+    marketItems.forEach(item=>{
+
+        //--------------------------------
+// Only show products users can buy
+//--------------------------------
+
+if (
+    item.type !== "ebook" &&
+    item.type !== "fashion" &&
+    item.type !== "essential"
+){
+    return;
+}
+
+//--------------------------------
+// MEDIA
+//--------------------------------
+
+let media = "";
+let isVideo = false;
+
+switch(item.type){
+
+    case "ebook":
+
+        media = item.coverUrl;
+        isVideo = false;
+        break;
+
+    case "fashion":
+
+        media = item.fileUrl;
+
+        isVideo =
+            media &&
+            (
+                media.endsWith(".mp4") ||
+                media.endsWith(".mov") ||
+                media.endsWith(".webm")
+            );
+
+        break;
+
+    case "essential":
+
+        media = item.fileUrl;
+        isVideo = false;
+        break;
+
+}
+
+if(!media) return;
+
+media = media.startsWith("http")
+    ? media
+    : API_BASE_URL + media;
+    
+
+        //--------------------------------
+        // Avatar
+        //--------------------------------
+
+        const avatar =
+
+            item.creatorAvatar
+
+            ? (
+
+                item.creatorAvatar.startsWith("http")
+
+                ? item.creatorAvatar
+
+                : API_BASE_URL + item.creatorAvatar
+
+            )
+
+            : "https://i.pravatar.cc/150";
+
+        //--------------------------------
+        // Card
+        //--------------------------------
+
+        const card =
+        document.createElement("div");
+
+        card.className =
+        "single-video";
+
+        card.dataset.id =
+        item.id;
+
+        card.innerHTML = `
+
+<!-- ===========================
+MEDIA
+=========================== -->
+
+${
+isVideo
+
+?
+
+`
+
+<video
+
+class="market-video"
+
+src="${media}"
+
+autoplay
+
+playsinline
+
+loop
+
+></video>
+
+`
+
+:
+
+`
+
+<img
+
+class="market-image"
+
+src="${media}"
+
+loading="lazy"
+
+>
+
+`
+
+}
+
+<div class="video-overlay"></div>
+
+<!-- ===========================
+TOP BAR
+=========================== -->
+
+<div class="video-top">
+
+    <div
+        class="top-circle"
+        onclick="history.back()">
+
+        <i class="bi bi-arrow-left"></i>
+
+    </div>
+
+    <div class="top-circle">
+
+        <i class="bi bi-three-dots"></i>
+
+    </div>
+
+</div>
+
+<!-- ===========================
+RIGHT ACTIONS
+=========================== -->
+
+<div class="video-actions">
+
+    <div class="action-item">
+
+        <button
+            class="action-btn"
+            onclick="openReviews(${item.id})">
+
+            💬
+
+        </button>
+
+        <span>
+
+            ${item.comments ? item.comments.length : 0}
+
+        </span>
+
+    </div>
+
+    <div class="action-item">
+
+        <button
+            class="action-btn"
+            onclick="saveProduct(${item.id})">
+
+            🔖
+
+        </button>
+
+        <span>
+
+            Save
+
+        </span>
+
+    </div>
+
+    <div class="action-item">
+
+        <button
+            class="action-btn"
+            onclick="shareProduct(${item.id})">
+
+            📤
+
+        </button>
+
+        <span>
+
+            Share
+
+        </span>
+
+    </div>
+
+    <div class="action-item">
+
+        <button
+            class="action-btn"
+            onclick="chatSeller('${item.creatorUsername}')">
+
+            ✉️
+
+        </button>
+
+        <span>
+
+            Chat
+
+        </span>
+
+    </div>
+
+</div>
+
+<!-- ===========================
+PRODUCT INFO
+=========================== -->
+
+<div class="video-info">
+
+    <div class="creator-row">
+
+        <img
+
+            class="creator-avatar"
+
+            src="${avatar}"
+
+            onclick="openSeller('${item.creatorUsername}')"
+
+        >
+
+        <div>
+
+            <div class="creator-name">
+
+                @${item.creatorUsername}
+
+            </div>
+
+            <div class="market-price">
+
+                ₦${Number(item.price || 0).toLocaleString()}
+
+            </div>
+
+        </div>
+
+        <button
+
+            class="follow-btn"
+
+            onclick="buyNow(${item.id})">
+
+            Buy Now
+
+        </button>
+
+    </div>
+
+    <div class="video-description">
+
+        <strong>
+
+            ${item.title || ""}
+
+        </strong>
+
+        <div
+
+            id="desc-${item.id}"
+
+            class="description-text collapsed">
+
+            ${item.context || ""}
+
+        </div>
+
+        ${
+        (item.context || "").length > 120
+
+        ?
+
+        `
+
+        <span
+
+            class="read-more"
+
+            onclick="toggleDescription(${item.id})">
+
+            ...more
+
+        </span>
+
+        `
+
+        :
+
+        ""
+
+        }
+
+    </div>
+
+    <div class="audio-pill">
+
+        <i class="bi bi-bag"></i>
+
+        <span>
+
+            Vindarr Marketplace
+
+        </span>
+
+    </div>
+
+</div>
+
+<!-- ===========================
+BOTTOM BAR
+=========================== -->
+
+<div class="comment-bar">
+
+    <div
+
+        class="comment-input"
+
+        onclick="openReviews(${item.id})">
+
+        <div class="comment-icon">
+
+            💬
+
+        </div>
+
+        <input
+
+            readonly
+
+            placeholder="Write a review..."
+
+        >
+
+    </div>
+
+    <button
+
+        class="send-btn"
+
+        onclick="shareProduct(${item.id})">
+
+        <i class="bi bi-send-fill"></i>
+
+    </button>
+
+</div>
+
+`;
+
+        marketContainer.appendChild(card);
+
+    });
+
+    setupObserver();
+
+}
+
+
+// =====================================
+// VINDARR MARKET
+// PART 3
+// Product Actions
+// =====================================
+
+// =====================================
+// BUY NOW
+// =====================================
+
+function buyNow(id){
+
+    window.location.href =
     `product.html?id=${id}`;
 
 }
+
+// =====================================
+// REVIEWS
+// =====================================
+
+function openReviews(id){
+
+    window.location.href =
+    `comments.html?video=${id}`;
+
+}
+
+// =====================================
+// SAVE PRODUCT
+// =====================================
+
+function saveProduct(id){
+
+    let saved = JSON.parse(
+
+        localStorage.getItem(
+            "savedProducts"
+        ) || "[]"
+
+    );
+
+    if(saved.includes(id)){
+
+        alert("Already saved");
+
+        return;
+
+    }
+
+    saved.push(id);
+
+    localStorage.setItem(
+
+        "savedProducts",
+
+        JSON.stringify(saved)
+
+    );
+
+    alert("Saved successfully");
+
+}
+
+// =====================================
+// SHARE PRODUCT
+// =====================================
+
+async function shareProduct(id){
+
+    const url =
+    `${window.location.origin}/product.html?id=${id}`;
+
+    try{
+
+        if(navigator.share){
+
+            await navigator.share({
+
+                title:"Vindarr Marketplace",
+
+                text:"Check out this product on Vindarr",
+
+                url
+
+            });
+
+        }
+
+        else{
+
+            await navigator.clipboard.writeText(url);
+
+            alert("Product link copied");
+
+        }
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+// =====================================
+// CHAT SELLER
+// =====================================
+
+function chatSeller(username){
+
+    window.location.href =
+
+    `messages.html?user=${encodeURIComponent(username)}`;
+
+}
+
+// =====================================
+// SELLER PROFILE
+// =====================================
+
+function openSeller(username){
+
+    window.location.href =
+
+    `profile.html?user=${encodeURIComponent(username)}`;
+
+}
+
+// =====================================
+// READ MORE
+// =====================================
+
+function toggleDescription(id){
+
+    const text =
+    document.getElementById(`desc-${id}`);
+
+    if(!text) return;
+
+    const btn =
+    text.nextElementSibling;
+
+    if(text.classList.contains("collapsed")){
+
+        text.classList.remove("collapsed");
+
+        if(btn){
+
+            btn.textContent =
+            "Show less";
+
+        }
+
+    }
+
+    else{
+
+        text.classList.add("collapsed");
+
+        if(btn){
+
+            btn.textContent =
+            "...more";
+
+        }
+
+    }
+
+}
+
+// =====================================
+// PLAY / PAUSE VIDEO
+// =====================================
+
+document.addEventListener("click",(e)=>{
+
+    if(
+
+        !e.target.classList.contains("market-video")
+
+    ){
+
+        return;
+
+    }
+
+    if(e.target.paused){
+
+        e.target.play();
+
+    }
+
+    else{
+
+        e.target.pause();
+
+    }
+
+});
+
+// =====================================
+// AUTO HIDE CONTROLS
+// =====================================
+
+let hideTimer;
+
+document.addEventListener("mousemove",()=>{
+
+    const videos =
+
+    document.querySelectorAll(".market-video");
+
+    videos.forEach(video=>{
+
+        video.controls = true;
+
+    });
+
+    clearTimeout(hideTimer);
+
+    hideTimer = setTimeout(()=>{
+
+        videos.forEach(video=>{
+
+            video.controls = false;
+
+        });
+
+    },3000);
+
+});
+
+
+// =====================================
+// VINDARR MARKET
+// PART 4
+// Autoplay + Feed Behaviour + Initialize
+// =====================================
+
+let observer;
+
+// =====================================
+// AUTOPLAY VIDEOS
+// =====================================
+
+function setupObserver(){
+
+    if(observer){
+
+        observer.disconnect();
+
+    }
+
+    observer = new IntersectionObserver(
+
+        entries=>{
+
+            entries.forEach(entry=>{
+
+                const media =
+                entry.target;
+
+                if(
+
+                    !media.classList.contains(
+                        "market-video"
+                    )
+
+                ){
+
+                    return;
+
+                }
+
+                if(entry.isIntersecting){
+
+                    media.play().catch(()=>{});
+
+                }
+
+                else{
+
+                    media.pause();
+
+                }
+
+            });
+
+        },
+
+        {
+
+            threshold:0.75
+
+        }
+
+    );
+
+    document
+
+    .querySelectorAll(".market-video")
+
+    .forEach(video=>{
+
+        observer.observe(video);
+
+    });
+
+}
+
+// =====================================
+// PAGE VISIBILITY
+// Pause videos when user leaves tab
+// =====================================
+
+document.addEventListener(
+
+    "visibilitychange",
+
+    ()=>{
+
+        document
+
+        .querySelectorAll(".market-video")
+
+        .forEach(video=>{
+
+            if(document.hidden){
+
+                video.pause();
+
+            }
+
+            else{
+
+                video.play().catch(()=>{});
+
+            }
+
+        });
+
+    }
+
+);
+
+// =====================================
+// MUTE / UNMUTE
+// Double click video
+// =====================================
+
+document.addEventListener("dblclick",(e)=>{
+
+    if(
+
+        !e.target.classList.contains(
+            "market-video"
+        )
+
+    ){
+
+        return;
+
+    }
+
+    e.target.muted =
+    !e.target.muted;
+
+});
+
+// =====================================
+// KEEP TRACK OF CURRENT PRODUCT
+// =====================================
+
+window.addEventListener("scroll",()=>{
+
+    const cards =
+
+    document.querySelectorAll(".single-video");
+
+    cards.forEach((card,index)=>{
+
+        const rect =
+        card.getBoundingClientRect();
+
+        if(
+
+            rect.top >= -100 &&
+
+            rect.top <= 100
+
+        ){
+
+            currentItem =
+            marketItems[index];
+
+        }
+
+    });
+
+});
+
+
+
+// =====================================
+// CATEGORY ACTIVE STATE
+// =====================================
+
+window.addEventListener(
+
+    "DOMContentLoaded",
+
+    ()=>{
+
+        document
+
+        .querySelectorAll(".market-tab")
+
+        .forEach(tab=>{
+
+            if(
+
+                tab.dataset.type ===
+
+                currentMarketType
+
+            ){
+
+                tab.classList.add(
+                    "active-category"
+                );
+
+            }
+
+        });
+
+    }
+
+);
+

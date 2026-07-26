@@ -1,200 +1,892 @@
-/* ===============================
-MARKET PAGE
-=============================== */
+/* ==========================================
+VINDARR MARKET
+FULLSCREEN FEED
+========================================== */
 
-.market-page{
-  padding-top:80px;
-  padding-bottom:90px;
-  background:#000;
-  min-height:100vh;
-}
+html,
+body{
 
-/* SEARCH */
+margin:0;
+padding:0;
 
-.market-search{
-  padding:15px;
-}
+width:100%;
+height:100%;
 
-.market-search input{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:15px;
-  background:#111;
-  color:white;
-  font-size:15px;
-}
+background:#000;
 
-/* CATEGORIES */
+overflow:hidden;
 
-/* .market-categories{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  padding:0 15px 15px;
-} */
+font-family:Inter,sans-serif;
 
-.market-categories{
-
-position:sticky;
-
-top:70px;
-
-z-index:50;
-
-background:black;
+color:#fff;
 
 }
 
+#marketFeed{
 
-.market-categories button{
-  border:none;
-  padding:10px 16px;
-  border-radius:30px;
-  background:#111;
-  color:white;
-  white-space:nowrap;
+position:fixed;
+
+top:0;
+left:0;
+
+width:100vw;
+height:100vh;
+
+overflow-y:auto;
+
+scroll-snap-type:y mandatory;
+
+scroll-behavior:smooth;
+
+background:#000;
+
+scrollbar-width:none;
+
 }
 
-.active-category{
-  background:red !important;
+#marketFeed::-webkit-scrollbar{
+
+display:none;
+
 }
 
-/* SECTIONS */
+/* ==========================================
+ONE PRODUCT
+========================================== */
 
-.market-section{
-  padding:20px 15px;
+.single-video{
+
+position:relative;
+
+width:100vw;
+height:100vh;
+
+scroll-snap-align:start;
+
+scroll-snap-stop:always;
+
+overflow:hidden;
+
+background:#000;
+
 }
 
-.section-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px;
+/* ==========================================
+MEDIA
+========================================== */
+
+.market-video,
+.market-image{
+
+position:absolute;
+
+top:0;
+left:0;
+
+width:100%;
+height:100%;
+
+object-fit:cover;
+
+background:#000;
+
 }
 
-.section-header h2{
-  font-size:20px;
-}
+/* ==========================================
+OVERLAY
+========================================== */
 
-.section-header span{
-  color:red;
-  font-size:14px;
-}
+.video-overlay{
 
-/* EBOOK GRID */
+position:absolute;
 
-.ebooks-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
-}
-
-.ebook-card{
-  background:#111;
-  border-radius:18px;
-  overflow:hidden;
-}
-
-.ebook-card img{
-  width:100%;
-  height:220px;
-  object-fit:cover;
-}
-
-.ebook-content{
-  padding:12px;
-}
-
-.ebook-title{
-  font-weight:bold;
-  margin-bottom:5px;
-}
-
-.ebook-price{
-  color:red;
-  margin-top:8px;
-}
-
-/* PRODUCT GRID */
-
-.products-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
-}
-
-.product-card{
-  background:#111;
-  border-radius:18px;
-  overflow:hidden;
-}
-
-.product-card img,
-.product-card video{
-  width:100%;
-  height:240px;
-  object-fit:cover;
-}
-
-.product-content{
-  padding:12px;
-}
-
-.product-title{
-  font-weight:bold;
-}
-
-.product-price{
-  color:red;
-  margin-top:8px;
-}
-
-/* new add */
-.market-hero{
-
-margin:15px;
-
-padding:30px;
-
-border-radius:20px;
+inset:0;
 
 background:
 
-linear-gradient(135deg,#b30000,#000);
+linear-gradient(
+
+180deg,
+
+rgba(0,0,0,.18),
+
+rgba(0,0,0,0) 35%,
+
+rgba(0,0,0,.62)
+
+);
+
+pointer-events:none;
 
 }
 
-.market-hero h2{
+/* ==========================================
+TOP BAR
+========================================== */
 
-font-size:28px;
+.video-top{
+
+position:absolute;
+
+top:18px;
+left:18px;
+right:18px;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+z-index:200;
 
 }
 
-.market-hero p{
+.top-circle{
 
-margin-top:8px;
+width:46px;
+height:46px;
 
-color:#ddd;
+border-radius:50%;
 
-}
+display:flex;
 
-.product-card,
-.ebook-card{
+justify-content:center;
+
+align-items:center;
+
+background:rgba(0,0,0,.45);
+
+backdrop-filter:blur(15px);
+
+color:#fff;
+
+font-size:20px;
+
+cursor:pointer;
 
 transition:.25s;
+
+}
+
+.top-circle:hover{
+
+transform:scale(1.08);
+
+background:#d10000;
+
+}
+
+/* ==========================================
+LEFT INFO PANEL
+========================================== */
+
+.video-info{
+
+position:absolute;
+
+left:18px;
+
+right:95px;
+
+bottom:95px;
+
+z-index:120;
+
+}
+
+.creator-row{
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+margin-bottom:14px;
+
+}
+
+.creator-avatar{
+
+width:52px;
+
+height:52px;
+
+border-radius:50%;
+
+object-fit:cover;
+
+border:2px solid #fff;
 
 cursor:pointer;
 
 }
 
-.product-card:hover,
-.ebook-card:hover{
+.creator-name{
 
-transform:translateY(-6px);
+font-size:16px;
 
-box-shadow:
+font-weight:700;
 
-0 20px 45px rgba(255,0,0,.25);
+display:flex;
+
+align-items:center;
+
+gap:6px;
+
+}
+
+.market-price{
+
+margin-top:4px;
+
+font-size:18px;
+
+font-weight:700;
+
+color:#ff4747;
+
+}
+
+/* ==========================================
+BUY NOW BUTTON
+========================================== */
+
+.follow-btn{
+
+margin-left:auto;
+
+padding:10px 20px;
+
+border:none;
+
+border-radius:999px;
+
+background:#d10000;
+
+color:#fff;
+
+font-size:14px;
+
+font-weight:700;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.follow-btn:hover{
+
+background:#ff2b2b;
+
+transform:scale(1.05);
+
+}
+
+/* ==========================================
+DESCRIPTION
+========================================== */
+
+.video-description{
+
+margin-top:14px;
+
+font-size:15px;
+
+line-height:1.55;
+
+text-shadow:
+
+0 2px 8px rgba(0,0,0,.85);
+
+}
+
+.video-description strong{
+
+display:block;
+
+font-size:17px;
+
+margin-bottom:6px;
+
+}
+
+.description-text{
+
+display:block;
+
+}
+
+.description-text.collapsed{
+
+display:-webkit-box;
+
+-webkit-line-clamp:2;
+
+-webkit-box-orient:vertical;
+
+overflow:hidden;
+
+}
+
+.read-more{
+
+display:inline-block;
+
+margin-top:8px;
+
+font-size:14px;
+
+font-weight:600;
+
+color:#ddd;
+
+cursor:pointer;
+
+transition:.2s;
+
+}
+
+.read-more:hover{
+
+color:#fff;
+
+}
+
+/* ==========================================
+MARKET LABEL
+========================================== */
+
+.audio-pill{
+
+margin-top:14px;
+
+display:inline-flex;
+
+align-items:center;
+
+gap:8px;
+
+padding:8px 14px;
+
+border-radius:999px;
+
+background:rgba(0,0,0,.45);
+
+backdrop-filter:blur(15px);
+
+font-size:13px;
+
+font-weight:600;
+
+color:#fff;
+
+}
+
+.audio-pill i{
+
+font-size:15px;
+
+color:#ff4747;
+
+}
+
+/* ==========================================
+RIGHT ACTIONS
+========================================== */
+
+.video-actions{
+
+position:absolute;
+
+right:18px;
+
+bottom:120px;
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+gap:22px;
+
+z-index:150;
+
+}
+
+.action-item{
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+gap:6px;
+
+}
+
+.action-btn{
+
+width:56px;
+
+height:56px;
+
+border:none;
+
+border-radius:50%;
+
+background:rgba(0,0,0,.45);
+
+backdrop-filter:blur(15px);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:24px;
+
+color:#fff;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.action-btn:hover{
+
+transform:scale(1.08);
+
+background:#d10000;
+
+}
+
+.action-item span{
+
+font-size:12px;
+
+font-weight:600;
+
+color:#fff;
+
+text-shadow:0 2px 8px rgba(0,0,0,.9);
+
+}
+
+/* ==========================================
+BOTTOM REVIEW BAR
+========================================== */
+
+.comment-bar{
+
+position:absolute;
+
+left:18px;
+
+right:18px;
+
+bottom:20px;
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+z-index:160;
+
+}
+
+.comment-input{
+
+flex:1;
+
+height:52px;
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+padding:0 18px;
+
+border-radius:999px;
+
+background:rgba(0,0,0,.50);
+
+backdrop-filter:blur(15px);
+
+cursor:pointer;
+
+}
+
+.comment-input input{
+
+flex:1;
+
+background:transparent;
+
+border:none;
+
+outline:none;
+
+color:#fff;
+
+font-size:14px;
+
+pointer-events:none;
+
+}
+
+.comment-input input::placeholder{
+
+color:#ddd;
+
+}
+
+.comment-icon{
+
+font-size:20px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+}
+
+.send-btn{
+
+width:52px;
+
+height:52px;
+
+border:none;
+
+border-radius:50%;
+
+background:#d10000;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:20px;
+
+color:#fff;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.send-btn:hover{
+
+background:#ff2b2b;
+
+transform:scale(1.08);
+
+}
+
+/* ==========================================
+LOADING
+========================================== */
+
+.market-loading{
+
+position:fixed;
+
+inset:0;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+background:#000;
+
+z-index:9999;
+
+}
+
+/* ==========================================
+ANIMATIONS
+========================================== */
+
+.single-video{
+
+animation:fadeUp .35s ease;
+
+}
+
+@keyframes fadeUp{
+
+from{
+
+opacity:0;
+
+transform:translateY(25px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+}
+
+/* ==========================================
+SCROLL SNAP
+========================================== */
+
+#marketFeed{
+
+scroll-snap-type:y mandatory;
+
+scroll-behavior:smooth;
+
+overscroll-behavior-y:contain;
+
+}
+
+.single-video{
+
+scroll-snap-align:start;
+
+scroll-snap-stop:always;
+
+}
+
+/* ==========================================
+SAFE AREA SUPPORT
+========================================== */
+
+.video-top{
+
+padding-top:env(safe-area-inset-top);
+
+}
+
+.comment-bar{
+
+padding-bottom:env(safe-area-inset-bottom);
+
+}
+
+/* ==========================================
+HELPER CLASSES
+========================================== */
+
+.hidden{
+
+display:none !important;
+
+}
+
+.fade{
+
+opacity:0;
+
+transition:opacity .25s ease;
+
+}
+
+.fade.show{
+
+opacity:1;
+
+}
+
+.clickable{
+
+cursor:pointer;
+
+}
+
+.center{
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+}
+
+/* ==========================================
+VIDEO / IMAGE TRANSITIONS
+========================================== */
+
+.market-video,
+.market-image{
+
+transition:
+
+transform .35s ease,
+
+opacity .35s ease;
+
+}
+
+.market-video:hover,
+.market-image:hover{
+
+transform:scale(1.02);
+
+}
+
+/* ==========================================
+RESPONSIVE
+========================================== */
+
+@media (max-width:768px){
+
+.video-info{
+
+left:16px;
+
+right:82px;
+
+bottom:92px;
+
+}
+
+.creator-avatar{
+
+width:46px;
+
+height:46px;
+
+}
+
+.creator-name{
+
+font-size:15px;
+
+}
+
+.market-price{
+
+font-size:16px;
+
+}
+
+.follow-btn{
+
+padding:8px 16px;
+
+font-size:13px;
+
+}
+
+.video-actions{
+
+right:14px;
+
+bottom:118px;
+
+gap:18px;
+
+}
+
+.action-btn{
+
+width:50px;
+
+height:50px;
+
+font-size:22px;
+
+}
+
+.comment-bar{
+
+left:14px;
+
+right:14px;
+
+bottom:16px;
+
+}
+
+.comment-input{
+
+height:48px;
+
+}
+
+.send-btn{
+
+width:48px;
+
+height:48px;
+
+}
+
+}
+
+/* ==========================================
+SMALL DEVICES
+========================================== */
+
+@media (max-width:480px){
+
+.video-description{
+
+font-size:14px;
+
+}
+
+.audio-pill{
+
+font-size:12px;
+
+padding:7px 12px;
+
+}
+
+.market-price{
+
+font-size:15px;
+
+}
+
+.action-item span{
+
+font-size:11px;
+
+}
+
+}
+
+/* ==========================================
+PERFORMANCE
+========================================== */
+
+.market-video{
+
+will-change:transform;
+
+}
+
+.market-image{
+
+will-change:transform;
 
 }
