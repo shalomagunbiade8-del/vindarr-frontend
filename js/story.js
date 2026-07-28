@@ -1,279 +1,612 @@
-const params =
-new URLSearchParams(window.location.search);
+console.log("story.js loaded");
 
-const storyId =
-params.get("id");
+// ===========================================
+// URL PARAMS
+// ===========================================
 
-loadStory();
-loadComments();
+const params = new URLSearchParams(window.location.search);
+
+const storyId = params.get("id");
+
+const token = localStorage.getItem("token");
+
+let currentStory = null;
+
+let expanded = false;
+
+// ===========================================
+// LOAD STORY
+// ===========================================
 
 async function loadStory(){
 
-  try{
+    try{
 
-    const res =
-    await fetch(
-      `${API_BASE_URL}/stories/${storyId}`
-    );
+        const res = await fetch(
 
-    const story =
-    await res.json();
+            `${API_BASE_URL}/stories/${storyId}`,
 
-    renderStory(story);
+            {
 
-  }catch(err){
+                headers: token ? {
 
-    console.error(err);
+                    Authorization:`Bearer ${token}`
 
-  }
+                } : {}
+
+            }
+
+        );
+
+        const story = await res.json();
+
+        currentStory = story;
+
+        renderStory(story);
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+    }
 
 }
+
+// ===========================================
+// RENDER STORY
+// ===========================================
 
 function renderStory(story){
 
-  const page =
-  document.getElementById("storyPage");
+    if(!story) return;
 
-  page.innerHTML = `
-
-    <img
-      src="${
+    const heroImage =
         story.imageUrl
         ? story.imageUrl
-        : 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop'
-      }"
-      class="story-banner"
-    >
+        : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop";
 
-    <div class="story-wrapper">
+    const avatar =
+        story.avatar
+        ? story.avatar
+        : "https://i.pravatar.cc/200";
 
-      <h1 class="story-main-title">
+    const words =
+        (story.content || "")
+        .trim()
+        .split(/\s+/)
+        .length;
 
-        ${story.title}
+    const readTime =
+        Math.max(
+            1,
+            Math.ceil(words / 220)
+        );
 
-      </h1>
+    // HERO
 
-      <div class="story-author">
+    document.getElementById(
 
-      <div class="story-share">
+        "storyHeroImage"
 
-  <button
-    onclick="shareCurrentStory()"
-  >
-    📤 Share Story
-  </button>
+    ).src = heroImage;
 
-</div>
+    document.getElementById(
 
-        By @${story.username || 'creator'}
+        "storyAuthorAvatar"
 
-      </div>
+    ).src = avatar;
 
-      <div class="story-body">
+    document.getElementById(
 
-        ${(story.content || '').replace(/\n/g, '<br>')}
+        "storyAuthorName"
 
-      </div>
+    ).textContent =
 
-    </div>
+        `@${story.username || "creator"}`;
 
-  `;
+    document.getElementById(
 
-}
+        "storyMeta"
 
-const token =
-localStorage.getItem("token");
+    ).textContent =
 
-async function loadComments(){
+        `${formatDate(story.createdAt)} • ${readTime} min read`;
 
-  try{
+    document.getElementById(
 
-    const res =
-    await fetch(
-      `${API_BASE_URL}/comments/story/${storyId}`
-    );
+        "storyTitle"
 
-    const comments =
-    await res.json();
+    ).textContent = story.title;
 
-    renderComments(comments);
+    // BODY
 
-  }catch(err){
+    const body =
+        document.getElementById(
 
-    console.error(err);
+            "storyBody"
 
-  }
+        );
 
-}
+    body.innerHTML =
+        (story.content || "")
+        .replace(/\n/g,"<br><br>");
 
-function renderComments(comments){
+    // COLLAPSE LONG STORIES
 
-  const container =
-  document.getElementById(
-    "commentsContainer"
-  );
+    if((story.content || "").length > 1200){
 
-  if(!comments.length){
+        body.classList.add("collapsed");
 
-    container.innerHTML = `
-      <p class="story-author">
-        No comments yet
-      </p>
-    `;
+        document.getElementById(
 
-    return;
+            "storyReadMore"
 
-  }
-
-  container.innerHTML =
-  comments.map(comment => `
-
-    <div class="story-comment">
-
-      <div class="story-comment-top">
-
-        <img
-          src="${
-            comment.author?.avatar ||
-            'https://i.pravatar.cc/100'
-          }"
-          class="story-comment-avatar"
-        >
-
-        <div>
-
-          <div class="story-comment-user">
-            @${comment.author?.username || 'user'}
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="story-comment-body">
-        ${comment.text || ''}
-      </div>
-
-    </div>
-
-  `).join("");
-
-}
-
-async function postComment(){
-
-  const input =
-  document.getElementById(
-    "commentInput"
-  );
-
-  const text =
-  input.value.trim();
-
-  if(!text){
-
-    alert("Comment required");
-
-    return;
-
-  }
-
-  console.log("Sending comment...");
-
-  try{
-
-    const res =
-    await fetch(
-      `${API_BASE_URL}/comments`,
-      {
-        method:"POST",
-
-        headers:{
-          "Content-Type":"application/json",
-          Authorization:`Bearer ${token}`
-        },
-
-        body:JSON.stringify({
-          text,
-          storyId:Number(storyId)
-        })
-      }
-    );
-
-    const data =
-    await res.json();
-
-    console.log("COMMENT RESPONSE:", data);
-
-    if(!res.ok){
-
-      alert(
-        data.message ||
-        "Failed to post comment"
-      );
-
-      return;
+        ).style.display = "inline-flex";
 
     }
 
-    alert("Comment posted");
+    // LIKE COUNT
 
-    input.value = "";
+    document.getElementById(
 
-    loadComments();
+        "storyLikeCount"
 
-  }catch(err){
+    ).textContent =
+        story.likesCount || 0;
 
-    console.error(err);
+    // OWNER MENU
 
-    alert("Network error");
-
-  }
+    checkStoryOwnership(story);
 
 }
 
-function formatDate(date){
+// ===========================================
+// OWNER MENU
+// ===========================================
 
-  return new Date(date)
-  .toLocaleDateString(
-    "en-NG",
-    {
-      day:"numeric",
-      month:"short",
-      year:"numeric"
+function checkStoryOwnership(story){
+
+    const currentUser = getCurrentUser?.();
+
+    if(!currentUser) return;
+
+    if(currentUser.id === story.userId){
+
+        document.getElementById(
+
+            "editStoryBtn"
+
+        ).style.display = "flex";
+
+        document.getElementById(
+
+            "deleteStoryBtn"
+
+        ).style.display = "flex";
+
     }
-  );
 
 }
+
+function toggleStoryMenu(){
+
+    document.getElementById(
+
+        "storyMenu"
+
+    ).classList.toggle("show");
+
+}
+
+// ===========================================
+// READ MORE
+// ===========================================
+
+function toggleStoryContent(){
+
+    const body =
+        document.getElementById("storyBody");
+
+    const btn =
+        document.getElementById("storyReadMore");
+
+    expanded = !expanded;
+
+    if(expanded){
+
+        body.classList.remove("collapsed");
+
+        btn.textContent = "Read Less";
+
+    }
+
+    else{
+
+        body.classList.add("collapsed");
+
+        btn.textContent = "Read More";
+
+    }
+
+}
+
+// ===========================================
+// EDIT STORY
+// ===========================================
+
+async function editCurrentStory(){
+
+    const title = prompt(
+
+        "Edit title",
+
+        currentStory.title
+
+    );
+
+    if(title === null) return;
+
+    const content = prompt(
+
+        "Edit content",
+
+        currentStory.content
+
+    );
+
+    if(content === null) return;
+
+    try{
+
+        const res = await fetch(
+
+            `${API_BASE_URL}/stories/${storyId}`,
+
+            {
+
+                method:"PATCH",
+
+                headers:{
+
+                    "Content-Type":"application/json",
+
+                    Authorization:`Bearer ${token}`
+
+                },
+
+                body:JSON.stringify({
+
+                    title,
+
+                    content
+
+                })
+
+            }
+
+        );
+
+        if(res.ok){
+
+            loadStory();
+
+            alert("Story updated");
+
+        }
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+// ===========================================
+// DELETE STORY
+// ===========================================
+
+async function deleteCurrentStory(){
+
+    if(!confirm("Delete this story?"))
+
+        return;
+
+    try{
+
+        const res = await fetch(
+
+            `${API_BASE_URL}/stories/${storyId}`,
+
+            {
+
+                method:"DELETE",
+
+                headers:{
+
+                    Authorization:`Bearer ${token}`
+
+                }
+
+            }
+
+        );
+
+        if(res.ok){
+
+            window.location.href =
+
+            "stories.html";
+
+        }
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+// ===========================================
+// LIKE
+// ===========================================
+
+async function likeStory(id){
+
+    try{
+
+        await fetch(
+
+            `${API_BASE_URL}/stories/${id}/like`,
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    Authorization:`Bearer ${token}`
+
+                }
+
+            }
+
+        );
+
+        loadStory();
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+// ===========================================
+// SAVE
+// ===========================================
+
+function saveStory(id){
+
+    let saved = JSON.parse(
+
+        localStorage.getItem(
+
+            "savedStories"
+
+        ) || "[]"
+
+    );
+
+    if(!saved.includes(id)){
+
+        saved.push(id);
+
+        localStorage.setItem(
+
+            "savedStories",
+
+            JSON.stringify(saved)
+
+        );
+
+    }
+
+    alert("Story saved");
+
+    window.location.href = "saved.html";
+
+}
+
+// ===========================================
+// COMMENTS
+// ===========================================
+
+function openComments(){
+
+    window.location.href =
+
+    `comments.html?story=${storyId}`;
+
+}
+
+// ===========================================
+// SHARE
+// ===========================================
 
 async function shareCurrentStory(){
 
-  const shareUrl =
+    const url =
+
     `${window.location.origin}/story.html?id=${storyId}`;
 
-  try{
+    try{
 
-    if(navigator.share){
+        if(navigator.share){
 
-      await navigator.share({
-        title:"Vindarr Story",
-        url:shareUrl
-      });
+            await navigator.share({
 
-    }else{
+                title:currentStory.title,
 
-      await navigator.clipboard.writeText(
-        shareUrl
-      );
+                url
 
-      alert("Story link copied");
+            });
+
+        }
+
+        else{
+
+            await navigator.clipboard.writeText(
+
+                url
+
+            );
+
+            alert("Story link copied");
+
+        }
 
     }
 
-  }catch(err){
+    catch(err){
 
-    console.error(err);
+        console.error(err);
 
-  }
+    }
 
 }
+
+// ===========================================
+// DATE
+// ===========================================
+
+function formatDate(date){
+
+    if(!date) return "";
+
+    return new Date(date)
+
+    .toLocaleDateString(
+
+        "en-NG",
+
+        {
+
+            day:"numeric",
+
+            month:"short",
+
+            year:"numeric"
+
+        }
+
+    );
+
+}
+
+// ===========================================
+// READING PROGRESS
+// ===========================================
+
+window.addEventListener(
+
+    "scroll",
+
+    ()=>{
+
+        const progress =
+
+        document.getElementById(
+
+            "storyProgressBar"
+
+        );
+
+        if(!progress) return;
+
+        const total =
+
+        document.documentElement.scrollHeight -
+
+        window.innerHeight;
+
+        const current =
+
+        window.scrollY;
+
+        const percent =
+
+        Math.min(
+
+            100,
+
+            Math.max(
+
+                0,
+
+                (current / total) * 100
+
+            )
+
+        );
+
+        progress.style.width =
+
+        percent + "%";
+
+    }
+
+);
+
+// ===========================================
+// CLOSE MENU WHEN CLICKING OUTSIDE
+// ===========================================
+
+document.addEventListener(
+
+    "click",
+
+    function(e){
+
+        const menu =
+
+        document.getElementById("storyMenu");
+
+        const wrapper =
+
+        document.querySelector(".story-menu-wrapper");
+
+        if(
+
+            menu &&
+            wrapper &&
+            !wrapper.contains(e.target)
+
+        ){
+
+            menu.classList.remove("show");
+
+        }
+
+    }
+
+);
+
+// ===========================================
+// INITIALIZE
+// ===========================================
+
+loadStory();
+
+
+

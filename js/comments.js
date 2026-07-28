@@ -2,13 +2,12 @@
 // VINDARR COMMENTS PAGE
 // =====================================
 
-const commentParams =
-  new URLSearchParams(
-    window.location.search
-  );
+const params = new URLSearchParams(window.location.search);
 
-const videoId =
-  commentParams.get("video");
+const videoId = params.get("video");
+const storyId = params.get("story");
+
+const token = localStorage.getItem("token");
 
 
 // =====================================
@@ -17,62 +16,65 @@ const videoId =
 
 async function loadComments(){
 
-  const list =
-    document.getElementById(
-      "commentsList"
-    );
+    const list = document.getElementById("commentsList");
 
-  if(!videoId){
+    try{
 
-    list.innerHTML = `
-      <div class="empty-comments">
-        Invalid video.
-      </div>
-    `;
+        let url = "";
 
-    return;
+        if(storyId){
 
-  }
+            url = `${API_BASE_URL}/stories/${storyId}/comments`;
 
-  try{
+        }else if(videoId){
 
-    const res =
-      await fetch(
-        `${API_BASE_URL}/comments/video/${videoId}`
-      );
+            url = `${API_BASE_URL}/comments/video/${videoId}`;
 
-    if(!res.ok){
+        }else{
 
-      throw new Error(
-        "Could not load comments"
-      );
+            list.innerHTML=`
+            <div class="empty-comments">
+                Nothing to comment on.
+            </div>
+            `;
+
+            return;
+
+        }
+
+        const res = await fetch(url,{
+    headers: token
+        ? {
+            Authorization:`Bearer ${token}`
+          }
+        : {}
+});
+
+        if(!res.ok){
+
+            throw new Error("Failed");
+
+        }
+
+        const comments = await res.json();
+
+        renderComments(comments);
 
     }
 
-    const comments =
-      await res.json();
+    catch(err){
 
-    renderComments(comments);
+        console.error(err);
 
-  }catch(err){
+        list.innerHTML=`
+        <div class="empty-comments">
 
-    console.error(err);
+            Unable to load comments.
 
-    list.innerHTML = `
-
-      <div class="empty-comments">
-
-        <i class="bi bi-chat-square-text"></i>
-
-        <div>
-          Unable to load comments.
         </div>
+        `;
 
-      </div>
-
-    `;
-
-  }
+    }
 
 }
 
@@ -130,38 +132,29 @@ function renderComments(comments){
 
     comments.map(comment => {
 
-      const avatar =
+    const avatarRaw =
+        comment.user?.avatar ||
+        comment.author?.avatar;
 
-        comment.author?.avatar
-
+    const avatar = avatarRaw
         ? (
+            avatarRaw.startsWith("http")
+                ? avatarRaw
+                : API_BASE_URL + avatarRaw
+        )
+        : "https://i.pravatar.cc/100";
 
-            comment.author.avatar
-              .startsWith("http")
-
-            ?
-
-            comment.author.avatar
-
-            :
-
-            API_BASE_URL +
-            comment.author.avatar
-
-          )
-
-        :
-
-        "https://i.pravatar.cc/100";
-
-
-      const username =
-
+    const username =
+        comment.user?.username ||
         comment.author?.username ||
         "User";
 
+    const message =
+        comment.text ||
+        comment.content ||
+        "";
 
-      return `
+    return `
 
         <article class="comment-card">
 
@@ -183,19 +176,17 @@ function renderComments(comments){
 
             </div>
 
-            <div class="comment-text">
+           <div class="comment-text">
 
-              ${escapeHtml(
-                comment.text || ""
-              )}
+    ${escapeHtml(message)}
 
-            </div>
+</div>
 
             <div class="comment-time">
 
               ${formatCommentTime(
-                comment.createdAt
-              )}
+    comment.createdAt || comment.created_at
+)}
 
             </div>
 
@@ -216,109 +207,76 @@ function renderComments(comments){
 
 async function submitComment(){
 
-  const input =
-    document.getElementById(
-      "commentInput"
-    );
+    const input=document.getElementById("commentInput");
 
-  const button =
-    document.getElementById(
-      "sendCommentBtn"
-    );
+    const button=document.getElementById("sendCommentBtn");
 
-  const text =
-    input.value.trim();
+    const text=input.value.trim();
 
+    if(!text) return;
 
-  if(!text)
-    return;
+    button.disabled=true;
 
+    try{
 
-  const token =
-    localStorage.getItem(
-      "token"
-    );
+        let url="";
+        let body={};
 
+        if(storyId){
 
-  if(!token){
+            url=`${API_BASE_URL}/stories/${storyId}/comments`;
 
-    window.location.href =
-      "login.html";
+            body={
+                content:text
+            };
 
-    return;
+        }else{
 
-  }
+            url=`${API_BASE_URL}/comments`;
 
-
-  button.disabled = true;
-
-
-  try{
-
-    const res =
-      await fetch(
-
-        `${API_BASE_URL}/comments`,
-
-        {
-
-          method:"POST",
-
-          headers:{
-
-            "Content-Type":
-              "application/json",
-
-            Authorization:
-              `Bearer ${token}`
-
-          },
-
-          body:JSON.stringify({
-
-            videoId:
-              Number(videoId),
-
-            text
-
-          })
+            body={
+                videoId:Number(videoId),
+                text:text
+            };
 
         }
 
-      );
+        const res=await fetch(url,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                Authorization:`Bearer ${token}`
+            },
+            body:JSON.stringify(body)
+        });
 
+        if(!res.ok){
 
-    if(!res.ok){
+            throw new Error();
 
-      throw new Error(
-        "Comment failed"
-      );
+        }
+
+        input.value="";
+
+        loadComments();
 
     }
 
-
-    input.value = "";
-
-
-    await loadComments();
-
-
-  }catch(err){
+    catch(err){
 
     console.error(err);
 
-    alert(
-      "Unable to post comment."
-    );
-
-  }finally{
-
-    button.disabled = false;
-
-  }
+    alert("Unable to post comment.");
 
 }
 
+    finally{
+
+        button.disabled=false;
+
+    }
+
+}
 
 // =====================================
 // ENTER TO SEND

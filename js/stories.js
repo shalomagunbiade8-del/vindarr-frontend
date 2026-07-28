@@ -1,547 +1,500 @@
-console.log("stories.js loaded");
+// ===============================================
+// VINDARR STORIES
+// PART 4
+// FULLSCREEN STORY FEED
+// ===============================================
+
+let stories = [];
+
+let currentStory = null;
 
 const token =
 localStorage.getItem("token");
 
-let stories = [];
-let page = 1;
-let loadingMore = false;
-let hasMore = true;
+// ===============================================
+// LOAD STORIES
+// ===============================================
 
-loadStories();
+async function loadStories(){
 
-async function loadStories(reset = true){
+    if(typeof showLoading==="function"){
 
-  try{
-
-    if(reset){
-      page = 1;
-    }
-
-    const res = await fetch(
-      `${API_BASE_URL}/stories?page=${page}`,
-      {
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
-      }
-    );
-
-    const result = await res.json();
-
-    const newStories =
-      result.data || [];
-
-    if(reset){
-
-      stories = newStories;
-
-    }else{
-
-      stories = [
-        ...stories,
-        ...newStories
-      ];
-
-    }
-
-    hasMore =
-      newStories.length > 0;
-
-    renderStories();
-
-  }catch(err){
-
-    console.error(err);
-
-  }
+    showLoading();
 
 }
 
+    try{
+
+        const res = await fetch(
+            `${API_BASE_URL}/stories`,
+            {
+                headers: token
+                    ? {
+                        Authorization:`Bearer ${token}`
+                    }
+                    : {}
+            }
+        );
+
+        console.log("Stories status:",res.status);
+
+        if(!res.ok){
+
+            throw new Error(await res.text());
+
+        }
+
+        const result = await res.json();
+
+        console.log(result);
+
+        stories = Array.isArray(result)
+    ? result
+    : (result.data || []);
+
+        renderStories();
+
+    }
+
+    catch(err){
+
+        console.error("Stories error:",err);
+
+        document.getElementById("storiesFeed").innerHTML=`
+
+            <div
+            style="
+            display:flex;
+            height:100vh;
+            align-items:center;
+            justify-content:center;
+            font-size:22px;
+            ">
+
+                Failed to load stories
+
+            </div>
+
+        `;
+
+    }
+
+    
+
+   if(typeof hideLoading==="function"){
+
+    hideLoading();
+
+}
+
+}
+
+// ===============================================
+// RENDER
+// ===============================================
 
 function renderStories(){
 
-  const container =
-  document.getElementById("storiesFeed");
+const feed =
+document.getElementById("storiesFeed");
 
-  // IMPORTANT
-  const storyList = stories || [];
+feed.innerHTML = "";
 
-  if(!storyList.length){
+stories.forEach(story=>{
 
-    container.innerHTML = `
+const image =
 
-      <div class="stories-empty">
+story.imageUrl ||
 
-        <h2>
-          No stories yet
-        </h2>
+"https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop";
 
-        <p>
-          Be the first creator
-          to publish a story.
-        </p>
+const avatar =
 
-      </div>
+story.avatar ||
 
-    `;
+"https://i.pravatar.cc/200";
 
-    return;
+feed.innerHTML += `
 
-  }
+<div class="story-feed-card">
 
-  container.innerHTML =
-  storyList.map(story => `
+<img
+src="${image}"
+class="story-feed-image">
 
-    <div class="story-card">
+<div class="story-feed-overlay"></div>
 
-      <img
-        src="${
-          story.imageUrl
-          ? story.imageUrl
-          : 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop'
-        }"
-        class="story-image"
-      >
+<!-- TOP -->
 
-      <div class="story-content">
+<div class="story-top">
 
-        <div class="story-meta">
+<button
 
-          <div class="story-user">
+class="story-top-btn"
 
-            <img
-              src="${
-                story.avatar
-                ? story.avatar
-                : 'https://i.pravatar.cc/100'
-              }"
-            >
+onclick="openStoryModal()">
 
-            <span>
-              @${story.username || 'creator'}
-            </span>
+<i class="bi bi-plus-lg"></i>
 
-          </div>
-
-          <div class="story-date">
-
-            ${formatDate(story.createdAt)}
-
-          </div>
-
-        </div>
-
-        <h2 class="story-title">
-
-          ${story.title}
-
-        </h2>
-
-        <p class="story-preview">
-
-          ${
-            story.content
-            ? story.content.substring(0,180)
-            : ''
-          }
-
-        </p>
-
-        <div class="story-actions">
-
-  <button onclick="likeStory(${story.id})">
-
-    ❤️ ${story.likesCount || 0}
-
-  </button>
-
-  <button
-  onclick="shareStory(${story.id})"
->
-  📤 Share
 </button>
 
-  ${
-    getCurrentUser()?.id === story.userId
-    ? `
-      <button
-        onclick="deleteStory(${story.id})"
-        class="story-delete-btn"
-      >
-        Delete
-      </button>
+<button
 
-      <button
-  onclick="editStory(${story.id})"
-  class="story-edit-btn"
->
-  Edit
+class="story-top-btn story-menu-btn"
+
+onclick="toggleStoryMenu()">
+
+<i class="bi bi-three-dots"></i>
+
 </button>
-    `
-    : ''
-  }
 
 </div>
 
-        <button
-          class="read-story-btn"
-          onclick="openStory('${story.id}')"
-        >
+<!-- RIGHT -->
 
-          Read Story
+<div class="story-actions">
 
-        </button>
+<div class="story-action">
 
-      </div>
+<button
 
-    </div>
+onclick="likeStory(${story.id})">
 
-  `).join("");
+❤️
 
-  container.innerHTML += `
-  <div
-    id="storiesLoadMore"
-    style="height:1px;"
-  ></div>
+</button>
+
+<span>
+
+${story.likesCount || 0}
+
+</span>
+
+</div>
+
+<div class="story-action">
+
+<button
+
+onclick="window.location='comments.html?story=${story.id}'">
+
+💬
+
+</button>
+
+<span>
+
+Comments
+
+</span>
+
+</div>
+
+<div class="story-action">
+
+<button
+
+onclick="saveStory(${story.id})">
+
+🔖
+
+</button>
+
+<span>
+
+Save
+
+</span>
+
+</div>
+
+<div class="story-action">
+
+<button
+
+onclick="shareStory(${story.id})">
+
+📤
+
+</button>
+
+<span>
+
+Share
+
+</span>
+
+</div>
+
+</div>
+
+<!-- BOTTOM -->
+
+<div class="story-bottom">
+
+<div class="story-user">
+
+<img
+
+src="${avatar}"
+
+class="story-avatar">
+
+<div>
+
+<div class="story-name">
+
+@${story.username}
+
+</div>
+
+<div class="story-date">
+
+${formatDate(story.createdAt)}
+
+</div>
+
+</div>
+
+</div>
+
+<div class="story-title">
+
+${story.title}
+
+</div>
+
+<div
+
+class="story-description"
+
+id="storyBody-${story.id}">
+
+${story.content}
+
+</div>
+
+<div
+class="story-read-more"
+onclick="openStory(${story.id})">
+
+Read More
+
+</div>
+
+</div>
+
+<!-- COMMENT BAR -->
+
+<div class="story-comment-bar">
+
+<div
+
+class="story-comment-input"
+
+onclick="window.location='comments.html?story=${story.id}'">
+
+💬
+
+<input
+
+placeholder="Write a comment..."
+
+readonly>
+
+</div>
+
+<button
+
+class="story-comment-send"
+
+onclick="window.location='comments.html?story=${story.id}'">
+
+<i class="bi bi-send-fill"></i>
+
+</button>
+
+</div>
+
+</div>
+
 `;
 
-setupStoriesLoadMore();
+});
+
+setupStoryObserver();
 
 }
 
-function setupStoriesLoadMore(){
-
-  const trigger =
-    document.getElementById(
-      "storiesLoadMore"
-    );
-
-  if(!trigger) return;
-
-  const observer =
-    new IntersectionObserver(
-      async entries => {
-
-        if(
-          entries[0].isIntersecting &&
-          !loadingMore &&
-          hasMore
-        ){
-
-          loadingMore = true;
-
-          page++;
-
-          await loadStories(false);
-
-          loadingMore = false;
-
-        }
-
-      },
-      {
-        rootMargin:"500px"
-      }
-    );
-
-  observer.observe(trigger);
-
-}
-
+// ===============================================
+// READ MORE
+// ===============================================
 function openStory(id){
 
-  window.location.href =
-  `story.html?id=${id}`;
+    window.location.href = `story.html?id=${id}`;
 
 }
+
+
+// ===============================================
+// MENU
+// ===============================================
+
+function toggleStoryMenu(){
+
+document
+
+.getElementById("storyMenu")
+
+.classList.toggle("show");
+
+}
+
+// ===============================================
+// SAVE
+// ===============================================
+
+function saveStory(id){
+
+let saved =
+
+JSON.parse(
+
+localStorage.getItem("savedStories")
+
+|| "[]"
+
+);
+
+if(saved.includes(id)){
+
+return;
+
+}
+
+saved.push(id);
+
+localStorage.setItem(
+
+"savedStories",
+
+JSON.stringify(saved)
+
+);
+
+alert("Story saved");
+
+}
+
+// ===============================================
+// SHARE
+// ===============================================
+
+async function shareStory(id){
+
+const url =
+
+`${window.location.origin}/story.html?id=${id}`;
+
+if(navigator.share){
+
+await navigator.share({
+
+title:"Vindarr Story",
+
+url
+
+});
+
+}else{
+
+navigator.clipboard.writeText(url);
+
+alert("Story link copied");
+
+}
+
+}
+
+// ===============================================
+// AUTOPLAY OBSERVER
+// ===============================================
+
+function setupStoryObserver(){
+
+const cards =
+
+document.querySelectorAll(
+
+".story-feed-card"
+
+);
+
+const observer =
+
+new IntersectionObserver(
+
+entries=>{
+
+entries.forEach(entry=>{
+
+if(entry.isIntersecting){
+
+currentStory =
+
+entry.target;
+
+}
+
+});
+
+},
+
+{
+
+threshold:.7
+
+}
+
+);
+
+cards.forEach(card=>{
+
+observer.observe(card);
+
+});
+
+}
+
+// ===============================================
+// MODAL
+// ===============================================
 
 function openStoryModal(){
 
-  document.getElementById(
-    "storyModal"
-  ).style.display = "flex";
+document
+
+.getElementById(
+
+"storyModal"
+
+)
+
+.style.display="flex";
 
 }
 
 function closeStoryModal(){
 
-  document.getElementById(
-    "storyModal"
-  ).style.display = "none";
+document
+
+.getElementById(
+
+"storyModal"
+
+)
+
+.style.display="none";
 
 }
 
-if(!token){
-
-  alert("Login required");
-
-  window.location.href = "login.html";
-
-}
-
-async function publishStory(){
-
-  const title =
-  document.getElementById(
-    "storyTitle"
-  ).value.trim();
-
-  const content =
-  document.getElementById(
-    "storyContent"
-  ).value.trim();
-
-  const image =
-  document.getElementById(
-    "storyImage"
-  ).files[0];
-
-  if(!title || !content){
-
-    alert("Title and content required");
-
-    return;
-
-  }
-
-  const formData =
-  new FormData();
-
-  formData.append("title", title);
-
-  formData.append("content", content);
-
-  if(image){
-
-    formData.append("image", image);
-
-  }
-
-  try{
-
-    const res =
-    await fetch(
-      `${API_BASE_URL}/stories`,
-      {
-        method:"POST",
-
-        headers:{
-          Authorization:`Bearer ${token}`
-        },
-
-        body:formData
-      }
-    );
-
-    const data =
-    await res.json();
-
-    console.log(data);
-
-    if(!res.ok){
-
-      alert(
-        data.message ||
-        "Failed to publish story"
-      );
-
-      return;
-
-    }
-
-    alert("Story published");
-
-    closeStoryModal();
-
-    document.getElementById(
-      "storyTitle"
-    ).value = "";
-
-    document.getElementById(
-      "storyContent"
-    ).value = "";
-
-    document.getElementById(
-      "storyImage"
-    ).value = "";
-
-    loadStories();
-
-  }catch(err){
-
-    console.error(err);
-
-    alert("Network error");
-
-  }
-
-}
-
-function formatDate(date){
-
-  if(!date) return "";
-
-  return new Date(date)
-  .toLocaleDateString(
-    "en-NG",
-    {
-      day:"numeric",
-      month:"short",
-      year:"numeric"
-    }
-  );
-
-}
-
-
-async function likeStory(id){
-
-  try{
-
-    await fetch(
-      `${API_BASE_URL}/stories/${id}/like`,
-      {
-        method:"POST",
-
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
-      }
-    );
-
-    loadStories();
-
-  }catch(err){
-
-    console.error(err);
-
-  }
-
-}
-
-async function deleteStory(id){
-
-  const confirmDelete =
-  confirm(
-    "Delete this story?"
-  );
-
-  if(!confirmDelete) return;
-
-  try{
-
-    const res =
-    await fetch(
-      `${API_BASE_URL}/stories/${id}`,
-      {
-        method:"DELETE",
-
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
-      }
-    );
-
-    if(res.ok){
-
-      loadStories();
-
-    }
-
-  }catch(err){
-
-    console.error(err);
-
-  }
-
-}
-
-async function editStory(id){
-
-  const story =
-  stories.find(s => s.id === id);
-
-  if(!story) return;
-
-  const newTitle =
-  prompt(
-    "Edit title",
-    story.title
-  );
-
-  if(!newTitle) return;
-
-  const newContent =
-  prompt(
-    "Edit content",
-    story.content
-  );
-
-  if(!newContent) return;
-
-  try{
-
-    const res =
-    await fetch(
-      `${API_BASE_URL}/stories/${id}`,
-      {
-        method:"PATCH",
-
-        headers:{
-          "Content-Type":"application/json",
-          Authorization:`Bearer ${token}`
-        },
-
-        body:JSON.stringify({
-          title:newTitle,
-          content:newContent
-        })
-      }
-    );
-
-    if(res.ok){
-
-      loadStories();
-
-    }
-
-  }catch(err){
-
-    console.error(err);
-
-  }
-
-}
-
-async function shareStory(id){
-
-  const shareUrl =
-    `${window.location.origin}/story.html?id=${id}`;
-
-  try{
-
-    if(navigator.share){
-
-      await navigator.share({
-        title:"Vindarr Story",
-        url:shareUrl
-      });
-
-    }else{
-
-      await navigator.clipboard.writeText(
-        shareUrl
-      );
-
-      alert("Story link copied");
-
-    }
-
-  }catch(err){
-
-    console.error(err);
-
-  }
-
-}

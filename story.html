@@ -4,63 +4,346 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-<title>Story</title>
+<title>Vindarr Story</title>
 
-<link rel="stylesheet"
-href="css/global.css">
+<link
+    rel="stylesheet"
+    href="css/global.css"
+>
+
+<link
+    rel="stylesheet"
+    href="css/story.css"
+>
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+>
 
 </head>
-<body>
 
-<nav class="top-navbar">
+<body class="story-view-page">
 
-  <div class="top-left">
+<!-- ===========================================
+STORY PAGE
+=========================================== -->
 
-    <img src="interfacelog.png"
-    width="30">
+<div
+    id="storyPage"
+    class="story-view-page"
+>
 
-    <span>Story</span>
+<!-- ===========================================
+FLOATING TOP BUTTONS
+=========================================== -->
 
-  </div>
+<div class="story-floating-top">
 
-</nav>
-
-<div id="storyPage"
-class="story-page"></div>
-
-<!-- COMMENTS -->
-<div class="story-comments-wrapper">
-
-  <h2 class="comments-title">
-    Comments
-  </h2>
-
-  <div class="comment-create">
-
-    <textarea
-      id="commentInput"
-      placeholder="Write a comment..."
-      class="story-textarea"
-    ></textarea>
+    <!-- CREATE STORY -->
 
     <button
-      onclick="postComment()"
-      class="publish-story-btn"
+        class="story-top-btn"
+        onclick="window.location.href='stories.html'"
     >
-      Post Comment
+
+        <i class="bi bi-plus-lg"></i>
+
     </button>
 
-  </div>
+    <!-- THREE DOT MENU -->
 
-  <div id="commentsContainer"></div>
+    <div class="story-menu-wrapper">
+
+        <button
+            class="story-top-btn"
+            onclick="toggleStoryMenu()"
+        >
+
+            <i class="bi bi-three-dots"></i>
+
+        </button>
+
+        <!-- Hidden menu (only owner sees Edit/Delete) -->
+
+        <div
+            id="storyMenu"
+            class="story-dropdown"
+        >
+
+            <button
+                id="editStoryBtn"
+                onclick="editStory(storyId)"
+                style="display:none"
+            >
+
+                <i class="bi bi-pencil-square"></i>
+
+                Edit Story
+
+            </button>
+
+            <button
+                id="deleteStoryBtn"
+                onclick="deleteStory(storyId)"
+                style="display:none"
+            >
+
+                <i class="bi bi-trash3"></i>
+
+                Delete Story
+
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
+<!-- ===========================================
+RIGHT ACTIONS
+=========================================== -->
+
+<div class="story-actions">
+
+    <div class="story-action-item">
+
+        <button
+            id="storyLikeBtn"
+            class="story-action-btn"
+            onclick="likeStory(storyId)"
+        >
+
+            <i class="bi bi-heart-fill"></i>
+
+        </button>
+
+        <span id="storyLikeCount">
+
+            0
+
+        </span>
+
+    </div>
+
+    <div class="story-action-item">
+
+        <button
+            class="story-action-btn"
+            onclick="openComments()"
+        >
+
+            <i class="bi bi-chat-fill"></i>
+
+        </button>
+
+        <span>
+
+            Comments
+
+        </span>
+
+    </div>
+
+    <div class="story-action-item">
+
+        <button
+            class="story-action-btn"
+            onclick="saveStory(storyId)"
+        >
+
+            <i class="bi bi-bookmark-fill"></i>
+
+        </button>
+
+        <span>
+
+            Save
+
+        </span>
+
+    </div>
+
+    <div class="story-action-item">
+
+        <button
+            class="story-action-btn"
+            onclick="shareCurrentStory()"
+        >
+
+            <i class="bi bi-share-fill"></i>
+
+        </button>
+
+        <span>
+
+            Share
+
+        </span>
+
+    </div>
+
+</div>
+
+<!-- ===========================================
+READING PROGRESS BAR
+=========================================== -->
+
+<div class="story-progress">
+
+    <div
+        id="storyProgressBar"
+        class="story-progress-fill"
+    ></div>
+
+</div>
+
+<!-- ===========================================
+STORY HERO
+=========================================== -->
+
+<div class="story-hero">
+
+    <img
+        id="storyHeroImage"
+        class="story-hero-image"
+        src=""
+        alt="Story Cover"
+    >
+
+    <div class="story-hero-overlay"></div>
+
+    <div class="story-hero-content">
+
+        <div class="story-author-row">
+
+            <img
+                id="storyAuthorAvatar"
+                class="story-author-avatar"
+                src=""
+                alt="Author"
+            >
+
+            <div>
+
+                <div
+                    id="storyAuthorName"
+                    class="story-author-name"
+                >
+
+                    @creator
+
+                </div>
+
+                <div
+                    id="storyMeta"
+                    class="story-meta"
+                >
+
+                    July 27 • 5 min read
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <h1
+            id="storyTitle"
+            class="story-title"
+        >
+
+            Story Title
+
+        </h1>
+
+    </div>
+
+</div>
+
+
+<!-- ===========================================
+STORY ARTICLE
+=========================================== -->
+
+<div class="story-content-wrapper">
+
+    <article
+        id="storyBody"
+        class="story-body"
+    >
+
+        Loading story...
+
+    </article>
+
+    <button
+        id="storyReadMore"
+        class="story-read-more-btn"
+        onclick="toggleStoryContent()"
+        style="display:none;"
+    >
+
+        Read More
+
+    </button>
+
+</div>
+
+<!-- ===========================================
+OWNER MENU
+=========================================== -->
+
+<div
+    id="storyMenu"
+    class="story-menu"
+>
+
+    <button
+        id="editStoryBtn"
+        onclick="editCurrentStory()"
+    >
+
+        <i class="bi bi-pencil-square"></i>
+
+        Edit Story
+
+    </button>
+
+    <button
+        id="deleteStoryBtn"
+        class="danger"
+        onclick="deleteCurrentStory()"
+    >
+
+        <i class="bi bi-trash"></i>
+
+        Delete Story
+
+    </button>
+
+</div>
+
+<!-- ===========================================
+SCRIPTS
+=========================================== -->
+
 <script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/story.js"></script>
+
+<script>
+
+checkAuth();
+
+</script>
 
 </body>
 </html>

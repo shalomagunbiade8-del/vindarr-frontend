@@ -1,0 +1,900 @@
+/* ===========================================
+STORY PAGE
+=========================================== */
+
+.story-view-page{
+
+    background:#000;
+    color:#fff;
+    min-height:100vh;
+    overflow-x:hidden;
+    font-family:Inter,sans-serif;
+
+}
+
+#storyPage{
+
+    position:relative;
+    width:100%;
+    min-height:100vh;
+
+}
+
+/* ===========================================
+HERO
+=========================================== */
+
+.story-hero{
+
+    position:relative;
+    width:100%;
+    height:72vh;
+    overflow:hidden;
+
+}
+
+.story-hero-image{
+
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+
+}
+
+.story-hero-overlay{
+
+    position:absolute;
+    inset:0;
+
+    background:
+    linear-gradient(
+
+        to top,
+
+        rgba(0,0,0,.94),
+
+        rgba(0,0,0,.45),
+
+        rgba(0,0,0,.08)
+
+    );
+
+}
+
+.story-hero-content{
+
+    position:absolute;
+
+    left:32px;
+    right:32px;
+    bottom:42px;
+
+    z-index:10;
+
+    max-width:900px;
+
+}
+
+.story-author-row{
+
+    display:flex;
+    align-items:center;
+    gap:16px;
+
+    margin-bottom:22px;
+
+}
+
+.story-author-avatar{
+
+    width:60px;
+    height:60px;
+
+    border-radius:50%;
+    object-fit:cover;
+
+    border:3px solid rgba(255,255,255,.9);
+
+    box-shadow:0 10px 30px rgba(0,0,0,.45);
+
+}
+
+.story-author-name{
+
+    font-size:17px;
+    font-weight:700;
+
+}
+
+.story-meta{
+
+    margin-top:4px;
+
+    font-size:13px;
+    color:rgba(255,255,255,.75);
+
+}
+
+.story-title{
+
+    margin:0;
+
+    font-size:46px;
+    font-weight:800;
+
+    line-height:1.15;
+
+    max-width:850px;
+
+    letter-spacing:-1px;
+
+}
+
+/* ===========================================
+FLOATING TOP
+=========================================== */
+
+.story-floating-top{
+
+    position:fixed;
+
+    top:20px;
+    left:20px;
+    right:20px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    z-index:3000;
+
+    pointer-events:none;
+
+}
+
+.story-floating-top>*{
+
+    pointer-events:auto;
+
+}
+
+.story-top-btn{
+
+    width:54px;
+    height:54px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:rgba(0,0,0,.45);
+
+    backdrop-filter:blur(18px);
+
+    color:#fff;
+
+    font-size:22px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+
+    0 10px 25px rgba(0,0,0,.35);
+
+}
+
+.story-top-btn:hover{
+
+    background:#d10000;
+
+    transform:scale(1.08);
+
+}
+
+/* ===========================================
+OWNER MENU
+=========================================== */
+
+.story-menu-wrapper{
+
+    position:relative;
+
+}
+
+.story-dropdown{
+
+    position:absolute;
+
+    top:64px;
+    right:0;
+
+    width:210px;
+
+    background:#111;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    display:none;
+
+    box-shadow:
+
+    0 20px 45px rgba(0,0,0,.45);
+
+    animation:storyMenuIn .18s ease;
+
+}
+
+.story-dropdown.show{
+
+    display:block;
+
+}
+
+.story-dropdown button{
+
+    width:100%;
+
+    border:none;
+
+    background:none;
+
+    color:#fff;
+
+    padding:16px 18px;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    cursor:pointer;
+
+    font-size:15px;
+    font-weight:600;
+
+    transition:.2s;
+
+}
+
+.story-dropdown button:hover{
+
+    background:#1d1d1d;
+
+}
+
+.story-dropdown button.danger{
+
+    color:#ff5d5d;
+
+}
+
+.story-dropdown button.danger:hover{
+
+    background:#260000;
+
+}
+
+@keyframes storyMenuIn{
+
+    from{
+
+        opacity:0;
+        transform:translateY(-8px);
+
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+
+    }
+
+}
+
+
+/* ===========================================
+STORY CONTENT
+=========================================== */
+
+.story-content-wrapper{
+
+    max-width:900px;
+
+    margin:auto;
+
+    padding:50px 28px 180px;
+
+}
+
+.story-body{
+
+    font-size:20px;
+
+    line-height:2;
+
+    color:#ededed;
+
+    letter-spacing:.15px;
+
+    overflow:hidden;
+
+    transition:max-height .4s ease;
+
+}
+
+.story-body.collapsed{
+
+    max-height:420px;
+
+    position:relative;
+
+}
+
+.story-body.collapsed::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    right:0;
+    bottom:0;
+
+    height:120px;
+
+    background:
+
+    linear-gradient(
+
+        to bottom,
+
+        rgba(0,0,0,0),
+
+        #000
+
+    );
+
+}
+
+.story-body p{
+
+    margin-bottom:28px;
+
+}
+
+.story-readmore{
+
+    margin-top:32px;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    background:#d10000;
+
+    color:#fff;
+
+    border:none;
+
+    border-radius:999px;
+
+    padding:14px 22px;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.story-readmore:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 12px 30px rgba(209,0,0,.35);
+
+}
+
+/* ===========================================
+RIGHT ACTIONS
+=========================================== */
+
+.story-actions{
+
+    position:fixed;
+
+    right:18px;
+
+    bottom:140px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:22px;
+
+    z-index:2500;
+
+}
+
+.story-action-item{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:6px;
+
+}
+
+.story-action-btn{
+
+    width:60px;
+
+    height:60px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:rgba(0,0,0,.45);
+
+    backdrop-filter:blur(18px);
+
+    color:#fff;
+
+    font-size:24px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+
+    0 12px 30px rgba(0,0,0,.35);
+
+}
+
+.story-action-btn:hover{
+
+    background:#d10000;
+
+    transform:scale(1.08);
+
+}
+
+.story-action-item span{
+
+    font-size:12px;
+
+    font-weight:600;
+
+    color:#ddd;
+
+    text-align:center;
+
+    max-width:70px;
+
+}
+
+/* ===========================================
+READING PROGRESS
+=========================================== */
+
+.story-progress{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:4px;
+
+    background:rgba(255,255,255,.08);
+
+    z-index:5000;
+
+}
+
+.story-progress-fill{
+
+    width:0;
+
+    height:100%;
+
+    background:#d10000;
+
+    transition:width .15s linear;
+
+}
+
+/* ===========================================
+BOTTOM COMMENT BAR
+=========================================== */
+
+.story-comment-bar{
+
+    position:fixed;
+
+    left:16px;
+
+    right:16px;
+
+    bottom:16px;
+
+    display:flex;
+
+    gap:12px;
+
+    z-index:4000;
+
+}
+
+.story-comment-input{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    padding:16px 20px;
+
+    border-radius:999px;
+
+    background:rgba(0,0,0,.58);
+
+    backdrop-filter:blur(18px);
+
+    cursor:pointer;
+
+    box-shadow:
+
+    0 12px 30px rgba(0,0,0,.35);
+
+}
+
+.story-comment-icon{
+
+    font-size:20px;
+
+}
+
+.story-comment-input input{
+
+    width:100%;
+
+    border:none;
+
+    outline:none;
+
+    background:none;
+
+    color:#fff;
+
+    font-size:15px;
+
+    pointer-events:none;
+
+}
+
+.story-comment-input input::placeholder{
+
+    color:#bbb;
+
+}
+
+.story-send-btn{
+
+    width:58px;
+
+    height:58px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#d10000;
+
+    color:#fff;
+
+    font-size:20px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.story-send-btn:hover{
+
+    transform:scale(1.08);
+
+}
+
+
+/* ===========================================
+OWNER MENU
+=========================================== */
+
+.story-owner-menu{
+
+    position:fixed;
+
+    top:82px;
+
+    right:20px;
+
+    width:180px;
+
+    background:#111;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    display:none;
+
+    z-index:5000;
+
+    box-shadow:
+
+    0 18px 45px rgba(0,0,0,.45);
+
+}
+
+.story-owner-menu.active{
+
+    display:block;
+
+}
+
+.story-owner-menu button{
+
+    width:100%;
+
+    border:none;
+
+    background:none;
+
+    color:#fff;
+
+    padding:16px 18px;
+
+    text-align:left;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    transition:.25s;
+
+}
+
+.story-owner-menu button:hover{
+
+    background:#1c1c1c;
+
+}
+
+.story-owner-menu .delete{
+
+    color:#ff5b5b;
+
+}
+
+/* ===========================================
+EMPTY STATE
+=========================================== */
+
+.story-empty{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-height:100vh;
+
+    text-align:center;
+
+    padding:40px;
+
+}
+
+.story-empty h2{
+
+    font-size:34px;
+
+    margin-bottom:14px;
+
+}
+
+.story-empty p{
+
+    color:#999;
+
+    max-width:520px;
+
+    line-height:1.8;
+
+}
+
+/* ===========================================
+MOBILE
+=========================================== */
+
+@media(max-width:900px){
+
+.story-title{
+
+    font-size:34px;
+
+}
+
+.story-body{
+
+    font-size:18px;
+
+}
+
+.story-actions{
+
+    right:10px;
+
+    bottom:125px;
+
+}
+
+.story-action-btn{
+
+    width:54px;
+
+    height:54px;
+
+    font-size:22px;
+
+}
+
+.story-comment-bar{
+
+    left:10px;
+
+    right:10px;
+
+}
+
+.story-content-wrapper{
+
+    padding:40px 20px 170px;
+
+}
+
+.story-author-avatar{
+
+    width:50px;
+
+    height:50px;
+
+}
+
+}
+
+@media(max-width:600px){
+
+.story-hero{
+
+    height:62vh;
+
+}
+
+.story-title{
+
+    font-size:28px;
+
+}
+
+.story-author-name{
+
+    font-size:15px;
+
+}
+
+.story-meta{
+
+    font-size:12px;
+
+}
+
+.story-body{
+
+    font-size:17px;
+
+    line-height:1.9;
+
+}
+
+.story-readmore{
+
+    width:100%;
+
+    justify-content:center;
+
+}
+
+.story-floating-top{
+
+    left:12px;
+
+    right:12px;
+
+    top:12px;
+
+}
+
+.story-top-btn{
+
+    width:48px;
+
+    height:48px;
+
+    font-size:20px;
+
+}
+
+.story-owner-menu{
+
+    right:12px;
+
+    top:72px;
+
+}
+
+}
