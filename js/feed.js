@@ -241,7 +241,7 @@ function renderVideos(videosToRender = posts) {
   }
 
 
-  if (!posts.length) {
+  if(!videosToRender.length && page === 1){
 
     feed.innerHTML = `
 

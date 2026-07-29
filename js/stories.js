@@ -32,7 +32,7 @@ async function loadStories(){
     try{
 
        const res = await fetch(
-    `${API_BASE_URL}/stories?page=${page}`,
+     `${API_BASE_URL}/stories?page=${page}&limit=6`,
             {
                 headers: token
                     ? {
@@ -119,13 +119,19 @@ function renderStories(storiesToRender){
 const feed =
 document.getElementById("storiesFeed");
 
+if (!feed) return;
+
 if(page === 1){
 
     feed.innerHTML = "";
 
 }
 
-storiesToRender.forEach(story=>{
+if (!Array.isArray(storiesToRender)) {
+    return;
+}
+
+storiesToRender.forEach(story => {
 
 const image =
 
@@ -343,10 +349,9 @@ onclick="window.location='comments.html?story=${story.id}'">
 
 </div>
 
-`;
+`);
 
 });
-
 setupStoryObserver();
 
 }
