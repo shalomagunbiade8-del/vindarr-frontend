@@ -16,6 +16,10 @@ let loadingMore = false;
 
 let hasMore = true;
 
+let nextVideos = [];
+
+let prefetching = false;
+
 let loadTrigger = null;
 
 let videoObserver = null;
@@ -52,9 +56,6 @@ async function loadVideos(reset = true) {
 
   try {
 
-    if (loadingMore && !reset) {
-      return;
-    }
 
     if (reset) {
 
@@ -65,9 +66,9 @@ async function loadVideos(reset = true) {
     }
 
     const res =
-      await fetch(
-        `${API_BASE_URL}/videos?page=${page}&limit=10`
-      );
+await fetch(
+`${API_BASE_URL}/videos?page=${page}&limit=10&_=${Date.now()}`
+);
 
 
     if (!res.ok) {
@@ -82,15 +83,43 @@ async function loadVideos(reset = true) {
     const result =
       await res.json();
 
+      console.log("Page:", page);
 
-    const videos =
-      Array.isArray(result)
-        ? result
-        : result.data || [];
+console.log(result);
 
 
-    hasMore =
-      result.hasMore ?? false;
+    let videos = [];
+
+if (Array.isArray(result)) {
+
+    videos = result;
+    console.log("Videos received:", videos.length);
+
+} else if (Array.isArray(result.data)) {
+
+    videos = result.data;
+
+} else if (Array.isArray(result.videos)) {
+
+    videos = result.videos;
+
+} else if (Array.isArray(result.results)) {
+
+    videos = result.results;
+
+}
+
+        if (!videos.length) {
+
+    hasMore = false;
+
+    return;
+
+}
+
+
+    // Do not assume exactly 10 means another page exists.
+hasMore = videos.length > 0;
 
 
     if (reset) {
@@ -103,7 +132,7 @@ async function loadVideos(reset = true) {
 
 }
 
-   renderVideos(videos);
+  renderVideos();
 
 
   } catch (err) {
@@ -143,6 +172,63 @@ async function loadVideos(reset = true) {
     }
 
   }
+
+}
+
+async function prefetchNextPage() {
+
+    if(prefetching) return;
+
+    if(!hasMore) return;
+
+    prefetching = true;
+
+    try{
+
+        const res = await fetch(
+            `${API_BASE_URL}/videos?page=${page+1}&limit=10`
+        );
+
+        if(!res.ok){
+
+            prefetching=false;
+            return;
+
+        }
+
+        const json = await res.json();
+
+        nextVideos = json.data || [];
+
+        hasMore = nextVideos.length === 10;
+
+    }catch(err){
+
+        console.error(err);
+
+    }
+
+    prefetching=false;
+
+}
+
+function appendPrefetchedVideos(){
+
+    if(nextVideos.length===0){
+
+        return;
+
+    }
+
+    page++;
+
+    posts.push(...nextVideos);
+
+    renderVideos();
+
+    nextVideos=[];
+
+    prefetchNextPage();
 
 }
 
@@ -228,6 +314,7 @@ function getCreatorAvatar(video) {
   );
 
 }
+
 
 
 // =====================================
@@ -672,27 +759,23 @@ function renderVideos(videosToRender = posts) {
   );
 
 
- if (page === 1) {
+  if (page === 1) {
 
+    // First load
     feed.innerHTML = html;
 
 } else {
 
-    feed.insertAdjacentHTML(
-        "beforeend",
-        html
-    );
+    // Load more
+    feed.insertAdjacentHTML("beforeend", html);
 
 }
 
+setupVideoObserver();
 
-  setupVideoObserver();
+setupLoadMore();
 
-
-  setupLoadMore();
-
-
-  openRequestedVideo();
+openRequestedVideo();
 
 }
 
@@ -1633,107 +1716,65 @@ function openRequestedVideo() {
 
 function setupLoadMore() {
 
-  if (loadTrigger) {
+    feed.removeEventListener(
 
-    loadTrigger.disconnect();
+        "scroll",
 
-  }
-
-
-  const oldTrigger =
-    document.getElementById(
-      "loadMoreTrigger"
-    );
-
-
-  if (oldTrigger) {
-
-    oldTrigger.remove();
-
-  }
-
-
-  if (!hasMore) {
-    return;
-  }
-
-
-  const trigger =
-    document.createElement(
-      "div"
-    );
-
-
-  trigger.id =
-    "loadMoreTrigger";
-
-
-  trigger.style.height =
-    "1px";
-
-
-  feed.appendChild(
-    trigger
-  );
-
-
-  loadTrigger =
-    new IntersectionObserver(
-
-      async entries => {
-
-        const entry =
-          entries[0];
-
-
-        if (
-          !entry.isIntersecting ||
-          loadingMore ||
-          !hasMore
-        ) {
-
-          return;
-
-        }
-
-
-        loadingMore =
-          true;
-
-
-        page++;
-
-
-        try {
-
-          await loadVideos(
-            false
-          );
-
-        } finally {
-
-          loadingMore =
-            false;
-
-        }
-
-      },
-
-      {
-
-        root: feed,
-
-        rootMargin:
-          "1000px"
-
-      }
+        handleInfiniteScroll
 
     );
 
+    feed.addEventListener(
 
-  loadTrigger.observe(
-    trigger
-  );
+        "scroll",
+
+        handleInfiniteScroll
+
+    );
+
+}
+
+async function handleInfiniteScroll() {
+
+    if (loadingMore) return;
+
+    if (!hasMore) return;
+
+    const remaining =
+
+        feed.scrollHeight -
+
+        feed.scrollTop -
+
+        feed.clientHeight;
+
+    if (remaining > 600) return;
+
+    loadingMore = true;
+
+    page++;
+
+    console.log("Loading page:", page);
+
+    try {
+
+        await loadVideos(false);
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+        page--;
+
+    }
+
+    finally{
+
+        loadingMore = false;
+
+    }
 
 }
 
@@ -1802,4 +1843,6 @@ function openFeedMenu() {
 // INITIAL LOAD
 // =====================================
 
-loadVideos();
+loadVideos().then(() => {
+    setupLoadMore();
+});
