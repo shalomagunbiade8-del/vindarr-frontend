@@ -8,6 +8,12 @@ let stories = [];
 
 let currentStory = null;
 
+let page = 1;
+let loadingStories = false;
+let hasMoreStories = true;
+
+let storyObserver = null;
+
 const token =
 localStorage.getItem("token");
 
@@ -25,8 +31,8 @@ async function loadStories(){
 
     try{
 
-        const res = await fetch(
-            `${API_BASE_URL}/stories`,
+       const res = await fetch(
+    `${API_BASE_URL}/stories?page=${page}`,
             {
                 headers: token
                     ? {
@@ -48,11 +54,26 @@ async function loadStories(){
 
         console.log(result);
 
-        stories = Array.isArray(result)
+       const newStories = Array.isArray(result)
     ? result
     : (result.data || []);
 
-        renderStories();
+if(page === 1){
+
+    stories = newStories;
+
+}else{
+
+    stories.push(...newStories);
+
+}
+
+hasMoreStories =
+    result.total !== undefined
+        ? stories.length < result.total
+        : newStories.length > 0;
+
+       renderStories(newStories);
 
     }
 
@@ -93,14 +114,18 @@ async function loadStories(){
 // RENDER
 // ===============================================
 
-function renderStories(){
+function renderStories(storiesToRender){
 
 const feed =
 document.getElementById("storiesFeed");
 
-feed.innerHTML = "";
+if(page === 1){
 
-stories.forEach(story=>{
+    feed.innerHTML = "";
+
+}
+
+storiesToRender.forEach(story=>{
 
 const image =
 
@@ -114,7 +139,7 @@ story.avatar ||
 
 "https://i.pravatar.cc/200";
 
-feed.innerHTML += `
+feed.insertAdjacentHTML("beforeend", `
 
 <div class="story-feed-card">
 
@@ -422,47 +447,35 @@ alert("Story link copied");
 
 function setupStoryObserver(){
 
-const cards =
+    if(!storyObserver){
 
-document.querySelectorAll(
+        storyObserver = new IntersectionObserver(
 
-".story-feed-card"
+            entries=>{
 
-);
+                entries.forEach(entry=>{
 
-const observer =
+                    if(entry.isIntersecting){
 
-new IntersectionObserver(
+                        currentStory = entry.target;
 
-entries=>{
+                    }
 
-entries.forEach(entry=>{
+                });
 
-if(entry.isIntersecting){
+            },
 
-currentStory =
+            { threshold:.7 }
 
-entry.target;
+        );
 
-}
+    }
 
-});
+    document.querySelectorAll(".story-feed-card").forEach(card=>{
 
-},
+        storyObserver.observe(card);
 
-{
-
-threshold:.7
-
-}
-
-);
-
-cards.forEach(card=>{
-
-observer.observe(card);
-
-});
+    });
 
 }
 
@@ -497,4 +510,40 @@ document
 .style.display="none";
 
 }
+
+document.addEventListener("DOMContentLoaded", async ()=>{
+
+    await loadStories();
+
+    const feed = document.getElementById("storiesFeed");
+
+    feed.addEventListener("scroll", async function(){
+
+        if(loadingStories) return;
+
+        if(!hasMoreStories) return;
+
+        const reachedBottom =
+
+            this.scrollTop +
+
+            this.clientHeight >=
+
+            this.scrollHeight - 400;
+
+        if(reachedBottom){
+
+            loadingStories = true;
+
+            page++;
+
+            await loadStories();
+
+            loadingStories = false;
+
+        }
+
+    });
+
+});
 

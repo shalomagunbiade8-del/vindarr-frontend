@@ -95,36 +95,15 @@ async function loadVideos(reset = true) {
 
     if (reset) {
 
-      posts = videos;
+    posts = videos;
 
-    } else {
+} else {
 
-      const existingIds =
-        new Set(
-          posts.map(
-            post => post.id
-          )
-        );
+    posts.push(...videos);
 
+}
 
-      const uniqueVideos =
-        videos.filter(
-          video =>
-            !existingIds.has(
-              video.id
-            )
-        );
-
-
-      posts = [
-        ...posts,
-        ...uniqueVideos
-      ];
-
-    }
-
-
-    renderVideos();
+   renderVideos(videos);
 
 
   } catch (err) {
@@ -255,7 +234,7 @@ function getCreatorAvatar(video) {
 // RENDER VIDEOS
 // =====================================
 
-function renderVideos() {
+function renderVideos(videosToRender = posts) {
 
   if (!feed) {
     return;
@@ -290,8 +269,11 @@ function renderVideos() {
   let html = "";
 
 
-  posts.forEach(
-    (v, i) => {
+  videosToRender.forEach(
+ (v, i) => {
+
+  const videoIndex =
+      (page - 1) * 10 + i;
 
       const mediaUrl =
         getMediaUrl(v);
@@ -349,13 +331,13 @@ function renderVideos() {
               ? `
 
                 <video
-                  id="video${i}"
+                id="video${videoIndex}"
                   src="${escapeHtml(mediaUrl)}"
                   class="feed-video"
                   loop
                   playsinline
                   preload="metadata"
-                  onclick="handleVideoTap(${i}, ${v.id}, event)"
+                  onclick="handleVideoTap(${videoIndex}, ${v.id}, event)"
                 ></video>
 
               `
@@ -690,7 +672,18 @@ function renderVideos() {
   );
 
 
-  feed.innerHTML = html;
+ if (page === 1) {
+
+    feed.innerHTML = html;
+
+} else {
+
+    feed.insertAdjacentHTML(
+        "beforeend",
+        html
+    );
+
+}
 
 
   setupVideoObserver();
