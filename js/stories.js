@@ -12,6 +12,8 @@ let page = 1;
 let loadingStories = false;
 let hasMoreStories = true;
 
+let publishingStory = false;
+
 let storyObserver = null;
 
 const token =
@@ -552,3 +554,158 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
 });
 
+// ===============================================
+// PUBLISH STORY
+// ===============================================
+
+// ===============================================
+// PUBLISH STORY
+// ===============================================
+
+async function publishStory() {
+
+    if (publishingStory) {
+
+    return;
+
+}
+
+publishingStory = true;
+
+    const title =
+        document.getElementById("storyTitle").value.trim();
+
+    const content =
+        document.getElementById("storyContent").value.trim();
+
+    const image =
+        document.getElementById("storyImage").files[0];
+
+    const preview =
+        document.getElementById("storyPreview");
+
+    const button =
+        document.querySelector(".publish-story-btn");
+
+    if (!title) {
+        alert("Enter a title.");
+        return;
+    }
+
+    if (!content) {
+        alert("Write your story.");
+        return;
+    }
+
+    if (!image) {
+        alert("Choose a cover image.");
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("image", image);
+
+    button.disabled = true;
+
+    button.innerHTML = `
+        <span class="spinner-border spinner-border-sm"></span>
+        Uploading image...
+    `;
+
+    try {
+
+        const res = await fetch(
+
+            `${API_BASE_URL}/stories`,
+
+            {
+
+                method: "POST",
+
+                headers: {
+
+                    Authorization:
+                        `Bearer ${token}`
+
+                },
+
+                body: formData
+
+            }
+
+        );
+
+        if (!res.ok) {
+
+            throw new Error(await res.text());
+
+        }
+
+        button.innerHTML =
+            "Creating story...";
+
+        const story =
+            await res.json();
+
+        button.innerHTML =
+            "Published ✓";
+
+        button.style.background =
+            "#18b34b";
+
+        setTimeout(async () => {
+
+            closeStoryModal();
+
+            document.getElementById("storyTitle").value = "";
+
+            document.getElementById("storyContent").value = "";
+
+            document.getElementById("storyImage").value = "";
+
+            preview.src = "";
+
+            preview.style.display = "none";
+
+            button.disabled = false;
+
+            publishingStory = false;
+
+            button.innerHTML =
+                "Publish Story";
+
+            button.style.background = "";
+
+            page = 1;
+
+stories = [];
+
+document.getElementById("storiesFeed").innerHTML = "";
+
+await loadStories();
+
+        }, 800);
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+        alert(err.message || "Unable to publish story.");
+
+        button.disabled = false;
+
+        publishingStory = false;
+
+        button.innerHTML =
+            "Publish Story";
+
+        button.style.background = "";
+
+    }
+
+}
