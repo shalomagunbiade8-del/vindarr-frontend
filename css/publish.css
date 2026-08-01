@@ -1,0 +1,1291 @@
+/* ==========================================
+PUBLISH PAGE
+PART 1
+LAYOUT • CARDS • INPUTS • TYPE SELECTOR
+========================================== */
+
+:root{
+
+--red:#d10000;
+--black:#0d0d0d;
+--card:#161616;
+--card2:#1f1f1f;
+--border:#2b2b2b;
+--text:#ffffff;
+--muted:#9e9e9e;
+--radius:22px;
+
+}
+
+/* ==========================================
+BODY
+========================================== */
+
+html,
+body{
+
+margin:0;
+padding:0;
+
+background:#090909;
+
+font-family:
+Inter,
+system-ui,
+sans-serif;
+
+color:#fff;
+
+min-height:100%;
+
+}
+
+/* ==========================================
+PAGE
+========================================== */
+
+.publish-body{
+
+padding:40px 20px 60px;
+
+display:flex;
+
+justify-content:center;
+
+align-items:flex-start;
+
+}
+
+.publish-shell{
+
+width:min(760px,100%);
+
+background:#101010;
+
+border:1px solid #202020;
+
+border-radius:30px;
+
+padding:40px;
+
+box-shadow:
+0 30px 70px rgba(0,0,0,.45);
+
+}
+
+/* ==========================================
+HEADER
+========================================== */
+
+.publish-header{
+
+text-align:center;
+
+margin-bottom:35px;
+
+}
+
+.publish-header-icon{
+
+width:78px;
+height:78px;
+
+margin:auto;
+
+border-radius:50%;
+
+display:flex;
+
+align-items:center;
+justify-content:center;
+
+background:
+linear-gradient(
+135deg,
+#ff003c,
+#d10000
+);
+
+font-size:34px;
+
+margin-bottom:18px;
+
+box-shadow:
+0 15px 40px rgba(209,0,0,.35);
+
+}
+
+.publish-header h1{
+
+margin:0;
+
+font-size:34px;
+
+font-weight:800;
+
+}
+
+.publish-header p{
+
+margin-top:10px;
+
+font-size:15px;
+
+color:#a5a5a5;
+
+line-height:1.7;
+
+}
+
+/* ==========================================
+TYPE SELECTOR
+========================================== */
+
+.publish-types{
+
+display:grid;
+
+grid-template-columns:
+repeat(4,1fr);
+
+gap:14px;
+
+margin-bottom:35px;
+
+}
+
+.publish-types button{
+
+border:none;
+
+background:#181818;
+
+border:1px solid #262626;
+
+border-radius:18px;
+
+padding:18px 10px;
+
+color:#ddd;
+
+cursor:pointer;
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+justify-content:center;
+
+gap:10px;
+
+transition:.28s;
+
+}
+
+.publish-types button i{
+
+font-size:26px;
+
+}
+
+.publish-types button span{
+
+font-size:14px;
+
+font-weight:600;
+
+}
+
+.publish-types button:hover{
+
+transform:translateY(-3px);
+
+background:#212121;
+
+}
+
+.publish-types button.active{
+
+background:
+
+linear-gradient(
+135deg,
+#ff003c,
+#d10000
+);
+
+border-color:#d10000;
+
+color:white;
+
+box-shadow:
+
+0 12px 30px
+rgba(209,0,0,.35);
+
+}
+
+/* ==========================================
+GROUPS
+========================================== */
+
+.publish-group{
+
+margin-bottom:24px;
+
+}
+
+.publish-group label{
+
+display:block;
+
+margin-bottom:10px;
+
+font-weight:700;
+
+font-size:15px;
+
+}
+
+/* ==========================================
+INPUTS
+========================================== */
+
+.publish-input{
+
+width:100%;
+
+background:#171717;
+
+border:1px solid #2d2d2d;
+
+border-radius:18px;
+
+padding:16px 18px;
+
+font-size:15px;
+
+color:white;
+
+outline:none;
+
+transition:.25s;
+
+box-sizing:border-box;
+
+}
+
+.publish-input:focus{
+
+border-color:#d10000;
+
+box-shadow:
+
+0 0 0 4px
+rgba(209,0,0,.18);
+
+}
+
+/* ==========================================
+TEXTAREA
+========================================== */
+
+.publish-textarea{
+
+width:100%;
+
+min-height:180px;
+
+resize:vertical;
+
+background:#171717;
+
+border:1px solid #2d2d2d;
+
+border-radius:18px;
+
+padding:18px;
+
+font-size:15px;
+
+line-height:1.8;
+
+color:white;
+
+outline:none;
+
+transition:.25s;
+
+box-sizing:border-box;
+
+}
+
+.publish-textarea:focus{
+
+border-color:#d10000;
+
+box-shadow:
+
+0 0 0 4px
+rgba(209,0,0,.18);
+
+}
+
+/* ==========================================
+SELECT
+========================================== */
+
+select.publish-input{
+
+cursor:pointer;
+
+}
+
+/* ==========================================
+PRICE
+========================================== */
+
+.price-box{
+
+display:flex;
+
+align-items:center;
+
+background:#171717;
+
+border:1px solid #2b2b2b;
+
+border-radius:18px;
+
+overflow:hidden;
+
+}
+
+.price-box span{
+
+padding:0 18px;
+
+font-size:20px;
+
+font-weight:700;
+
+color:#ff4d4d;
+
+}
+
+.price-box input{
+
+flex:1;
+
+background:none;
+
+border:none;
+
+outline:none;
+
+padding:16px 18px;
+
+font-size:16px;
+
+color:white;
+
+}
+
+/* ==========================================
+BUTTON
+========================================== */
+
+.publish-actions{
+
+margin-top:34px;
+
+}
+
+.publish-btn{
+
+width:100%;
+
+height:62px;
+
+border:none;
+
+border-radius:18px;
+
+background:
+
+linear-gradient(
+135deg,
+#ff003c,
+#d10000
+);
+
+color:white;
+
+font-size:17px;
+
+font-weight:700;
+
+cursor:pointer;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:12px;
+
+transition:.28s;
+
+box-shadow:
+
+0 18px 45px
+rgba(209,0,0,.30);
+
+}
+
+.publish-btn:hover{
+
+transform:translateY(-2px);
+
+box-shadow:
+
+0 22px 55px
+rgba(209,0,0,.40);
+
+}
+
+.publish-btn:disabled{
+
+opacity:.65;
+
+cursor:not-allowed;
+
+transform:none;
+
+box-shadow:none;
+
+}
+
+
+/* ==========================================
+PART 2
+UPLOAD CARDS • PREVIEWS • PROGRESS UI
+========================================== */
+
+/* ==========================================
+UPLOAD CARD
+========================================== */
+
+.upload-card{
+
+display:block;
+
+cursor:pointer;
+
+border:2px dashed #333;
+
+border-radius:22px;
+
+background:#161616;
+
+transition:.25s;
+
+overflow:hidden;
+
+}
+
+.upload-card:hover{
+
+border-color:#d10000;
+
+background:#1c1c1c;
+
+transform:translateY(-2px);
+
+}
+
+.upload-card-inner{
+
+padding:34px 24px;
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+justify-content:center;
+
+text-align:center;
+
+gap:12px;
+
+}
+
+.upload-card-inner i{
+
+font-size:42px;
+
+color:#ff2f4f;
+
+}
+
+.upload-card-inner h4{
+
+margin:0;
+
+font-size:20px;
+
+font-weight:700;
+
+color:#fff;
+
+}
+
+.upload-card-inner p{
+
+margin:0;
+
+font-size:14px;
+
+color:#9f9f9f;
+
+line-height:1.6;
+
+}
+
+/* ==========================================
+PREVIEW WRAPPER
+========================================== */
+
+.preview-wrapper{
+
+margin-top:18px;
+
+border-radius:22px;
+
+overflow:hidden;
+
+background:#131313;
+
+border:1px solid #282828;
+
+animation:fadePreview .25s ease;
+
+}
+
+@keyframes fadePreview{
+
+from{
+
+opacity:0;
+transform:translateY(10px);
+
+}
+
+to{
+
+opacity:1;
+transform:none;
+
+}
+
+}
+
+/* ==========================================
+IMAGE PREVIEW
+========================================== */
+
+.preview-image{
+
+display:block;
+
+width:100%;
+
+max-height:430px;
+
+object-fit:cover;
+
+border-radius:22px;
+
+}
+
+/* ==========================================
+VIDEO PREVIEW
+========================================== */
+
+.preview-video{
+
+display:block;
+
+width:100%;
+
+max-height:430px;
+
+border-radius:22px;
+
+background:#000;
+
+}
+
+/* ==========================================
+PDF PREVIEW
+========================================== */
+
+.preview-pdf{
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+padding:24px;
+
+}
+
+.preview-pdf i{
+
+font-size:48px;
+
+color:#ff4040;
+
+}
+
+.preview-pdf strong{
+
+display:block;
+
+font-size:18px;
+
+margin-bottom:4px;
+
+}
+
+.preview-pdf p{
+
+margin:0;
+
+font-size:14px;
+
+color:#9e9e9e;
+
+word-break:break-word;
+
+}
+
+/* ==========================================
+UPLOAD STATUS CARD
+========================================== */
+
+.upload-status-card{
+
+margin-top:8px;
+
+padding:22px;
+
+background:#171717;
+
+border:1px solid #2d2d2d;
+
+border-radius:22px;
+
+animation:fadePreview .25s ease;
+
+}
+
+/* ==========================================
+STATUS HEADER
+========================================== */
+
+.upload-status-top{
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+margin-bottom:18px;
+
+}
+
+.upload-status-title{
+
+font-size:18px;
+
+font-weight:700;
+
+color:#fff;
+
+margin-bottom:4px;
+
+}
+
+.upload-status-text{
+
+font-size:14px;
+
+color:#b0b0b0;
+
+}
+
+/* ==========================================
+SPINNER
+========================================== */
+
+.upload-spinner{
+
+width:44px;
+
+height:44px;
+
+border-radius:50%;
+
+border:4px solid rgba(255,255,255,.12);
+
+border-top-color:#d10000;
+
+animation:publishSpin .8s linear infinite;
+
+flex-shrink:0;
+
+}
+
+@keyframes publishSpin{
+
+to{
+
+transform:rotate(360deg);
+
+}
+
+}
+
+/* ==========================================
+BOOTSTRAP PROGRESS
+========================================== */
+
+.progress{
+
+height:14px;
+
+background:#252525;
+
+border-radius:999px;
+
+overflow:hidden;
+
+}
+
+.progress-bar{
+
+font-weight:700;
+
+font-size:11px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+background:
+
+linear-gradient(
+90deg,
+#ff003c,
+#d10000
+);
+
+transition:width .35s ease;
+
+}
+
+/* ==========================================
+SUCCESS STATE
+========================================== */
+
+.upload-success{
+
+border-color:#18b663;
+
+background:#102117;
+
+}
+
+.upload-success .upload-status-title{
+
+color:#53df93;
+
+}
+
+.upload-success .upload-spinner{
+
+display:none;
+
+}
+
+/* ==========================================
+ERROR STATE
+========================================== */
+
+.upload-error{
+
+border-color:#d10000;
+
+background:#251212;
+
+}
+
+.upload-error .upload-status-title{
+
+color:#ff5f5f;
+
+}
+
+.upload-error .upload-spinner{
+
+display:none;
+
+}
+
+
+/* ==========================================
+PART 3
+RESPONSIVE • ANIMATIONS • FINAL POLISH
+========================================== */
+
+/* ==========================================
+SMOOTH TRANSITIONS
+========================================== */
+
+.publish-shell,
+.publish-input,
+.publish-textarea,
+.upload-card,
+.publish-btn,
+.preview-wrapper,
+.upload-status-card{
+
+transition:
+all .25s ease;
+
+}
+
+/* ==========================================
+INPUT PLACEHOLDERS
+========================================== */
+
+.publish-input::placeholder,
+.publish-textarea::placeholder{
+
+color:#707070;
+
+}
+
+/* ==========================================
+CUSTOM SCROLLBAR
+========================================== */
+
+.publish-textarea::-webkit-scrollbar{
+
+width:8px;
+
+}
+
+.publish-textarea::-webkit-scrollbar-track{
+
+background:#141414;
+
+border-radius:999px;
+
+}
+
+.publish-textarea::-webkit-scrollbar-thumb{
+
+background:#444;
+
+border-radius:999px;
+
+}
+
+.publish-textarea::-webkit-scrollbar-thumb:hover{
+
+background:#d10000;
+
+}
+
+/* ==========================================
+FOCUS ANIMATION
+========================================== */
+
+.publish-group:focus-within label{
+
+color:#ff4d4d;
+
+transition:.25s;
+
+}
+
+/* ==========================================
+BUTTON CLICK EFFECT
+========================================== */
+
+.publish-btn:active{
+
+transform:scale(.98);
+
+}
+
+/* ==========================================
+UPLOAD CARD ICON ANIMATION
+========================================== */
+
+.upload-card:hover i{
+
+transform:translateY(-3px) scale(1.08);
+
+transition:.25s;
+
+}
+
+/* ==========================================
+PREVIEW SHADOW
+========================================== */
+
+.preview-image,
+.preview-video{
+
+box-shadow:
+
+0 15px 40px rgba(0,0,0,.35);
+
+}
+
+/* ==========================================
+STATUS CARD SHADOW
+========================================== */
+
+.upload-status-card{
+
+box-shadow:
+
+0 15px 40px rgba(0,0,0,.25);
+
+}
+
+/* ==========================================
+DESKTOP
+========================================== */
+
+@media (min-width:992px){
+
+.publish-shell{
+
+padding:48px;
+
+}
+
+.publish-header h1{
+
+font-size:38px;
+
+}
+
+.publish-header p{
+
+font-size:16px;
+
+}
+
+.publish-types{
+
+gap:18px;
+
+}
+
+.publish-types button{
+
+padding:22px 16px;
+
+}
+
+.publish-types button i{
+
+font-size:30px;
+
+}
+
+.publish-input,
+.publish-textarea{
+
+font-size:16px;
+
+}
+
+}
+
+/* ==========================================
+TABLET
+========================================== */
+
+@media (max-width:991px){
+
+.publish-shell{
+
+padding:30px;
+
+border-radius:24px;
+
+}
+
+.publish-header{
+
+margin-bottom:28px;
+
+}
+
+.publish-header-icon{
+
+width:70px;
+
+height:70px;
+
+font-size:30px;
+
+}
+
+.publish-header h1{
+
+font-size:30px;
+
+}
+
+.publish-types{
+
+grid-template-columns:
+
+repeat(2,1fr);
+
+}
+
+}
+
+/* ==========================================
+MOBILE
+========================================== */
+
+@media (max-width:768px){
+
+.publish-body{
+
+padding:0;
+
+}
+
+.publish-shell{
+
+width:100%;
+
+min-height:100vh;
+
+border-radius:0;
+
+padding:22px 18px 40px;
+
+border:none;
+
+box-shadow:none;
+
+}
+
+.publish-header{
+
+margin-bottom:22px;
+
+}
+
+.publish-header-icon{
+
+width:62px;
+
+height:62px;
+
+font-size:26px;
+
+}
+
+.publish-header h1{
+
+font-size:26px;
+
+}
+
+.publish-header p{
+
+font-size:14px;
+
+}
+
+.publish-types{
+
+gap:10px;
+
+}
+
+.publish-types button{
+
+padding:16px 10px;
+
+border-radius:16px;
+
+}
+
+.publish-types button i{
+
+font-size:24px;
+
+}
+
+.publish-types button span{
+
+font-size:13px;
+
+}
+
+.publish-input{
+
+padding:15px;
+
+font-size:15px;
+
+}
+
+.publish-textarea{
+
+min-height:160px;
+
+padding:15px;
+
+}
+
+.upload-card-inner{
+
+padding:28px 18px;
+
+}
+
+.upload-card-inner h4{
+
+font-size:18px;
+
+}
+
+.preview-image,
+.preview-video{
+
+max-height:280px;
+
+}
+
+.publish-btn{
+
+height:58px;
+
+font-size:16px;
+
+position:sticky;
+
+bottom:18px;
+
+z-index:100;
+
+}
+
+}
+
+/* ==========================================
+VERY SMALL DEVICES
+========================================== */
+
+@media (max-width:420px){
+
+.publish-types{
+
+grid-template-columns:1fr;
+
+}
+
+.publish-header h1{
+
+font-size:22px;
+
+}
+
+.publish-header p{
+
+font-size:13px;
+
+}
+
+.preview-image,
+.preview-video{
+
+max-height:220px;
+
+}
+
+}
+
+/* ==========================================
+RED GLOW
+========================================== */
+
+.publish-shell::before{
+
+content:"";
+
+position:absolute;
+
+display:none;
+
+}
+
+.publish-types button.active,
+.publish-btn{
+
+background-size:200% 200%;
+
+animation:redGlow 5s linear infinite;
+
+}
+
+@keyframes redGlow{
+
+0%{
+
+background-position:0% 50%;
+
+}
+
+50%{
+
+background-position:100% 50%;
+
+}
+
+100%{
+
+background-position:0% 50%;
+
+}
+
+}
+
+/* ==========================================
+END
+========================================== */
