@@ -1,0 +1,788 @@
+/* =====================================
+SEARCH PAGE
+===================================== */
+
+.search-body{
+
+    background:#050505;
+    color:#fff;
+
+    min-height:100vh;
+
+    overflow-x:hidden;
+    overflow-y:auto;
+
+}
+
+.search-shell{
+
+    position:relative;
+
+    width:100%;
+    min-height:100vh;
+
+    display:flex;
+    flex-direction:column;
+
+    background:
+    radial-gradient(circle at top,#1a1a1a 0%,#050505 65%);
+
+}
+
+/* =====================================
+TOP HEADER
+===================================== */
+
+.search-header{
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:22px 24px;
+
+    flex-shrink:0;
+
+}
+
+.record-btn{
+
+    width:54px;
+    height:54px;
+
+    border-radius:50%;
+
+    border:none;
+
+    background:linear-gradient(
+        135deg,
+        #ff2a2a,
+        #d10000
+    );
+
+    color:#fff;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+    0 10px 30px rgba(209,0,0,.35);
+
+}
+
+.record-btn:hover{
+
+    transform:scale(1.08);
+
+}
+
+.search-brand{
+
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+
+}
+
+.search-brand h2{
+
+    margin:0;
+
+    font-size:1.35rem;
+    font-weight:700;
+
+}
+
+.search-brand p{
+
+    margin:4px 0 0;
+
+    color:#888;
+
+    font-size:.9rem;
+
+}
+
+/* =====================================
+CONTENT AREA
+===================================== */
+
+.search-content{
+
+    flex:1;
+
+    padding:
+    12px
+    20px
+    140px;
+
+}
+
+/* =====================================
+DISCOVER
+===================================== */
+
+.search-discover{
+
+    display:flex;
+    flex-direction:column;
+
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+
+    min-height:65vh;
+
+}
+
+.search-discover-icon{
+
+    width:110px;
+    height:110px;
+
+    border-radius:50%;
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #d10000,
+        #ff4d4d
+    );
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:46px;
+
+    margin-bottom:30px;
+
+    box-shadow:
+
+    0 20px 50px
+    rgba(209,0,0,.25);
+
+}
+
+.search-discover h2{
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    margin-bottom:14px;
+
+}
+
+.search-discover p{
+
+    max-width:500px;
+
+    color:#9a9a9a;
+
+    line-height:1.7;
+
+    font-size:1rem;
+
+}
+
+/* =====================================
+RESULTS
+===================================== */
+
+.search-results{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:42px;
+
+}
+
+.search-section{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+.search-title{
+
+    font-size:1.2rem;
+
+    font-weight:700;
+
+    margin:0;
+
+}
+
+.search-loading,
+.search-empty{
+
+    min-height:40vh;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:#888;
+
+    font-size:1.05rem;
+
+}
+
+/* =====================================
+CREATORS
+===================================== */
+
+.creator-results{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:16px;
+
+}
+
+.creator-card{
+
+    display:flex;
+    align-items:center;
+
+    gap:16px;
+
+    padding:16px;
+
+    border-radius:22px;
+
+    background:#111;
+
+    border:1px solid #222;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.creator-card:hover{
+
+    transform:translateY(-3px);
+
+    border-color:#d10000;
+
+    background:#171717;
+
+}
+
+.creator-card img{
+
+    width:64px;
+    height:64px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+}
+
+.creator-card h4{
+
+    margin:0 0 4px;
+
+    font-size:1rem;
+
+}
+
+.creator-card p{
+
+    margin:0;
+
+    color:#8f8f8f;
+
+    font-size:.9rem;
+
+}
+
+/* =====================================
+VIDEO GRID
+===================================== */
+
+.search-video-grid{
+
+    display:grid;
+
+    grid-template-columns:
+
+    repeat(auto-fill,minmax(220px,1fr));
+
+    gap:18px;
+
+}
+
+.search-video-card{
+
+    overflow:hidden;
+
+    border-radius:22px;
+
+    background:#111;
+
+    border:1px solid #222;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.search-video-card:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#d10000;
+
+}
+
+.search-video-card video{
+
+    width:100%;
+
+    aspect-ratio:9/16;
+
+    object-fit:cover;
+
+    display:block;
+
+    background:#000;
+
+}
+
+.search-video-info{
+
+    padding:14px;
+
+}
+
+.search-video-info h4{
+
+    margin:0 0 6px;
+
+    font-size:.96rem;
+
+    font-weight:600;
+
+}
+
+.search-video-info p{
+
+    margin:0;
+
+    color:#888;
+
+    font-size:.85rem;
+
+}
+
+/* =====================================
+PRODUCTS / EBOOKS / STORIES
+===================================== */
+
+.search-product-grid{
+
+    display:grid;
+
+    grid-template-columns:
+
+    repeat(auto-fill,minmax(200px,1fr));
+
+    gap:18px;
+
+}
+
+.search-product-card{
+
+    overflow:hidden;
+
+    border-radius:22px;
+
+    background:#111;
+
+    border:1px solid #222;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.search-product-card:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#d10000;
+
+}
+
+.search-product-card img,
+
+.search-product-card video{
+
+    width:100%;
+
+    aspect-ratio:4/5;
+
+    object-fit:cover;
+
+    display:block;
+
+    background:#000;
+
+}
+
+.search-product-card h4{
+
+    margin:14px 14px 6px;
+
+    font-size:.96rem;
+
+    font-weight:600;
+
+}
+
+.search-product-card p{
+
+    margin:0 14px 16px;
+
+    color:#00d26a;
+
+    font-weight:700;
+
+    font-size:.92rem;
+
+}
+
+/* =====================================
+STORY CARD
+===================================== */
+
+.story-card{
+
+    position:relative;
+
+}
+
+.story-card::after{
+
+    content:"Story";
+
+    position:absolute;
+
+    top:12px;
+    left:12px;
+
+    padding:4px 10px;
+
+    border-radius:20px;
+
+    background:rgba(0,0,0,.65);
+
+    color:#fff;
+
+    font-size:.75rem;
+
+    font-weight:600;
+
+}
+
+/* =====================================
+BOTTOM SEARCH BAR
+===================================== */
+
+.search-bottom{
+
+    position:fixed;
+
+    left:0;
+    right:0;
+    bottom:0;
+
+    padding:18px 20px
+            calc(18px + env(safe-area-inset-bottom));
+
+    background:
+
+    linear-gradient(
+
+        to top,
+
+        rgba(5,5,5,.98),
+
+        rgba(5,5,5,.88),
+
+        transparent
+
+    );
+
+    backdrop-filter:blur(18px);
+
+    z-index:999;
+
+}
+
+.search-box{
+
+    display:flex;
+    align-items:center;
+
+    gap:14px;
+
+    max-width:900px;
+
+    margin:auto;
+
+    padding:16px 22px;
+
+    border-radius:999px;
+
+    background:#111;
+
+    border:1px solid #262626;
+
+    transition:.25s;
+
+    box-shadow:
+
+    0 15px 45px rgba(0,0,0,.35);
+
+}
+
+.search-box:focus-within{
+
+    border-color:#d10000;
+
+    box-shadow:
+
+    0 0 0 3px rgba(209,0,0,.18);
+
+}
+
+.search-box i{
+
+    color:#999;
+
+    font-size:1.15rem;
+
+}
+
+.search-box input{
+
+    flex:1;
+
+    background:none;
+
+    border:none;
+
+    outline:none;
+
+    color:#fff;
+
+    font-size:1rem;
+
+}
+
+.search-box input::placeholder{
+
+    color:#8d8d8d;
+
+}
+
+/* =====================================
+CAMERA BUTTON
+===================================== */
+
+.record-search-btn{
+
+    width:56px;
+    height:56px;
+
+    border-radius:50%;
+
+    border:none;
+
+    background:
+
+    linear-gradient(
+
+        135deg,
+
+        #ff3434,
+
+        #d10000
+
+    );
+
+    color:#fff;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+
+    0 15px 40px rgba(209,0,0,.35);
+
+}
+
+.record-search-btn:hover{
+
+    transform:translateY(-2px) scale(1.05);
+
+}
+
+.record-search-btn:active{
+
+    transform:scale(.96);
+
+}
+
+
+
+/* =====================================
+FADE ANIMATION
+===================================== */
+
+.search-section{
+
+    animation:fadeSearch .35s ease;
+
+}
+
+@keyframes fadeSearch{
+
+from{
+
+    opacity:0;
+
+    transform:translateY(18px);
+
+}
+
+to{
+
+    opacity:1;
+
+    transform:translateY(0);
+
+}
+
+}
+
+/* =====================================
+RESPONSIVE
+===================================== */
+
+@media (max-width:768px){
+
+.search-header{
+
+    padding:18px;
+
+}
+
+.search-brand h2{
+
+    font-size:1.15rem;
+
+}
+
+.search-brand p{
+
+    font-size:.8rem;
+
+}
+
+.search-content{
+
+    padding:
+
+    10px
+    14px
+    120px;
+
+}
+
+.search-video-grid{
+
+    grid-template-columns:
+
+    repeat(2,1fr);
+
+}
+
+.search-product-grid{
+
+    grid-template-columns:
+
+    repeat(2,1fr);
+
+}
+
+.search-box{
+
+    padding:15px 18px;
+
+}
+
+}
+
+@media (max-width:480px){
+
+.search-video-grid,
+
+.search-product-grid{
+
+    gap:12px;
+
+}
+
+.creator-card{
+
+    padding:14px;
+
+}
+
+.search-product-card h4,
+
+.search-video-info h4{
+
+    font-size:.9rem;
+
+}
+
+.search-product-card p{
+
+    font-size:.85rem;
+
+}
+
+}
