@@ -1661,30 +1661,23 @@ if (backBtn) {
    NEXT
 ========================================== */
 
+/* ==========================================
+   NEXT
+========================================== */
+
 if (nextBtn) {
 
     nextBtn.addEventListener(
         "click",
         () => {
 
-            if (recordedBlob) {
+            window.location.href =
+                "find.html";
 
-                caption?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center"
-                });
-
-                return;
-            }
-
-
-            showCameraMessage(
-                "Record your Find video first."
-            );
         }
     );
-}
 
+}
 
 /* ==========================================
    URL CLEANUP
