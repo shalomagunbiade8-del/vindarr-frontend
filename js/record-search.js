@@ -1,3 +1,8 @@
+/* ==========================================
+   VINDARR — RECORD FIND
+   record-search.js
+========================================== */
+
 let mediaStream = null;
 let mediaRecorder = null;
 
@@ -7,22 +12,18 @@ let recordedObjectUrl = null;
 
 let recording = false;
 let uploading = false;
+let cameraReady = false;
+
 let usingFrontCamera = true;
 
 let seconds = 0;
 let timer = null;
 
-/* ==========================================
-   CONFIG
-========================================== */
-
-const FILE_UPLOAD_ENDPOINT =
-    `${API_BASE_URL}/files/upload`;
+const MAX_RECORDING_SECONDS = 300;
 
 const FIND_ENDPOINT =
     `${API_BASE_URL}/find`;
 
-const MAX_RECORDING_SECONDS = 300;
 
 /* ==========================================
    ELEMENTS
@@ -33,6 +34,9 @@ const camera =
 
 const playback =
     document.getElementById("playback");
+
+const cameraMessage =
+    document.getElementById("cameraMessage");
 
 const caption =
     document.getElementById("caption");
@@ -53,7 +57,7 @@ const retakeBtn =
     document.getElementById("retakeBtn");
 
 const uploadBtn =
-    document.getElementById("uploadBtn");
+    document.getElementById("sendFindBtn");
 
 const switchCameraBtn =
     document.getElementById("switchCameraBtn");
@@ -79,31 +83,89 @@ const videoInfo =
 const videoSize =
     document.getElementById("videoSize");
 
-/* ==========================================
-   SAFETY CHECK
-========================================== */
+const backBtn =
+    document.getElementById("backBtn");
 
-if (!camera || !playback || !recordBtn) {
-    console.error(
-        "record-search.js: Required elements are missing."
-    );
-}
+const nextBtn =
+    document.getElementById("nextBtn");
+
 
 /* ==========================================
-   GET AUTH TOKEN
+   AUTH
 ========================================== */
 
 function getToken() {
-
     return localStorage.getItem("token");
-
 }
 
+
 /* ==========================================
-   GET SUPPORTED MIME TYPE
+   CAMERA MESSAGE
+========================================== */
+
+function showCameraMessage(message) {
+
+    if (!cameraMessage) {
+        return;
+    }
+
+    cameraMessage.style.display = "flex";
+
+    const text =
+        cameraMessage.querySelector("p");
+
+    if (text) {
+        text.textContent = message;
+    }
+}
+
+
+function hideCameraMessage() {
+
+    if (cameraMessage) {
+        cameraMessage.style.display = "none";
+    }
+}
+
+
+/* ==========================================
+   BUTTON STATE
+========================================== */
+
+function updateCameraButtons() {
+
+    if (recordBtn) {
+        recordBtn.disabled =
+            !cameraReady ||
+            uploading;
+    }
+
+    if (switchCameraBtn) {
+        switchCameraBtn.disabled =
+            !cameraReady ||
+            recording ||
+            uploading;
+    }
+
+    if (retakeBtn) {
+        retakeBtn.disabled =
+            recording ||
+            uploading;
+    }
+}
+
+
+/* ==========================================
+   MIME TYPE
 ========================================== */
 
 function getSupportedMimeType() {
+
+    if (
+        typeof MediaRecorder === "undefined"
+    ) {
+        return "";
+    }
 
     const types = [
 
@@ -119,20 +181,101 @@ function getSupportedMimeType() {
 
     for (const type of types) {
 
-        if (
-            typeof MediaRecorder !== "undefined" &&
-            MediaRecorder.isTypeSupported(type)
-        ) {
+        try {
 
-            return type;
+            if (
+                MediaRecorder.isTypeSupported(type)
+            ) {
+                return type;
+            }
 
         }
 
+        catch (error) {
+            console.warn(
+                "MIME type check failed:",
+                type,
+                error
+            );
+        }
     }
 
     return "";
-
 }
+
+
+/* ==========================================
+   SECURE CONTEXT CHECK
+========================================== */
+
+function checkCameraEnvironment() {
+
+    if (
+        !window.isSecureContext &&
+        location.hostname !== "localhost" &&
+        location.hostname !== "127.0.0.1"
+    ) {
+
+        showCameraMessage(
+            "Camera access requires a secure connection (HTTPS)."
+        );
+
+        return false;
+    }
+
+    if (
+        !navigator.mediaDevices ||
+        typeof navigator.mediaDevices.getUserMedia !==
+            "function"
+    ) {
+
+        showCameraMessage(
+            "Camera access is not supported by this browser."
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+
+/* ==========================================
+   STOP CAMERA
+========================================== */
+
+function stopCamera() {
+
+    if (mediaStream) {
+
+        mediaStream
+            .getTracks()
+            .forEach(track => {
+
+                try {
+                    track.stop();
+                }
+
+                catch (error) {
+                    console.warn(
+                        "Unable to stop camera track:",
+                        error
+                    );
+                }
+
+            });
+    }
+
+    mediaStream = null;
+    cameraReady = false;
+
+    if (camera) {
+        camera.srcObject = null;
+    }
+
+    updateCameraButtons();
+}
+
 
 /* ==========================================
    START CAMERA
@@ -140,49 +283,101 @@ function getSupportedMimeType() {
 
 async function startCamera() {
 
+    if (recording || uploading) {
+        return false;
+    }
+
+    if (!checkCameraEnvironment()) {
+        updateCameraButtons();
+        return false;
+    }
+
+    cameraReady = false;
+    updateCameraButtons();
+
+    showCameraMessage(
+        "Requesting camera and microphone access..."
+    );
+
     try {
-
-        if (
-            !navigator.mediaDevices ||
-            !navigator.mediaDevices.getUserMedia
-        ) {
-
-            alert(
-                "Camera access is not supported by this browser."
-            );
-
-            return false;
-
-        }
 
         stopCamera();
 
-        mediaStream =
-            await navigator.mediaDevices.getUserMedia({
+        /*
+         * First attempt:
+         * request the preferred camera.
+         */
 
-                video: {
+        const constraints = {
 
-                    facingMode:
-                        usingFrontCamera
-                            ? "user"
-                            : "environment",
+            video: {
 
-                    width: {
-                        ideal: 1280
-                    },
+                facingMode:
+                    usingFrontCamera
+                        ? "user"
+                        : "environment",
 
-                    height: {
-                        ideal: 720
-                    }
-
+                width: {
+                    ideal: 1280
                 },
 
-                audio: true
+                height: {
+                    ideal: 720
+                }
 
-            });
+            },
+
+            audio: true
+
+        };
+
+        mediaStream =
+            await navigator.mediaDevices
+                .getUserMedia(constraints);
+
+
+        /*
+         * Make sure we actually received
+         * both required tracks.
+         */
+
+        const videoTracks =
+            mediaStream.getVideoTracks();
+
+        const audioTracks =
+            mediaStream.getAudioTracks();
+
+
+        if (!videoTracks.length) {
+
+            stopCamera();
+
+            throw new Error(
+                "No camera track was returned."
+            );
+        }
+
+
+        if (!audioTracks.length) {
+
+            stopCamera();
+
+            throw new Error(
+                "No microphone track was returned."
+            );
+        }
+
+
+        /*
+         * Attach stream to preview.
+         */
 
         camera.srcObject =
             mediaStream;
+
+        camera.muted = true;
+        camera.autoplay = true;
+        camera.playsInline = true;
 
         camera.style.display =
             "block";
@@ -190,7 +385,20 @@ async function startCamera() {
         playback.style.display =
             "none";
 
-        await camera.play().catch(() => {});
+
+        /*
+         * Wait for the video element
+         * to actually receive video data.
+         */
+
+        await waitForCameraReady();
+
+
+        cameraReady = true;
+
+        hideCameraMessage();
+
+        updateCameraButtons();
 
         return true;
 
@@ -199,69 +407,268 @@ async function startCamera() {
     catch (error) {
 
         console.error(
-            "Camera error:",
+            "Vindarr camera initialization error:",
             error
         );
 
-        if (
-            error.name ===
-            "NotAllowedError"
-        ) {
+        stopCamera();
 
-            alert(
-                "Camera and microphone permission is required to record a Find request."
-            );
+        cameraReady = false;
 
-        }
+        updateCameraButtons();
 
-        else if (
-            error.name ===
-            "NotFoundError"
-        ) {
-
-            alert(
-                "No camera or microphone was found on this device."
-            );
-
-        }
-
-        else {
-
-            alert(
-                "Unable to access your camera."
-            );
-
-        }
+        handleCameraError(error);
 
         return false;
-
     }
-
 }
+
 
 /* ==========================================
-   STOP CAMERA
+   WAIT FOR CAMERA READY
 ========================================== */
 
-function stopCamera() {
+function waitForCameraReady() {
 
-    if (!mediaStream) {
-        return;
+    return new Promise(
+        async (resolve, reject) => {
+
+            if (!camera) {
+
+                reject(
+                    new Error(
+                        "Camera element not found."
+                    )
+                );
+
+                return;
+            }
+
+
+            let finished = false;
+
+
+            const cleanup = () => {
+
+                camera.removeEventListener(
+                    "loadedmetadata",
+                    onReady
+                );
+
+                camera.removeEventListener(
+                    "canplay",
+                    onReady
+                );
+
+                camera.removeEventListener(
+                    "playing",
+                    onReady
+                );
+            };
+
+
+            const finish = () => {
+
+                if (finished) {
+                    return;
+                }
+
+                finished = true;
+
+                cleanup();
+
+                resolve();
+            };
+
+
+            const onReady = () => {
+
+                if (
+                    camera.videoWidth > 0 &&
+                    camera.videoHeight > 0
+                ) {
+                    finish();
+                }
+            };
+
+
+            camera.addEventListener(
+                "loadedmetadata",
+                onReady
+            );
+
+            camera.addEventListener(
+                "canplay",
+                onReady
+            );
+
+            camera.addEventListener(
+                "playing",
+                onReady
+            );
+
+
+            try {
+
+                await camera.play();
+
+            }
+
+            catch (error) {
+
+                console.warn(
+                    "Camera play() warning:",
+                    error
+                );
+            }
+
+
+            /*
+             * Sometimes the browser has already
+             * delivered metadata before listeners
+             * were attached.
+             */
+
+            if (
+                camera.readyState >= 2 &&
+                camera.videoWidth > 0 &&
+                camera.videoHeight > 0
+            ) {
+
+                finish();
+
+                return;
+            }
+
+
+            /*
+             * Safety timeout.
+             */
+
+            setTimeout(
+                () => {
+
+                    if (
+                        camera.videoWidth > 0 &&
+                        camera.videoHeight > 0
+                    ) {
+
+                        finish();
+
+                    }
+
+                    else {
+
+                        if (!finished) {
+
+                            finished = true;
+
+                            cleanup();
+
+                            reject(
+                                new Error(
+                                    "Camera started but no video frames were received."
+                                )
+                            );
+                        }
+                    }
+
+                },
+                8000
+            );
+        }
+    );
+}
+
+
+/* ==========================================
+   CAMERA ERROR HANDLER
+========================================== */
+
+function handleCameraError(error) {
+
+    const name =
+        error?.name || "";
+
+    let message =
+        "Unable to access the camera.";
+
+
+    if (
+        name === "NotAllowedError" ||
+        name === "PermissionDeniedError"
+    ) {
+
+        message =
+            "Camera and microphone permission is required. Please allow access in your browser settings and reload this page.";
     }
 
-    mediaStream
-        .getTracks()
-        .forEach(track => {
 
-            track.stop();
+    else if (
+        name === "NotFoundError" ||
+        name === "DevicesNotFoundError"
+    ) {
 
-        });
+        message =
+            "No camera or microphone was found on this device.";
+    }
 
-    mediaStream = null;
 
-    camera.srcObject = null;
+    else if (
+        name === "NotReadableError" ||
+        name === "TrackStartError"
+    ) {
 
+        message =
+            "Your camera or microphone is already being used by another application.";
+    }
+
+
+    else if (
+        name === "OverconstrainedError"
+    ) {
+
+        message =
+            "The selected camera is not available. Try switching cameras.";
+    }
+
+
+    else if (
+        name === "SecurityError"
+    ) {
+
+        message =
+            "Camera access was blocked by the browser for security reasons.";
+    }
+
+
+    else if (
+        error?.message
+    ) {
+
+        message =
+            error.message;
+    }
+
+
+    showCameraMessage(message);
+
+
+    /*
+     * Do not repeatedly spam alerts.
+     * The message is already visible on screen.
+     */
+
+    console.error(
+        "Camera error:",
+        {
+            name,
+            message:
+                error?.message
+        }
+    );
 }
+
 
 /* ==========================================
    SWITCH CAMERA
@@ -273,40 +680,53 @@ if (switchCameraBtn) {
         "click",
         async () => {
 
-            if (recording || uploading) {
+            if (
+                recording ||
+                uploading
+            ) {
+                return;
+            }
+
+            if (!cameraReady) {
                 return;
             }
 
             usingFrontCamera =
                 !usingFrontCamera;
 
-            await startCamera();
+            showCameraMessage(
+                "Switching camera..."
+            );
 
+            await startCamera();
         }
     );
-
 }
 
+
 /* ==========================================
-   CAPTION COUNTER
+   CAPTION
 ========================================== */
 
-if (caption && captionCount) {
+if (caption) {
 
     caption.addEventListener(
         "input",
         () => {
 
-            captionCount.textContent =
-                `${caption.value.length} / 300`;
+            if (captionCount) {
+
+                captionCount.textContent =
+                    `${caption.value.length} / 300`;
+            }
 
         }
     );
-
 }
 
+
 /* ==========================================
-   TIME FORMAT
+   TIMER
 ========================================== */
 
 function formatTime(value) {
@@ -322,12 +742,8 @@ function formatTime(value) {
         ).padStart(2, "0");
 
     return `${minutes}:${secs}`;
-
 }
 
-/* ==========================================
-   START TIMER
-========================================== */
 
 function startTimer() {
 
@@ -335,8 +751,10 @@ function startTimer() {
 
     seconds = 0;
 
-    timerLabel.textContent =
-        "00:00";
+    if (timerLabel) {
+        timerLabel.textContent =
+            "00:00";
+    }
 
     timer =
         setInterval(
@@ -344,8 +762,11 @@ function startTimer() {
 
                 seconds++;
 
-                timerLabel.textContent =
-                    formatTime(seconds);
+                if (timerLabel) {
+
+                    timerLabel.textContent =
+                        formatTime(seconds);
+                }
 
                 if (
                     seconds >=
@@ -353,30 +774,24 @@ function startTimer() {
                 ) {
 
                     stopRecording();
-
                 }
 
             },
             1000
         );
-
 }
 
-/* ==========================================
-   STOP TIMER
-========================================== */
 
 function stopTimer() {
 
     if (timer) {
 
         clearInterval(timer);
-
     }
 
     timer = null;
-
 }
+
 
 /* ==========================================
    START RECORDING
@@ -384,15 +799,15 @@ function stopTimer() {
 
 function startRecording() {
 
-    if (!mediaStream) {
+    if (!cameraReady || !mediaStream) {
 
-        alert(
-            "Camera is not ready yet."
+        showCameraMessage(
+            "Camera is not ready. Please allow camera and microphone access and try again."
         );
 
         return;
-
     }
+
 
     if (
         typeof MediaRecorder ===
@@ -400,15 +815,16 @@ function startRecording() {
     ) {
 
         alert(
-            "Video recording is not supported by this browser."
+            "This browser does not support video recording."
         );
 
         return;
-
     }
+
 
     const mimeType =
         getSupportedMimeType();
+
 
     if (!mimeType) {
 
@@ -417,23 +833,21 @@ function startRecording() {
         );
 
         return;
-
     }
 
-    recordedChunks = [];
 
+    recordedChunks = [];
     recordedBlob = null;
 
-    const options = {
-        mimeType
-    };
 
     try {
 
         mediaRecorder =
             new MediaRecorder(
                 mediaStream,
-                options
+                {
+                    mimeType
+                }
             );
 
     }
@@ -441,17 +855,17 @@ function startRecording() {
     catch (error) {
 
         console.error(
-            "MediaRecorder error:",
+            "MediaRecorder creation failed:",
             error
         );
 
         alert(
-            "Unable to start video recording."
+            "Unable to start recording on this device."
         );
 
         return;
-
     }
+
 
     mediaRecorder.ondataavailable =
         event => {
@@ -464,16 +878,15 @@ function startRecording() {
                 recordedChunks.push(
                     event.data
                 );
-
             }
-
         };
+
 
     mediaRecorder.onerror =
         event => {
 
             console.error(
-                "Recording error:",
+                "MediaRecorder error:",
                 event
             );
 
@@ -481,40 +894,60 @@ function startRecording() {
 
             stopTimer();
 
-            recordBtn.classList.remove(
+            recordBtn?.classList.remove(
                 "recording"
             );
 
+            updateCameraButtons();
         };
+
 
     mediaRecorder.onstop =
         finishRecording;
 
-    mediaRecorder.start(
-        1000
-    );
+
+    try {
+
+        mediaRecorder.start(1000);
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "MediaRecorder.start failed:",
+            error
+        );
+
+        mediaRecorder = null;
+
+        alert(
+            "Unable to start recording."
+        );
+
+        return;
+    }
+
 
     recording = true;
 
-    recordBtn.classList.add(
+    recordBtn?.classList.add(
         "recording"
     );
 
-    recordBtn.setAttribute(
+    recordBtn?.setAttribute(
         "aria-label",
         "Stop recording"
     );
 
+
     if (switchCameraBtn) {
-
-        switchCameraBtn.disabled =
-            true;
-
+        switchCameraBtn.disabled = true;
     }
 
     startTimer();
-
 }
+
 
 /* ==========================================
    STOP RECORDING
@@ -526,31 +959,48 @@ function stopRecording() {
         return;
     }
 
+
     if (
         mediaRecorder.state ===
         "inactive"
     ) {
-
         return;
+    }
+
+
+    try {
+
+        mediaRecorder.stop();
 
     }
 
-    mediaRecorder.stop();
+    catch (error) {
+
+        console.error(
+            "Unable to stop recorder:",
+            error
+        );
+    }
+
 
     recording = false;
 
-    recordBtn.classList.remove(
+    recordBtn?.classList.remove(
         "recording"
     );
 
-    recordBtn.setAttribute(
+    recordBtn?.setAttribute(
         "aria-label",
         "Start recording"
     );
 
     stopTimer();
 
+    if (recordBtn) {
+        recordBtn.disabled = true;
+    }
 }
+
 
 /* ==========================================
    FINISH RECORDING
@@ -562,6 +1012,7 @@ function finishRecording() {
         mediaRecorder?.mimeType ||
         "video/webm";
 
+
     recordedBlob =
         new Blob(
             recordedChunks,
@@ -570,27 +1021,36 @@ function finishRecording() {
             }
         );
 
+
+    mediaRecorder = null;
+
+
     if (!recordedBlob.size) {
 
         alert(
-            "No video was recorded. Please try again."
+            "No video was recorded."
         );
 
         recordedBlob = null;
 
-        return;
+        updateCameraButtons();
 
+        return;
     }
 
+
     revokePlaybackUrl();
+
 
     recordedObjectUrl =
         URL.createObjectURL(
             recordedBlob
         );
 
+
     camera.style.display =
         "none";
+
 
     playback.src =
         recordedObjectUrl;
@@ -600,55 +1060,52 @@ function finishRecording() {
 
     playback.load();
 
+
     stopCamera();
 
-    if (videoInfo) {
 
+    if (videoInfo) {
         videoInfo.style.display =
             "flex";
-
     }
+
 
     if (videoSize) {
 
-        const sizeMB =
+        const size =
             recordedBlob.size /
             1024 /
             1024;
 
         videoSize.textContent =
-            `${sizeMB.toFixed(2)} MB`;
-
+            `${size.toFixed(2)} MB`;
     }
+
 
     if (retakeBtn) {
-
         retakeBtn.style.display =
             "inline-flex";
-
+        retakeBtn.disabled = false;
     }
+
 
     if (uploadBtn) {
-
         uploadBtn.style.display =
-            "inline-flex";
-
-        uploadBtn.disabled =
-            false;
-
+            "flex";
+        uploadBtn.disabled = false;
     }
+
 
     if (switchCameraBtn) {
-
-        switchCameraBtn.disabled =
-            true;
-
+        switchCameraBtn.disabled = true;
     }
 
-    timerLabel.textContent =
-        formatTime(seconds);
 
+    if (recordBtn) {
+        recordBtn.disabled = true;
+    }
 }
+
 
 /* ==========================================
    RECORD BUTTON
@@ -673,13 +1130,12 @@ if (recordBtn) {
             else {
 
                 stopRecording();
-
             }
 
         }
     );
-
 }
+
 
 /* ==========================================
    RETAKE
@@ -691,92 +1147,96 @@ if (retakeBtn) {
         "click",
         async () => {
 
-            if (recording || uploading) {
+            if (
+                recording ||
+                uploading
+            ) {
                 return;
             }
 
-            recordedBlob = null;
 
+            recordedBlob = null;
             recordedChunks = [];
 
-            playback.pause();
 
-            playback.removeAttribute(
-                "src"
-            );
+            if (playback) {
 
-            playback.load();
+                playback.pause();
 
-            playback.style.display =
-                "none";
+                playback.removeAttribute(
+                    "src"
+                );
 
-            camera.style.display =
-                "block";
+                playback.load();
+
+                playback.style.display =
+                    "none";
+            }
+
+
+            if (camera) {
+
+                camera.style.display =
+                    "block";
+            }
+
 
             if (videoInfo) {
 
                 videoInfo.style.display =
                     "none";
-
             }
+
 
             retakeBtn.style.display =
                 "none";
+
 
             if (uploadBtn) {
 
                 uploadBtn.style.display =
                     "none";
-
             }
 
-            if (switchCameraBtn) {
-
-                switchCameraBtn.disabled =
-                    false;
-
-            }
-
-            seconds = 0;
-
-            timerLabel.textContent =
-                "00:00";
 
             revokePlaybackUrl();
 
-            await startCamera();
 
+            seconds = 0;
+
+            if (timerLabel) {
+
+                timerLabel.textContent =
+                    "00:00";
+            }
+
+
+            await startCamera();
         }
     );
-
 }
 
+
 /* ==========================================
-   VALIDATE FORM
+   VALIDATION
 ========================================== */
 
-function validateFindRequest() {
-
-    const captionValue =
-        caption?.value.trim() || "";
-
-    const categoryValue =
-        category?.value.trim() || "";
-
-    const locationValue =
-        locationInput?.value.trim() || "";
+function validateFind() {
 
     if (!recordedBlob) {
 
         alert(
-            "Please record a video first."
+            "Please record a Find video first."
         );
 
-        return null;
-
+        return false;
     }
 
-    if (!captionValue) {
+
+    if (
+        !caption ||
+        !caption.value.trim()
+    ) {
 
         alert(
             "Please describe what you are looking for."
@@ -784,72 +1244,49 @@ function validateFindRequest() {
 
         caption?.focus();
 
-        return null;
-
+        return false;
     }
 
-    if (captionValue.length > 300) {
+
+    if (
+        caption.value.trim().length >
+        300
+    ) {
 
         alert(
-            "Your description must be 300 characters or less."
+            "Your caption must be 300 characters or less."
         );
 
-        return null;
-
+        return false;
     }
 
-    if (!categoryValue) {
+
+    if (
+        !category ||
+        !category.value
+    ) {
 
         alert(
             "Please select a category."
         );
 
-        return null;
+        category?.focus();
 
+        return false;
     }
 
-    return {
 
-        caption: captionValue,
-
-        category: categoryValue,
-
-        location: locationValue
-
-    };
-
+    return true;
 }
 
-/* ==========================================
-   UPLOAD UI
-========================================== */
-
-function showUploadCard() {
-
-    uploadCard.style.display =
-        "block";
-
-    uploadTitle.textContent =
-        "Uploading video...";
-
-    uploadText.textContent =
-        "Preparing your Find request.";
-
-    uploadProgress.style.width =
-        "0%";
-
-    uploadProgress.textContent =
-        "0%";
-
-}
 
 /* ==========================================
-   UPDATE PROGRESS
+   PROGRESS
 ========================================== */
 
-function updateProgress(percent) {
+function setProgress(percent) {
 
-    const safePercent =
+    const value =
         Math.max(
             0,
             Math.min(
@@ -858,357 +1295,17 @@ function updateProgress(percent) {
             )
         );
 
-    uploadProgress.style.width =
-        `${safePercent}%`;
 
-    uploadProgress.textContent =
-        `${safePercent}%`;
+    if (uploadProgress) {
 
+        uploadProgress.style.width =
+            `${value}%`;
+    }
 }
 
-/* ==========================================
-   UPLOAD VIDEO FILE
-========================================== */
-
-function uploadVideoFile(
-    blob,
-    token
-) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            const xhr =
-                new XMLHttpRequest();
-
-            xhr.open(
-                "POST",
-                FILE_UPLOAD_ENDPOINT
-            );
-
-            xhr.setRequestHeader(
-                "Authorization",
-                `Bearer ${token}`
-            );
-
-            xhr.upload.onprogress =
-                event => {
-
-                    if (
-                        !event.lengthComputable
-                    ) {
-
-                        return;
-
-                    }
-
-                    const percent =
-                        (
-                            event.loaded /
-                            event.total
-                        ) * 100;
-
-                    updateProgress(
-                        percent
-                    );
-
-                    uploadTitle.textContent =
-                        "Uploading video...";
-
-                    uploadText.textContent =
-                        `Uploading ${Math.round(percent)}%`;
-
-                };
-
-            xhr.onload = () => {
-
-                if (
-                    xhr.status < 200 ||
-                    xhr.status >= 300
-                ) {
-
-                    let message =
-                        "Video upload failed.";
-
-                    try {
-
-                        const response =
-                            JSON.parse(
-                                xhr.responseText
-                            );
-
-                        if (
-                            response?.message
-                        ) {
-
-                            message =
-                                Array.isArray(
-                                    response.message
-                                )
-                                    ? response.message.join(
-                                        ", "
-                                    )
-                                    : response.message;
-
-                        }
-
-                    }
-
-                    catch (error) {
-                        // Keep default message.
-                    }
-
-                    reject(
-                        new Error(
-                            message
-                        )
-                    );
-
-                    return;
-
-                }
-
-                let response;
-
-                try {
-
-                    response =
-                        JSON.parse(
-                            xhr.responseText
-                        );
-
-                }
-
-                catch (error) {
-
-                    reject(
-                        new Error(
-                            "The upload server returned an invalid response."
-                        )
-                    );
-
-                    return;
-
-                }
-
-                const videoUrl =
-                    response?.videoUrl ||
-                    response?.fileUrl ||
-                    response?.url ||
-                    response?.data?.videoUrl ||
-                    response?.data?.fileUrl ||
-                    response?.data?.url;
-
-                if (!videoUrl) {
-
-                    console.error(
-                        "Upload response:",
-                        response
-                    );
-
-                    reject(
-                        new Error(
-                            "Video uploaded, but no video URL was returned."
-                        )
-                    );
-
-                    return;
-
-                }
-
-                resolve(
-                    videoUrl
-                );
-
-            };
-
-            xhr.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Network error while uploading the video."
-                    )
-                );
-
-            };
-
-            xhr.ontimeout = () => {
-
-                reject(
-                    new Error(
-                        "The video upload timed out."
-                    )
-                );
-
-            };
-
-            const extension =
-                blob.type.includes(
-                    "mp4"
-                )
-                    ? "mp4"
-                    : "webm";
-
-            const formData =
-                new FormData();
-
-            formData.append(
-                "file",
-                blob,
-                `find-video.${extension}`
-            );
-
-            xhr.send(
-                formData
-            );
-
-        }
-    );
-
-}
 
 /* ==========================================
-   CREATE FIND REQUEST
-========================================== */
-
-function createFindRequest(
-    data,
-    videoUrl,
-    token
-) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            const payload = {
-
-                caption:
-                    data.caption,
-
-                category:
-                    data.category,
-
-                location:
-                    data.location || undefined,
-
-                videoUrl:
-                    videoUrl,
-
-                duration:
-                    seconds
-
-            };
-
-            const xhr =
-                new XMLHttpRequest();
-
-            xhr.open(
-                "POST",
-                FIND_ENDPOINT
-            );
-
-            xhr.setRequestHeader(
-                "Authorization",
-                `Bearer ${token}`
-            );
-
-            xhr.setRequestHeader(
-                "Content-Type",
-                "application/json"
-            );
-
-            xhr.onload = () => {
-
-                if (
-                    xhr.status >= 200 &&
-                    xhr.status < 300
-                ) {
-
-                    let response = {};
-
-                    try {
-
-                        response =
-                            JSON.parse(
-                                xhr.responseText
-                            );
-
-                    }
-
-                    catch (error) {
-                        // Empty response is acceptable.
-                    }
-
-                    resolve(
-                        response
-                    );
-
-                    return;
-
-                }
-
-                let message =
-                    "Unable to publish your Find request.";
-
-                try {
-
-                    const response =
-                        JSON.parse(
-                            xhr.responseText
-                        );
-
-                    if (
-                        response?.message
-                    ) {
-
-                        message =
-                            Array.isArray(
-                                response.message
-                            )
-                                ? response.message.join(
-                                    ", "
-                                )
-                                : response.message;
-
-                    }
-
-                }
-
-                catch (error) {
-                    // Keep default message.
-                }
-
-                reject(
-                    new Error(
-                        message
-                    )
-                );
-
-            };
-
-            xhr.onerror = () => {
-
-                reject(
-                    new Error(
-                        "Network error while publishing your Find request."
-                    )
-                );
-
-            };
-
-            xhr.send(
-                JSON.stringify(
-                    payload
-                )
-            );
-
-        }
-    );
-
-}
-
-/* ==========================================
-   PUBLISH FIND REQUEST
+   SEND FIND
 ========================================== */
 
 if (uploadBtn) {
@@ -1221,8 +1318,10 @@ if (uploadBtn) {
                 return;
             }
 
+
             const token =
                 getToken();
+
 
             if (!token) {
 
@@ -1230,17 +1329,16 @@ if (uploadBtn) {
                     "login.html";
 
                 return;
-
             }
 
-            const data =
-                validateFindRequest();
 
-            if (!data) {
+            if (!validateFind()) {
                 return;
             }
 
+
             uploading = true;
+
 
             uploadBtn.disabled =
                 true;
@@ -1248,142 +1346,387 @@ if (uploadBtn) {
             recordBtn.disabled =
                 true;
 
-            if (retakeBtn) {
+            retakeBtn.disabled =
+                true;
 
-                retakeBtn.disabled =
-                    true;
+            switchCameraBtn.disabled =
+                true;
 
+
+            if (uploadCard) {
+
+                uploadCard.style.display =
+                    "block";
             }
 
-            if (switchCameraBtn) {
 
-                switchCameraBtn.disabled =
-                    true;
+            if (uploadTitle) {
 
+                uploadTitle.textContent =
+                    "Publishing Find...";
             }
 
-            showUploadCard();
+
+            if (uploadText) {
+
+                uploadText.textContent =
+                    "Uploading your video.";
+            }
+
+
+            setProgress(0);
+
 
             try {
 
-                /*
-                 * STEP 1
-                 * Upload raw video.
-                 */
+                const formData =
+                    new FormData();
 
-                const videoUrl =
-                    await uploadVideoFile(
-                        recordedBlob,
-                        token
-                    );
 
-                updateProgress(
-                    100
+                const extension =
+                    recordedBlob.type
+                        .includes("mp4")
+                        ? "mp4"
+                        : "webm";
+
+
+                formData.append(
+                    "video",
+                    recordedBlob,
+                    `find-video.${extension}`
                 );
 
-                uploadTitle.textContent =
-                    "Saving request...";
 
-                uploadText.textContent =
-                    "Publishing your Find request.";
-
-                /*
-                 * STEP 2
-                 * POST metadata + videoUrl
-                 * to /find.
-                 */
-
-                await createFindRequest(
-                    data,
-                    videoUrl,
-                    token
+                formData.append(
+                    "caption",
+                    caption.value.trim()
                 );
 
-                uploadTitle.textContent =
-                    "Published";
 
-                uploadText.textContent =
-                    "Your Find request is now live.";
-
-                updateProgress(
-                    100
+                formData.append(
+                    "category",
+                    category.value
                 );
+
+
+                formData.append(
+                    "location",
+                    locationInput?.value.trim() ||
+                        ""
+                );
+
+
+                await new Promise(
+                    (resolve, reject) => {
+
+                        const xhr =
+                            new XMLHttpRequest();
+
+
+                        xhr.open(
+                            "POST",
+                            FIND_ENDPOINT
+                        );
+
+
+                        xhr.setRequestHeader(
+                            "Authorization",
+                            `Bearer ${token}`
+                        );
+
+
+                        xhr.upload.onprogress =
+                            event => {
+
+                                if (
+                                    !event.lengthComputable
+                                ) {
+                                    return;
+                                }
+
+
+                                const percent =
+                                    (
+                                        event.loaded /
+                                        event.total
+                                    ) * 100;
+
+
+                                setProgress(
+                                    percent
+                                );
+
+
+                                if (uploadText) {
+
+                                    uploadText.textContent =
+                                        `Uploading ${Math.round(
+                                            percent
+                                        )}%`;
+                                }
+                            };
+
+
+                        xhr.onload =
+                            () => {
+
+                                if (
+                                    xhr.status >= 200 &&
+                                    xhr.status < 300
+                                ) {
+
+                                    resolve();
+
+                                    return;
+                                }
+
+
+                                let message =
+                                    "Unable to publish Find.";
+
+
+                                try {
+
+                                    const response =
+                                        JSON.parse(
+                                            xhr.responseText
+                                        );
+
+
+                                    if (
+                                        response?.message
+                                    ) {
+
+                                        message =
+                                            Array.isArray(
+                                                response.message
+                                            )
+                                                ? response.message.join(
+                                                    ", "
+                                                )
+                                                : response.message;
+                                    }
+                                }
+
+                                catch {
+                                    // Ignore invalid JSON.
+                                }
+
+
+                                reject(
+                                    new Error(
+                                        message
+                                    )
+                                );
+                            };
+
+
+                        xhr.onerror =
+                            () => {
+
+                                reject(
+                                    new Error(
+                                        "Network error while publishing Find."
+                                    )
+                                );
+                            };
+
+
+                        xhr.ontimeout =
+                            () => {
+
+                                reject(
+                                    new Error(
+                                        "The upload timed out."
+                                    )
+                                );
+                            };
+
+
+                        xhr.send(
+                            formData
+                        );
+                    }
+                );
+
+
+                setProgress(100);
+
+
+                if (uploadTitle) {
+
+                    uploadTitle.textContent =
+                        "Find Published";
+                }
+
+
+                if (uploadText) {
+
+                    uploadText.textContent =
+                        "Your Find is now live.";
+                }
+
 
                 setTimeout(
                     () => {
 
                         window.location.href =
-                            "search.html";
+                            "find.html";
 
                     },
-                    1200
+                    900
                 );
-
             }
+
 
             catch (error) {
 
                 console.error(
-                    "Find publish error:",
+                    "Find upload error:",
                     error
                 );
 
-                uploadTitle.textContent =
-                    "Upload Failed";
 
-                uploadText.textContent =
-                    error.message ||
-                    "Something went wrong. Please try again.";
+                if (uploadTitle) {
+
+                    uploadTitle.textContent =
+                        "Upload Failed";
+                }
+
+
+                if (uploadText) {
+
+                    uploadText.textContent =
+                        error.message ||
+                        "Something went wrong.";
+                }
+
 
                 uploadBtn.disabled =
                     false;
 
-                recordBtn.disabled =
+                retakeBtn.disabled =
                     false;
-
-                if (retakeBtn) {
-
-                    retakeBtn.disabled =
-                        false;
-
-                }
 
                 uploading = false;
 
+                /*
+                 * The recording itself still exists,
+                 * so the user can retry the upload.
+                 */
+                recordBtn.disabled =
+                    true;
+
+                switchCameraBtn.disabled =
+                    true;
             }
 
         }
     );
-
 }
 
+
 /* ==========================================
-   REVOKE PLAYBACK URL
+   BACK
+========================================== */
+
+if (backBtn) {
+
+    backBtn.addEventListener(
+        "click",
+        () => {
+
+            if (recording) {
+
+                const leave =
+                    confirm(
+                        "You are currently recording. Leave without saving this Find?"
+                    );
+
+                if (!leave) {
+                    return;
+                }
+
+                stopRecording();
+            }
+
+
+            window.history.back();
+        }
+    );
+}
+
+
+/* ==========================================
+   NEXT
+========================================== */
+
+if (nextBtn) {
+
+    nextBtn.addEventListener(
+        "click",
+        () => {
+
+            if (recordedBlob) {
+
+                caption?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
+                return;
+            }
+
+
+            showCameraMessage(
+                "Record your Find video first."
+            );
+        }
+    );
+}
+
+
+/* ==========================================
+   URL CLEANUP
 ========================================== */
 
 function revokePlaybackUrl() {
 
-    if (recordedObjectUrl) {
+    if (!recordedObjectUrl) {
+        return;
+    }
+
+
+    try {
 
         URL.revokeObjectURL(
             recordedObjectUrl
         );
 
-        recordedObjectUrl =
-            null;
-
     }
 
+    catch (error) {
+
+        console.warn(
+            "Unable to revoke playback URL:",
+            error
+        );
+    }
+
+
+    recordedObjectUrl = null;
 }
 
+
 /* ==========================================
-   INITIALIZE
+   INITIALIZATION
 ========================================== */
 
-async function initializeRecordSearch() {
+async function initialize() {
 
     const token =
         getToken();
+
 
     if (!token) {
 
@@ -1391,18 +1734,57 @@ async function initializeRecordSearch() {
             "login.html";
 
         return;
-
     }
 
-    await startCamera();
 
+    /*
+     * Make the UI honest while the camera
+     * is being initialized.
+     */
+
+    if (recordBtn) {
+        recordBtn.disabled = true;
+    }
+
+
+    if (switchCameraBtn) {
+        switchCameraBtn.disabled = true;
+    }
+
+
+    if (retakeBtn) {
+
+        retakeBtn.style.display =
+            "none";
+    }
+
+
+    if (uploadBtn) {
+
+        uploadBtn.style.display =
+            "none";
+    }
+
+
+    if (videoInfo) {
+
+        videoInfo.style.display =
+            "none";
+    }
+
+
+    showCameraMessage(
+        "Preparing camera..."
+    );
+
+
+    await startCamera();
 }
 
-/*
- * The script is loaded at the bottom
- * of record-search.html, so initialize
- * immediately.
- */
+
+/* ==========================================
+   DOM READY
+========================================== */
 
 if (
     document.readyState ===
@@ -1411,19 +1793,61 @@ if (
 
     document.addEventListener(
         "DOMContentLoaded",
-        initializeRecordSearch
+        initialize,
+        {
+            once: true
+        }
     );
 
 }
 
 else {
 
-    initializeRecordSearch();
-
+    initialize();
 }
 
+
 /* ==========================================
-   CLEANUP
+   VISIBILITY RECOVERY
+========================================== */
+
+document.addEventListener(
+    "visibilitychange",
+    async () => {
+
+        if (
+            document.visibilityState !==
+            "visible"
+        ) {
+            return;
+        }
+
+
+        if (
+            uploading ||
+            recording ||
+            recordedBlob
+        ) {
+            return;
+        }
+
+
+        /*
+         * If the user changed browser
+         * permissions while the page was
+         * hidden, try the camera again.
+         */
+
+        if (!cameraReady) {
+
+            await startCamera();
+        }
+    }
+);
+
+
+/* ==========================================
+   PAGE CLEANUP
 ========================================== */
 
 window.addEventListener(
@@ -1435,6 +1859,12 @@ window.addEventListener(
         stopCamera();
 
         revokePlaybackUrl();
-
     }
 );
+
+
+/* ==========================================
+   INITIAL BUTTON STATE
+========================================== */
+
+updateCameraButtons();

@@ -546,6 +546,8 @@ Discover on Vindarr
 <p>
 
 Search creators, videos, ebooks, products and stories.
+Or tap camera icon to record what you want the Vindarr 
+community to help you find.
 
 
 </p>

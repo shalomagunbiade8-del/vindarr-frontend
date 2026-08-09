@@ -1,362 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<meta charset="UTF-8">
+    <title>Record a Find — Vindarr</title>
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    <link
+        rel="stylesheet"
+        href="css/record-search.css"
+    >
 
-<title>Record Find • Vindarr</title>
-
-<link
-rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-
-<link
-rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-
-<link rel="stylesheet" href="css/record-search.css">
-
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
 </head>
 
-<body class="record-search-body">
+<body>
 
-<div class="record-shell">
+<header class="record-header">
 
-    <!-- ===================================== -->
-    <!-- HEADER -->
-    <!-- ===================================== -->
+    <button
+        id="backBtn"
+        class="icon-btn"
+        type="button"
+        aria-label="Go back"
+    >
+        <i class="bi bi-x-lg"></i>
+    </button>
 
-    <header class="record-header">
+    <h1>NEW FIND</h1>
 
-        <button
-            class="back-btn"
-            onclick="history.back()">
+    <button
+        id="nextBtn"
+        class="next-btn"
+        type="button"
+    >
+        NEXT
+    </button>
 
-            <i class="bi bi-arrow-left"></i>
+</header>
 
-        </button>
 
-        <div class="record-title">
+<main class="record-page">
 
-            <h2>Find Something</h2>
+    <section class="camera-card">
 
-            <p>
-                Record what you're looking for
-            </p>
+        <div class="camera-stage">
 
-        </div>
+            <video
+                id="camera"
+                autoplay
+                muted
+                playsinline
+            ></video>
 
-    </header>
+            <video
+                id="playback"
+                controls
+                playsinline
+            ></video>
 
-    <!-- ===================================== -->
-    <!-- CAMERA -->
-    <!-- ===================================== -->
-
-    <section class="camera-section">
-
-        <video
-
-            id="camera"
-
-            class="camera-preview"
-
-            autoplay
-
-            playsinline
-
-            muted>
-
-        </video>
-
-        <video
-
-            id="playback"
-
-            class="camera-preview"
-
-            controls
-
-            style="display:none;">
-
-        </video>
-
-        <!-- overlay -->
-
-        <div class="camera-overlay">
-
-            <div class="record-status">
-
-                <span class="live-dot"></span>
-
-                <span>LIVE</span>
-
+            <div
+                id="cameraMessage"
+                class="camera-message"
+            >
+                <i class="bi bi-camera-video"></i>
+                <p>Preparing camera...</p>
             </div>
 
             <div
                 id="recordTimer"
-                class="record-timer">
-
+                class="record-timer"
+            >
                 00:00
-
             </div>
+
+        </div>
+
+
+        <div class="camera-controls">
+
+            <button
+                id="switchCameraBtn"
+                class="camera-control"
+                type="button"
+                aria-label="Switch camera"
+            >
+                <i class="bi bi-arrow-repeat"></i>
+            </button>
+
+            <button
+                id="recordBtn"
+                class="record-btn"
+                type="button"
+                aria-label="Start recording"
+            >
+                <span></span>
+            </button>
+
+            <button
+                id="retakeBtn"
+                class="camera-control"
+                type="button"
+                aria-label="Retake"
+            >
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
 
         </div>
 
     </section>
 
-    <!-- ===================================== -->
-    <!-- FORM -->
-    <!-- ===================================== -->
+
+    <section
+        id="videoInfo"
+        class="video-info"
+    >
+
+        <div>
+            <strong id="videoSize">
+                0 MB
+            </strong>
+
+            <span>
+                Recorded video
+            </span>
+        </div>
+
+    </section>
+
 
     <section class="find-form">
 
         <div class="form-group">
 
-            <label>
-
-                What are you looking for?
-
+            <label for="caption">
+                What are you trying to find?
             </label>
 
             <textarea
-
                 id="caption"
-
                 maxlength="300"
-
-                placeholder="Describe what you need so the community can help...">
-
-            </textarea>
+                placeholder="Record your question, product, book, place, object or anything you need help discovering..."
+            ></textarea>
 
             <div
                 id="captionCount"
-                class="caption-counter">
-
+                class="caption-count"
+            >
                 0 / 300
-
             </div>
 
         </div>
 
-        <div class="row g-3">
 
-            <div class="col-md-6">
+        <div class="form-group">
 
-                <label>
+            <label for="findCategory">
+                Category
+            </label>
 
-                    Category
+            <select id="findCategory">
 
-                </label>
+                <option value="">
+                    Select category
+                </option>
 
-                <select
-                    id="findCategory"
-                    class="form-select">
+                <option value="Products">
+                    Products
+                </option>
 
-                    <option value="BOOK">
-                        Book
-                    </option>
+                <option value="Books">
+                    Books
+                </option>
 
-                    <option value="PRODUCT">
-                        Product
-                    </option>
+                <option value="Fashion">
+                    Fashion
+                </option>
 
-                    <option value="PERSON">
-                        Person
-                    </option>
+                <option value="Food">
+                    Food
+                </option>
 
-                    <option value="BUSINESS">
-                        Business
-                    </option>
+                <option value="Technology">
+                    Technology
+                </option>
 
-                    <option value="SERVICE">
-                        Service
-                    </option>
+                <option value="Education">
+                    Education
+                </option>
 
-                    <option value="JOB">
-                        Job
-                    </option>
+                <option value="Travel">
+                    Travel
+                </option>
 
-                    <option value="OTHER">
-                        Other
-                    </option>
+                <option value="Business">
+                    Business
+                </option>
 
-                </select>
+                <option value="People">
+                    People
+                </option>
 
-            </div>
+                <option value="Places">
+                    Places
+                </option>
 
-            <div class="col-md-6">
+                <option value="Other">
+                    Other
+                </option>
 
-                <label>
-
-                    Location
-
-                </label>
-
-                <input
-
-                    id="findLocation"
-
-                    class="form-control"
-
-                    type="text"
-
-                    placeholder="Optional">
-
-            </div>
+            </select>
 
         </div>
 
-                <!-- ===================================== -->
-        <!-- VIDEO INFO -->
-        <!-- ===================================== -->
 
-        <div
-            id="videoInfo"
-            class="video-info"
-            style="display:none;">
+        <div class="form-group">
 
-            <div class="info-item">
+            <label for="findLocation">
+                Location
+            </label>
 
-                <i class="bi bi-camera-reels-fill"></i>
-
-                <div>
-
-                    <small>Recorded Video</small>
-
-                    <strong id="videoSize">
-                        0 MB
-                    </strong>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- ===================================== -->
-        <!-- UPLOAD STATUS -->
-        <!-- ===================================== -->
-
-        <div
-            id="uploadCard"
-            class="upload-card"
-            style="display:none;">
-
-            <div class="upload-spinner"></div>
-
-            <h4 id="uploadTitle">
-                Uploading...
-            </h4>
-
-            <p id="uploadText">
-                Preparing your Find request...
-            </p>
-
-            <div class="progress">
-
-                <div
-
-                    id="uploadProgress"
-
-                    class="progress-bar progress-bar-striped progress-bar-animated"
-
-                    style="width:0%;">
-
-                    0%
-
-                </div>
-
-            </div>
+            <input
+                id="findLocation"
+                type="text"
+                placeholder="Optional location"
+            >
 
         </div>
 
     </section>
 
-    <!-- ===================================== -->
-    <!-- FLOATING CONTROLS -->
-    <!-- ===================================== -->
 
-    <footer class="record-controls">
+    <button
+        id="sendFindBtn"
+        class="send-find-btn"
+        type="button"
+    >
+        <i class="bi bi-search"></i>
+        Send Find
+    </button>
 
-        <button
 
-            id="switchCameraBtn"
+    <div
+        id="uploadCard"
+        class="upload-card"
+    >
 
-            class="icon-btn">
+        <div class="upload-icon">
+            <i class="bi bi-cloud-arrow-up"></i>
+        </div>
 
-            <i class="bi bi-arrow-repeat"></i>
+        <strong id="uploadTitle">
+            Publishing...
+        </strong>
 
-        </button>
+        <p id="uploadText">
+            Uploading your Find request.
+        </p>
 
-        <button
+        <div class="progress-track">
 
-            id="recordBtn"
+            <div
+                id="uploadProgress"
+                class="progress-bar"
+            ></div>
 
-            class="record-button">
-
-            <span></span>
-
-        </button>
-
-        <button
-
-            id="retakeBtn"
-
-            class="icon-btn"
-
-            style="display:none;">
-
-            <i class="bi bi-arrow-counterclockwise"></i>
-
-        </button>
-
-        <button
-
-            id="uploadBtn"
-
-            class="publish-btn"
-
-            style="display:none;">
-
-            <i class="bi bi-send-fill"></i>
-
-            <span>
-
-                Publish Request
-
-            </span>
-
-        </button>
-
-    </footer>
+        </div>
 
     </div>
 
-<!-- ===================================== -->
-<!-- SCRIPTS -->
-<!-- ===================================== -->
+</main>
+
 
 <script src="js/config.js"></script>
-
-<script src="js/auth.js"></script>
-
-<script>
-
-checkAuth();
-
-</script>
-
 <script src="js/record-search.js"></script>
 
-<script
-src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-</script>
-
 </body>
-
 </html>

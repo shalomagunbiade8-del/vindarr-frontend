@@ -1,414 +1,244 @@
-let page = 1;
+/* ==========================================
+   VINDARR — FIND DISCOVERY
+   find.js
+========================================== */
 
-const LIMIT = 15;
+const FIND_ENDPOINT =
+    `${API_BASE_URL}/find`;
 
-let currentFilter = "recent";
+const findFeed =
+    document.getElementById("findFeed");
 
-let searchTimer = null;
-
-let loading = false;
-
-let hasMore = true;
-
-let allRequests = [];
-
-const findGrid =
-document.getElementById("findGrid");
-
-const loadingState =
-document.getElementById("loadingState");
+const loading =
+    document.getElementById("loading");
 
 const emptyState =
-document.getElementById("emptyState");
-
-const loadMoreWrap =
-document.getElementById("loadMoreWrap");
-
-const loadMoreBtn =
-document.getElementById("loadMoreBtn");
-
-const searchInput =
-document.getElementById("searchInput");
-
-const clearSearchBtn =
-document.getElementById("clearSearchBtn");
-
-const createFindBtn =
-document.getElementById("createFindBtn");
-
-const emptyCreateBtn =
-document.getElementById("emptyCreateBtn");
-
-const bottomRecordBtn =
-document.getElementById("bottomRecordBtn");
+    document.getElementById("emptyState");
 
 const backBtn =
-document.getElementById("backBtn");
+    document.getElementById("backBtn");
 
-const filterButtons =
-document.querySelectorAll(".filter-chip");
+const recordFindBtn =
+    document.getElementById("recordFindBtn");
+
+const emptyRecordBtn =
+    document.getElementById("emptyRecordBtn");
+
 
 /* ==========================================
-HELPERS
+   AUTH
+========================================== */
+
+function getToken() {
+
+    return localStorage.getItem("token");
+
+}
+
+
+/* ==========================================
+   ESCAPE HTML
 ========================================== */
 
 function escapeHtml(value) {
 
+    if (value === null ||
+        value === undefined) {
 
-return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+        return "";
 
+    }
 
-}
-
-function getToken() {
-
-
-return localStorage.getItem("token");
-
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
+
+
+/* ==========================================
+   DATE
+========================================== */
 
 function formatDate(value) {
 
-
-if (!value) {
-    return "";
-}
-
-const date =
-    new Date(value);
-
-if (Number.isNaN(date.getTime())) {
-    return "";
-}
-
-const diff =
-    Date.now() - date.getTime();
-
-const minutes =
-    Math.floor(diff / 60000);
-
-if (minutes < 1) {
-    return "Just now";
-}
-
-if (minutes < 60) {
-    return `${minutes}m ago`;
-}
-
-const hours =
-    Math.floor(minutes / 60);
-
-if (hours < 24) {
-    return `${hours}h ago`;
-}
-
-const days =
-    Math.floor(hours / 24);
-
-if (days < 7) {
-    return `${days}d ago`;
-}
-
-return date.toLocaleDateString(
-    undefined,
-    {
-        day: "numeric",
-        month: "short"
+    if (!value) {
+        return "";
     }
-);
 
+    const date =
+        new Date(value);
 
-}
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
 
-function formatDuration(seconds) {
+        return "";
 
+    }
 
-const value =
-    Number(seconds);
-
-if (
-    !Number.isFinite(value) ||
-    value <= 0
-) {
-    return "";
-}
-
-const mins =
-    Math.floor(value / 60);
-
-const secs =
-    Math.floor(value % 60);
-
-return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-
+    return date.toLocaleDateString(
+        undefined,
+        {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        }
+    );
 
 }
 
-function normalizeResponse(response) {
-
-
-if (Array.isArray(response)) {
-    return {
-        data: response,
-        total: response.length,
-        hasMore: false
-    };
-}
-
-if (Array.isArray(response?.data)) {
-    return response;
-}
-
-if (Array.isArray(response?.items)) {
-    return {
-        ...response,
-        data: response.items
-    };
-}
-
-return {
-    data: [],
-    total: 0,
-    hasMore: false
-};
-
-
-}
-
-function getInitials(name) {
-
-
-const value =
-    String(name || "User")
-        .trim();
-
-if (!value) {
-    return "U";
-}
-
-return value
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(part => part[0])
-    .join("")
-    .toUpperCase();
-
-
-}
 
 /* ==========================================
-NAVIGATION
+   REPLIES
 ========================================== */
 
-function goToRecord() {
+function renderReplies(replies) {
 
+    if (
+        !Array.isArray(replies) ||
+        replies.length === 0
+    ) {
 
-window.location.href =
-    "record-search.html";
+        return "";
 
+    }
 
-}
+    return `
 
-createFindBtn?.addEventListener(
-"click",
-goToRecord
-);
+        <section class="replies">
 
-emptyCreateBtn?.addEventListener(
-"click",
-goToRecord
-);
-
-bottomRecordBtn?.addEventListener(
-"click",
-goToRecord
-);
-
-backBtn?.addEventListener(
-"click",
-() => {
-history.back();
-}
-);
-
-/* ==========================================
-CARD
-========================================== */
-
-function renderCard(request) {
-
-
-const id =
-    Number(request?.id);
-
-const caption =
-    escapeHtml(
-        request?.caption ||
-        "Someone is looking for something."
-    );
-
-const username =
-    escapeHtml(
-        request?.creatorUsername ||
-        "User"
-    );
-
-const avatar =
-    request?.creatorAvatar;
-
-const category =
-    escapeHtml(
-        request?.category ||
-        "OTHER"
-    );
-
-const location =
-    escapeHtml(
-        request?.location ||
-        ""
-    );
-
-const status =
-    String(
-        request?.status ||
-        "OPEN"
-    ).toUpperCase();
-
-const duration =
-    formatDuration(
-        request?.duration
-    );
-
-const avatarHtml =
-    avatar
-        ? `
-            <img
-                class="find-avatar"
-                src="${escapeHtml(avatar)}"
-                alt="${username}"
-                loading="lazy"
-            >
-        `
-        : `
-            <div class="find-avatar-placeholder">
-                ${escapeHtml(
-                    getInitials(username)
-                )}
+            <div class="replies-title">
+                ${replies.length}
+                ${replies.length === 1
+                    ? "video reply"
+                    : "video replies"}
             </div>
-        `;
 
-const videoUrl =
-    request?.videoUrl;
+            ${replies.map(
+                reply => `
 
-const thumbnailUrl =
-    request?.thumbnailUrl;
+                    <article class="reply">
 
-return `
-    <article
-        class="find-card"
-        data-id="${id}"
-        tabindex="0"
-        role="button"
-        aria-label="Open Find request"
-    >
+                        <div class="reply-author">
 
-        <div class="find-card-video">
-
-            ${
-                thumbnailUrl
-                    ? `
-                        <img
-                            src="${escapeHtml(thumbnailUrl)}"
-                            alt=""
-                            loading="lazy"
-                        >
-                    `
-                    : videoUrl
-                        ? `
-                            <video
-                                src="${escapeHtml(videoUrl)}"
-                                muted
-                                playsinline
-                                preload="metadata"
-                            ></video>
-                        `
-                        : `
-                            <div
-                                style="
-                                    width:100%;
-                                    height:100%;
-                                    display:flex;
-                                    align-items:center;
-                                    justify-content:center;
-                                    background:#111;
-                                    color:#555;
-                                "
+                            <img
+                                class="avatar"
+                                src="${escapeHtml(
+                                    reply.creatorAvatar ||
+                                    "images/default-avatar.png"
+                                )}"
+                                alt=""
+                                onerror="this.style.display='none'"
                             >
-                                <i
-                                    class="bi bi-camera-video"
-                                    style="font-size:2rem;"
-                                ></i>
+
+                            <div class="author-info">
+
+                                <span class="author-name">
+                                    ${escapeHtml(
+                                        reply.creatorUsername ||
+                                        "User"
+                                    )}
+                                </span>
+
+                                <span class="find-date">
+                                    ${formatDate(
+                                        reply.createdAt
+                                    )}
+                                </span>
+
                             </div>
-                        `
-            }
 
-            <div class="find-video-overlay">
+                        </div>
 
-                <div class="find-play">
+                        ${
+                            reply.videoUrl
+                                ? `
+                                    <video
+                                        class="reply-video"
+                                        src="${escapeHtml(
+                                            reply.videoUrl
+                                        )}"
+                                        controls
+                                        playsinline
+                                        preload="metadata"
+                                    ></video>
+                                  `
+                                : ""
+                        }
 
-                    <i class="bi bi-play-fill"></i>
+                        ${
+                            reply.text
+                                ? `
+                                    <div class="reply-info">
 
-                </div>
+                                        <p class="reply-text">
+                                            ${escapeHtml(
+                                                reply.text
+                                            )}
+                                        </p>
 
-            </div>
+                                    </div>
+                                  `
+                                : ""
+                        }
 
-            <span
-                class="find-status ${
-                    status === "SOLVED"
-                        ? "solved"
-                        : "open"
-                }"
-            >
-                ${
-                    status === "SOLVED"
-                        ? "Solved"
-                        : "Open"
-                }
-            </span>
+                    </article>
 
-            ${
-                duration
-                    ? `
-                        <span class="find-duration">
-                            ${duration}
-                        </span>
-                    `
-                    : ""
-            }
+                `
+            ).join("")}
 
-        </div>
+        </section>
+
+    `;
+
+}
 
 
-        <div class="find-card-body">
+/* ==========================================
+   FIND CARD
+========================================== */
 
-            <div class="find-user">
+function renderFind(request) {
 
-                ${avatarHtml}
+    const avatar =
+        request.creatorAvatar ||
+        "images/default-avatar.png";
 
-                <div class="find-user-name">
+    return `
 
-                    <strong>
-                        @${username}
-                    </strong>
+        <article
+            class="find-card"
+            data-find-id="${request.id}"
+        >
 
-                    <span>
-                        ${formatDate(request?.createdAt)}
+            <div class="find-author">
+
+                <img
+                    class="avatar"
+                    src="${escapeHtml(avatar)}"
+                    alt=""
+                    onerror="this.style.display='none'"
+                >
+
+                <div class="author-info">
+
+                    <span class="author-name">
+                        ${escapeHtml(
+                            request.creatorUsername ||
+                            "User"
+                        )}
+                    </span>
+
+                    <span class="find-date">
+                        ${formatDate(
+                            request.createdAt
+                        )}
                     </span>
 
                 </div>
@@ -416,572 +246,291 @@ return `
             </div>
 
 
-            <p class="find-caption">
-                ${caption}
-            </p>
-
-
-            <div class="find-meta">
-
-                <span class="find-category">
-                    ${category}
-                </span>
-
-                ${
-                    location
-                        ? `
-                            <span class="find-location">
-                                <i class="bi bi-geo-alt"></i>
-                                <span>
-                                    ${location}
-                                </span>
-                            </span>
-                        `
-                        : ""
-                }
-
-            </div>
-
-
-            <div class="find-stats">
-
-                <span class="find-stat">
-                    <i class="bi bi-heart"></i>
-                    ${Number(request?.likeCount || 0)}
-                </span>
-
-                <span class="find-stat">
-                    <i class="bi bi-chat"></i>
-                    ${Number(request?.replyCount || 0)}
-                </span>
-
-                <span class="find-stat">
-                    <i class="bi bi-eye"></i>
-                    ${Number(request?.viewCount || 0)}
-                </span>
-
-            </div>
-
-        </div>
-
-    </article>
-`;
-
-
-}
-
-/* ==========================================
-RENDER
-========================================== */
-
-function renderRequests(requests) {
-
-
-if (!findGrid) {
-    return;
-}
-
-if (!requests.length) {
-
-    findGrid.innerHTML = "";
-
-    emptyState.style.display =
-        "flex";
-
-    return;
-
-}
-
-emptyState.style.display =
-    "none";
-
-findGrid.innerHTML =
-    requests
-        .map(renderCard)
-        .join("");
-
-
-}
-
-/* ==========================================
-LOAD ENDPOINT
-========================================== */
-
-function getEndpoint() {
-
-
-switch (currentFilter) {
-
-    case "trending":
-        return `${API_BASE_URL}/find/trending?limit=${LIMIT}`;
-
-    case "open":
-        return `${API_BASE_URL}/find/open`;
-
-    case "solved":
-        return `${API_BASE_URL}/find/solved`;
-
-    default:
-        return `${API_BASE_URL}/find?page=${page}&limit=${LIMIT}`;
-
-}
-
-
-}
-
-/* ==========================================
-LOAD REQUESTS
-========================================== */
-
-async function loadRequests(
-reset = false
-) {
-
-
-if (loading) {
-    return;
-}
-
-if (!hasMore && !reset) {
-    return;
-}
-
-loading = true;
-
-if (reset) {
-
-    page = 1;
-
-    hasMore = true;
-
-    allRequests = [];
-
-    findGrid.innerHTML = "";
-
-    emptyState.style.display =
-        "none";
-
-    loadingState.style.display =
-        "flex";
-
-}
-
-try {
-
-    const response =
-        await fetch(
-            getEndpoint(),
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${getToken()}`
-                }
+            ${
+                request.videoUrl
+                    ? `
+                        <video
+                            class="find-video"
+                            src="${escapeHtml(
+                                request.videoUrl
+                            )}"
+                            controls
+                            playsinline
+                            preload="metadata"
+                        ></video>
+                      `
+                    : ""
             }
-        );
 
-    if (!response.ok) {
 
-        throw new Error(
-            `Failed to load Find requests (${response.status})`
-        );
+            <div class="find-details">
 
-    }
+                <p class="find-caption">
+                    ${escapeHtml(
+                        request.caption
+                    )}
+                </p>
 
-    const json =
-        await response.json();
 
-    const normalized =
-        normalizeResponse(json);
+                <div class="find-meta">
 
-    let incoming =
-        normalized.data || [];
+                    ${
+                        request.category
+                            ? `
+                                <span class="meta-pill">
+                                    <i class="bi bi-grid"></i>
+                                    ${escapeHtml(
+                                        request.category
+                                    )}
+                                </span>
+                              `
+                            : ""
+                    }
 
-    /*
-     * Category filtering is performed
-     * client-side because the current
-     * backend endpoints are status/order
-     * based.
-     */
+                    ${
+                        request.location
+                            ? `
+                                <span class="meta-pill">
+                                    <i class="bi bi-geo-alt"></i>
+                                    ${escapeHtml(
+                                        request.location
+                                    )}
+                                </span>
+                              `
+                            : ""
+                    }
 
-    if (
-        ![
-            "recent",
-            "trending",
-            "open",
-            "solved"
-        ].includes(currentFilter)
-    ) {
+                </div>
 
-        incoming =
-            incoming.filter(
-                request =>
-                    String(
-                        request?.category ||
-                        ""
-                    ).toUpperCase() ===
-                    currentFilter
-            );
+            </div>
 
-    }
 
-    allRequests =
-        reset
-            ? incoming
-            : [
-                ...allRequests,
-                ...incoming
-            ];
+            <div class="find-actions">
 
-    renderRequests(
-        allRequests
-    );
+                <button
+                    class="find-action"
+                    type="button"
+                    data-like="${request.id}"
+                >
+                    <i class="bi bi-heart"></i>
 
-    hasMore =
-        Boolean(
-            normalized.hasMore
-        );
+                    <span>
+                        ${request.likeCount || 0}
+                    </span>
+                </button>
 
-    if (
-        currentFilter === "recent" &&
-        incoming.length
-    ) {
 
-        page++;
+                <button
+                    class="find-action"
+                    type="button"
+                >
+                    <i class="bi bi-chat"></i>
 
-    }
+                    <span>
+                        ${request.replyCount || 0}
+                    </span>
+                </button>
 
-    loadMoreWrap.style.display =
-        hasMore
-            ? "flex"
-            : "none";
+            </div>
 
-}
 
-catch (error) {
+            ${renderReplies(
+                request.replies
+            )}
 
-    console.error(
-        "Find load error:",
-        error
-    );
+        </article>
 
-    findGrid.innerHTML = `
-        <div
-            style="
-                grid-column:1/-1;
-                padding:60px 20px;
-                text-align:center;
-                color:#777;
-            "
-        >
-            <i
-                class="bi bi-exclamation-circle"
-                style="
-                    display:block;
-                    font-size:2rem;
-                    margin-bottom:12px;
-                "
-            ></i>
-
-            <strong
-                style="
-                    display:block;
-                    color:#ddd;
-                    margin-bottom:6px;
-                "
-            >
-                Unable to load Find requests
-            </strong>
-
-            <span>
-                Please try again.
-            </span>
-
-        </div>
     `;
 
 }
 
-finally {
 
-    loading = false;
+/* ==========================================
+   LOAD FINDS
+========================================== */
 
-    loadingState.style.display =
+async function loadFinds() {
+
+    loading.style.display =
+        "block";
+
+    emptyState.style.display =
         "none";
 
-}
+    findFeed.innerHTML =
+        "";
 
+    try {
 
-}
-
-/* ==========================================
-FILTERS
-========================================== */
-
-filterButtons.forEach(
-button => {
-
-
-    button.addEventListener(
-        "click",
-        () => {
-
-            filterButtons.forEach(
-                item =>
-                    item.classList.remove(
-                        "active"
-                    )
+        const response =
+            await fetch(
+                FIND_ENDPOINT
             );
 
-            button.classList.add(
-                "active"
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load Finds."
             );
-
-            currentFilter =
-                button.dataset.filter;
-
-            loadRequests(true);
 
         }
-    );
+
+        const result =
+            await response.json();
+
+        const requests =
+            Array.isArray(result)
+                ? result
+                : (
+                    Array.isArray(result?.data)
+                        ? result.data
+                        : []
+                );
+
+        loading.style.display =
+            "none";
+
+        if (!requests.length) {
+
+            emptyState.style.display =
+                "block";
+
+            return;
+
+        }
+
+        findFeed.innerHTML =
+            requests
+                .map(renderFind)
+                .join("");
+
+        attachActions();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Find feed error:",
+            error
+        );
+
+        loading.textContent =
+            "Unable to load Finds. Please try again.";
+
+    }
 
 }
 
 
-);
-
 /* ==========================================
-SEARCH
+   LIKE
 ========================================== */
 
-searchInput?.addEventListener(
-"input",
-() => {
+function attachActions() {
 
+    document
+        .querySelectorAll(
+            "[data-like]"
+        )
+        .forEach(
+            button => {
 
-    clearTimeout(
-        searchTimer
-    );
+                button.addEventListener(
+                    "click",
+                    async () => {
 
-    const query =
-        searchInput.value
-            .trim()
-            .toLowerCase();
+                        const token =
+                            getToken();
 
-    clearSearchBtn.style.display =
-        query
-            ? "flex"
-            : "none";
+                        if (!token) {
 
-    searchTimer =
-        setTimeout(
-            () => {
+                            window.location.href =
+                                "login.html";
 
-                if (!query) {
+                            return;
 
-                    renderRequests(
-                        allRequests
-                    );
+                        }
 
-                    return;
+                        const id =
+                            button.dataset.like;
 
-                }
+                        try {
 
-                const filtered =
-                    allRequests.filter(
-                        request => {
+                            const response =
+                                await fetch(
+                                    `${FIND_ENDPOINT}/${id}/like`,
+                                    {
+                                        method: "POST",
 
-                            const text =
-                                [
-                                    request?.caption,
-                                    request?.category,
-                                    request?.location,
-                                    request?.creatorUsername
-                                ]
-                                    .filter(Boolean)
-                                    .join(" ")
-                                    .toLowerCase();
+                                        headers: {
+                                            Authorization:
+                                                `Bearer ${token}`
+                                        }
+                                    }
+                                );
 
-                            return text.includes(
-                                query
+                            if (
+                                response.ok
+                            ) {
+
+                                await loadFinds();
+
+                            }
+
+                        }
+
+                        catch (error) {
+
+                            console.error(
+                                "Find like error:",
+                                error
                             );
 
                         }
-                    );
 
-                renderRequests(
-                    filtered
+                    }
                 );
 
-            },
-            250
+            }
         );
 
 }
 
 
-);
-
 /* ==========================================
-CLEAR SEARCH
+   NAVIGATION
 ========================================== */
 
-clearSearchBtn?.addEventListener(
-"click",
-() => {
-
-
-    searchInput.value = "";
-
-    clearSearchBtn.style.display =
-        "none";
-
-    renderRequests(
-        allRequests
-    );
-
-    searchInput.focus();
-
-}
-
-
-);
-
-/* ==========================================
-OPEN FIND
-========================================== */
-
-findGrid?.addEventListener(
-"click",
-event => {
-
-
-    const card =
-        event.target.closest(
-            ".find-card"
-        );
-
-    if (!card) {
-        return;
-    }
-
-    const id =
-        card.dataset.id;
-
-    if (!id) {
-        return;
-    }
+function openRecorder() {
 
     window.location.href =
-        `find.html?id=${encodeURIComponent(id)}`;
+        "record-search.html";
 
 }
 
-
+recordFindBtn?.addEventListener(
+    "click",
+    openRecorder
 );
 
-/* ==========================================
-KEYBOARD ACCESS
-========================================== */
+emptyRecordBtn?.addEventListener(
+    "click",
+    openRecorder
+);
 
-findGrid?.addEventListener(
-"keydown",
-event => {
+backBtn?.addEventListener(
+    "click",
+    () => {
 
-
-    if (
-        event.key !== "Enter" &&
-        event.key !== " "
-    ) {
-        return;
-    }
-
-    const card =
-        event.target.closest(
-            ".find-card"
-        );
-
-    if (!card) {
-        return;
-    }
-
-    event.preventDefault();
-
-    const id =
-        card.dataset.id;
-
-    if (id) {
-
-        window.location.href =
-            `find.html?id=${encodeURIComponent(id)}`;
+        window.history.back();
 
     }
-
-}
-
-
 );
+
 
 /* ==========================================
-LOAD MORE
+   INITIALIZE
 ========================================== */
 
-loadMoreBtn?.addEventListener(
-"click",
-() => {
-
-
-    loadRequests();
-
-}
-
-
-);
-
-/* ==========================================
-INITIALIZE
-========================================== */
-
-async function initializeFindSearch() {
-
-
-const token =
-    getToken();
-
-if (!token) {
-
-    window.location.href =
-        "login.html";
-
-    return;
-
-}
-
-clearSearchBtn.style.display =
-    "none";
-
-await loadRequests(true);
-
-
-}
-
-if (
-document.readyState ===
-"loading"
-) {
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    initializeFindSearch
-);
-
-
-}
-
-else {
-
-
-initializeFindSearch();
-
-
-}
+loadFinds();
