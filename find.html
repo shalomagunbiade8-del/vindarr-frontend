@@ -31,13 +31,20 @@
         id="backBtn"
         class="header-btn"
         type="button"
+        aria-label="Go back"
     >
         <i class="bi bi-arrow-left"></i>
     </button>
 
-    <h1>
-        FIND
-    </h1>
+    <div class="header-title">
+
+        <span>FIND</span>
+
+        <small>
+            Discover through people
+        </small>
+
+    </div>
 
     <button
         id="recordFindBtn"
@@ -53,24 +60,167 @@
 
 <main class="find-page">
 
+
+    <!-- =====================================
+         SEARCH
+    ====================================== -->
+
+    <section class="find-discovery">
+
+        <div class="find-search">
+
+            <i class="bi bi-search"></i>
+
+            <input
+                id="findSearch"
+                type="search"
+                placeholder="Search Finds..."
+                autocomplete="off"
+            >
+
+            <button
+                id="clearSearchBtn"
+                type="button"
+                aria-label="Clear search"
+            >
+                <i class="bi bi-x"></i>
+            </button>
+
+        </div>
+
+
+        <div
+            id="categoryFilters"
+            class="category-filters"
+        >
+
+            <button
+                class="category-filter active"
+                type="button"
+                data-category=""
+            >
+                All
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Products"
+            >
+                Products
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Books"
+            >
+                Books
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Fashion"
+            >
+                Fashion
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Food"
+            >
+                Food
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Technology"
+            >
+                Technology
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Education"
+            >
+                Education
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Travel"
+            >
+                Travel
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Places"
+            >
+                Places
+            </button>
+
+            <button
+                class="category-filter"
+                type="button"
+                data-category="Other"
+            >
+                Other
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         LOADING
+    ====================================== -->
+
     <div
         id="loading"
         class="loading"
     >
-        Loading Finds...
+
+        <div class="loading-spinner"></div>
+
+        <span>
+            Loading Finds...
+        </span>
+
     </div>
+
+
+    <!-- =====================================
+         FEED
+    ====================================== -->
 
     <section
         id="findFeed"
         class="find-feed"
     ></section>
 
-    <div
+
+    <!-- =====================================
+         EMPTY STATE
+    ====================================== -->
+
+    <section
         id="emptyState"
         class="empty-state"
     >
 
-        <i class="bi bi-search"></i>
+        <div class="empty-icon">
+
+            <i class="bi bi-search"></i>
+
+        </div>
 
         <h2>
             Nothing here yet
@@ -82,14 +232,259 @@
 
         <button
             id="emptyRecordBtn"
+            class="primary-btn"
             type="button"
         >
+
+            <i class="bi bi-camera-video"></i>
+
             Record a Find
+
         </button>
+
+    </section>
+
+
+    <!-- =====================================
+         LOAD MORE
+    ====================================== -->
+
+    <button
+        id="loadMoreBtn"
+        class="load-more-btn"
+        type="button"
+    >
+
+        Load more
+
+    </button>
+
+
+</main>
+
+
+<!-- ==========================================
+     REPLY RECORDING MODAL
+=========================================== -->
+
+<div
+    id="replyModal"
+    class="modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-backdrop"></div>
+
+    <div class="reply-modal">
+
+        <header class="modal-header">
+
+            <div>
+
+                <strong>
+                    Video Reply
+                </strong>
+
+                <small>
+                    Help answer this Find
+                </small>
+
+            </div>
+
+            <button
+                id="closeReplyModalBtn"
+                class="modal-close"
+                type="button"
+                aria-label="Close"
+            >
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+        </header>
+
+
+        <div class="reply-camera">
+
+            <video
+                id="replyCamera"
+                autoplay
+                muted
+                playsinline
+            ></video>
+
+            <video
+                id="replyPlayback"
+                controls
+                playsinline
+            ></video>
+
+            <div
+                id="replyCameraMessage"
+                class="reply-camera-message"
+            >
+
+                <i class="bi bi-camera-video"></i>
+
+                <span>
+                    Preparing camera...
+                </span>
+
+            </div>
+
+            <div
+                id="replyTimer"
+                class="reply-timer"
+            >
+                00:00
+            </div>
+
+        </div>
+
+
+        <div class="reply-camera-controls">
+
+            <button
+                id="replySwitchCameraBtn"
+                class="reply-control"
+                type="button"
+                aria-label="Switch camera"
+            >
+                <i class="bi bi-arrow-repeat"></i>
+            </button>
+
+
+            <button
+                id="replyRecordBtn"
+                class="reply-record-btn"
+                type="button"
+                aria-label="Start recording"
+            >
+
+                <span></span>
+
+            </button>
+
+
+            <button
+                id="replyRetakeBtn"
+                class="reply-control"
+                type="button"
+                aria-label="Retake"
+            >
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+
+        </div>
+
+
+        <div
+            id="replyPreviewInfo"
+            class="reply-preview-info"
+        >
+            Record a video answer to this Find.
+        </div>
+
+
+        <button
+            id="sendReplyBtn"
+            class="send-reply-btn"
+            type="button"
+        >
+
+            <i class="bi bi-send"></i>
+
+            Send Video Reply
+
+        </button>
+
+
+        <div
+            id="replyUploadStatus"
+            class="reply-upload-status"
+        >
+
+            <div class="reply-progress">
+
+                <div
+                    id="replyUploadProgress"
+                    class="reply-progress-bar"
+                ></div>
+
+            </div>
+
+            <span id="replyUploadText">
+                Uploading...
+            </span>
+
+        </div>
 
     </div>
 
-</main>
+</div>
+
+
+<!-- ==========================================
+     DELETE CONFIRMATION
+=========================================== -->
+
+<div
+    id="deleteModal"
+    class="modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-backdrop"></div>
+
+    <div class="confirm-modal">
+
+        <div class="confirm-icon">
+
+            <i class="bi bi-trash3"></i>
+
+        </div>
+
+        <h2>
+            Delete this Find?
+        </h2>
+
+        <p>
+            This cannot be undone.
+        </p>
+
+        <div class="confirm-actions">
+
+            <button
+                id="cancelDeleteBtn"
+                class="secondary-btn"
+                type="button"
+            >
+                Cancel
+            </button>
+
+            <button
+                id="confirmDeleteBtn"
+                class="danger-btn"
+                type="button"
+            >
+                Delete
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==========================================
+     TOAST
+=========================================== -->
+
+<div
+    id="toast"
+    class="toast"
+    role="status"
+></div>
 
 
 <script src="js/config.js"></script>
