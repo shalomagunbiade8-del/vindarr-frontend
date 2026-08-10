@@ -1,40 +1,36 @@
-/* =========================================================
-   VINDARR — FIND
-   find.css
-   ========================================================= */
-
 :root {
-    --black: #0d0d0d;
-    --black-2: #151515;
-    --black-3: #1d1d1d;
-    --white: #ffffff;
-    --white-soft: #f5f5f5;
-    --gray: #9b9b9b;
-    --gray-2: #6f6f6f;
-    --line: rgba(255, 255, 255, 0.10);
-    --red: #d10000;
-    --red-dark: #a90000;
-    --green: #21c66d;
-    --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-    --radius: 18px;
-}
+    --black: #0b0b0b;
+    --black-soft: #141414;
+    --black-card: #191919;
+    --black-border: #292929;
 
-/* =========================================================
-   RESET
-   ========================================================= */
+    --white: #ffffff;
+    --white-soft: #eeeeee;
+    --muted: #9b9b9b;
+
+    --red: #d10000;
+    --red-dark: #9d0000;
+
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 11px;
+
+    --shadow:
+        0 20px 55px rgba(0, 0, 0, .38);
+}
 
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
-html {
-    scroll-behavior: smooth;
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
 }
 
 body {
-    min-height: 100vh;
     background: var(--black);
     color: var(--white);
     font-family:
@@ -43,131 +39,128 @@ body {
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
-    overflow-x: hidden;
 }
 
 button,
-input,
-textarea,
-select {
+input {
     font: inherit;
 }
 
 button {
-    border: 0;
     cursor: pointer;
 }
 
 button:disabled {
     cursor: not-allowed;
-    opacity: 0.45;
+    opacity: .55;
 }
 
-video {
-    display: block;
-    max-width: 100%;
-}
 
-/* =========================================================
+/* ==========================================
    HEADER
-   ========================================================= */
+========================================== */
 
 .find-header {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 50;
 
-    width: 100%;
-    height: 68px;
+    height: 76px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    padding: 0 18px;
+    padding: 0 22px;
 
     background:
-        rgba(13, 13, 13, 0.94);
+        rgba(11, 11, 11, .92);
 
-    border-bottom: 1px solid var(--line);
+    border-bottom:
+        1px solid var(--black-border);
 
     backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
 }
 
 .header-btn {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 
+    border: 0;
     border-radius: 50%;
 
-    background: var(--black-3);
     color: var(--white);
+    background: #1b1b1b;
 
     transition:
-        transform 0.2s ease,
-        background 0.2s ease;
+        transform .18s ease,
+        background .18s ease;
 }
 
 .header-btn:hover {
-    background: #292929;
+    background: #262626;
     transform: translateY(-1px);
 }
 
-.header-btn i {
-    font-size: 20px;
-}
-
-.find-camera {
+.camera-btn {
     background: var(--red);
 }
 
-.find-camera:hover {
+.camera-btn:hover {
     background: var(--red-dark);
 }
 
 .header-title {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    text-align: center;
+}
+
+.header-title h1 {
+    margin: 0;
+
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: .14em;
 }
 
 .header-title span {
-    font-size: 17px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
+    display: block;
+
+    margin-top: 3px;
+
+    color: var(--muted);
+
+    font-size: 11px;
 }
 
-.header-title small {
-    color: var(--gray);
-    font-size: 10px;
-}
 
-/* =========================================================
+/* ==========================================
    PAGE
-   ========================================================= */
+========================================== */
 
 .find-page {
-    width: min(100%, 760px);
+    width: min(760px, 100%);
+
     margin: 0 auto;
-    padding: 18px 16px 100px;
+
+    padding:
+        20px 16px
+        60px;
 }
 
-/* =========================================================
+
+/* ==========================================
    SEARCH
-   ========================================================= */
+========================================== */
 
-.find-discovery {
-    margin-bottom: 20px;
+.search-section {
+    margin-bottom: 16px;
 }
 
-.find-search {
-    height: 52px;
+.search-box {
+    height: 50px;
 
     display: flex;
     align-items: center;
@@ -175,143 +168,185 @@ video {
 
     padding: 0 15px;
 
-    background: var(--black-2);
-    border: 1px solid var(--line);
+    background: var(--black-soft);
+
+    border:
+        1px solid var(--black-border);
+
     border-radius: 16px;
 
     transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+        border-color .2s ease,
+        box-shadow .2s ease;
 }
 
-.find-search:focus-within {
-    border-color: rgba(209, 0, 0, 0.65);
+.search-box:focus-within {
+    border-color: rgba(209, 0, 0, .65);
 
     box-shadow:
-        0 0 0 3px rgba(209, 0, 0, 0.10);
+        0 0 0 3px rgba(209, 0, 0, .08);
 }
 
-.find-search > i {
-    color: var(--gray);
-    font-size: 18px;
+.search-box > i {
+    color: #8d8d8d;
 }
 
-.find-search input {
-    flex: 1;
-
-    min-width: 0;
+.search-box input {
+    width: 100%;
 
     border: 0;
     outline: 0;
 
-    background: transparent;
     color: var(--white);
+    background: transparent;
 
-    font-size: 15px;
+    font-size: 14px;
 }
 
-.find-search input::placeholder {
-    color: var(--gray-2);
+.search-box input::placeholder {
+    color: #747474;
 }
 
-#clearSearchBtn {
+.clear-search {
     width: 30px;
     height: 30px;
 
-    display: none;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 
+    border: 0;
     border-radius: 50%;
 
-    background: #292929;
-    color: var(--gray);
+    color: #aaa;
+    background: transparent;
+
+    opacity: 0;
+    pointer-events: none;
 }
 
-#clearSearchBtn.visible {
-    display: flex;
+.clear-search.visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-/* =========================================================
-   CATEGORY FILTERS
-   ========================================================= */
 
-.category-filters {
+/* ==========================================
+   TABS
+========================================== */
+
+.find-tabs {
     display: flex;
     gap: 8px;
 
-    margin-top: 13px;
+    margin-bottom: 20px;
 
     overflow-x: auto;
-    padding-bottom: 4px;
 
     scrollbar-width: none;
 }
 
-.category-filters::-webkit-scrollbar {
+.find-tabs::-webkit-scrollbar {
     display: none;
 }
 
-.category-filter {
+.find-tab {
     flex: 0 0 auto;
 
-    min-height: 36px;
+    padding:
+        10px 17px;
 
-    padding: 0 14px;
+    border:
+        1px solid var(--black-border);
 
-    border: 1px solid var(--line);
     border-radius: 999px;
 
-    background: var(--black-2);
-    color: var(--gray);
+    color: #a7a7a7;
+    background: var(--black-soft);
 
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
 
     transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease;
+        .2s ease;
 }
 
-.category-filter:hover {
-    color: var(--white);
-    border-color: rgba(255, 255, 255, 0.22);
+.find-tab:hover {
+    color: white;
+    border-color: #444;
 }
 
-.category-filter.active {
+.find-tab.active {
+    color: white;
     background: var(--red);
     border-color: var(--red);
-    color: var(--white);
 }
 
-/* =========================================================
-   LOADING
-   ========================================================= */
 
-.loading {
-    min-height: 180px;
+/* ==========================================
+   STATUS
+========================================== */
+
+.status-box {
+    min-height: 150px;
 
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
 
-    color: var(--gray);
+    gap: 9px;
 
-    font-size: 13px;
+    color: var(--muted);
+
+    text-align: center;
 }
 
-.loading-spinner {
-    width: 18px;
-    height: 18px;
+.status-box strong {
+    color: white;
+}
 
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    border-top-color: var(--red);
+.error-state {
+    display: none;
+}
+
+.error-state i {
+    color: var(--red);
+    font-size: 30px;
+}
+
+.error-state button {
+    margin-top: 8px;
+
+    padding: 9px 16px;
+
+    border: 0;
+    border-radius: 999px;
+
+    color: white;
+    background: var(--red);
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+
+    border:
+        3px solid #333;
+
+    border-top-color:
+        var(--red);
 
     border-radius: 50%;
 
-    animation: spin 0.8s linear infinite;
+    animation:
+        spin .8s linear infinite;
+}
+
+.spinner.small {
+    width: 20px;
+    height: 20px;
+
+    border-width: 2px;
 }
 
 @keyframes spin {
@@ -320,342 +355,396 @@ video {
     }
 }
 
-/* =========================================================
-   FIND FEED
-   ========================================================= */
+
+/* ==========================================
+   FEED
+========================================== */
 
 .find-feed {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 20px;
 }
 
-/* =========================================================
+
+/* ==========================================
    FIND CARD
-   ========================================================= */
+========================================== */
 
 .find-card {
     overflow: hidden;
 
-    background: var(--black-2);
+    background:
+        linear-gradient(
+            145deg,
+            #191919,
+            #111111
+        );
 
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border:
+        1px solid var(--black-border);
 
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.20);
+    border-radius:
+        var(--radius-lg);
 
-    animation: cardIn 0.35s ease both;
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, .24);
 }
 
-@keyframes cardIn {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* =========================================================
-   FIND CARD HEADER
-   ========================================================= */
-
-.find-card-header {
-    min-height: 62px;
-
+.find-card-top {
     display: flex;
     align-items: center;
-    gap: 11px;
+    justify-content: space-between;
 
-    padding: 12px 14px;
+    padding: 15px 16px 11px;
 }
 
-.find-avatar {
-    width: 38px;
-    height: 38px;
+.creator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
-    flex: 0 0 auto;
+    min-width: 0;
+}
 
-    border-radius: 50%;
+.creator-avatar {
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
 
     overflow: hidden;
 
-    background: #292929;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: var(--white);
-    font-size: 14px;
-    font-weight: 800;
-}
-
-.find-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.find-user-info {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.find-username {
-    color: var(--white);
-
-    font-size: 13px;
-    font-weight: 800;
-}
-
-.find-time {
-    color: var(--gray-2);
-    font-size: 11px;
-}
-
-.find-card-menu {
-    margin-left: auto;
-
-    width: 34px;
-    height: 34px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 
     border-radius: 50%;
 
+    color: white;
+    background:
+        linear-gradient(
+            135deg,
+            var(--red),
+            #570000
+        );
+
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.creator-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.creator-details {
+    min-width: 0;
+}
+
+.creator-name {
+    color: white;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.find-meta {
+    margin-top: 3px;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #777;
+
+    font-size: 11px;
+}
+
+.category-badge {
+    padding: 4px 8px;
+
+    border-radius: 999px;
+
+    color: #ffb0b0;
+    background: rgba(209, 0, 0, .12);
+}
+
+
+/* ==========================================
+   MENU
+========================================== */
+
+.find-menu-wrap {
+    position: relative;
+}
+
+.find-menu-btn {
+    width: 36px;
+    height: 36px;
+
+    display: grid;
+    place-items: center;
+
+    border: 0;
+    border-radius: 50%;
+
+    color: #aaa;
     background: transparent;
-    color: var(--gray);
-
-    transition: background 0.2s ease;
 }
 
-.find-card-menu:hover {
-    background: #292929;
-    color: var(--white);
+.find-menu-btn:hover {
+    color: white;
+    background: #242424;
 }
 
-/* =========================================================
-   FIND VIDEO
-   ========================================================= */
+.find-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+
+    z-index: 20;
+
+    min-width: 150px;
+
+    padding: 6px;
+
+    display: none;
+
+    background: #202020;
+
+    border:
+        1px solid #363636;
+
+    border-radius: 12px;
+
+    box-shadow: var(--shadow);
+}
+
+.find-menu.open {
+    display: block;
+}
+
+.find-menu button {
+    width: 100%;
+
+    padding: 10px 11px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    border: 0;
+    border-radius: 8px;
+
+    color: #eee;
+    background: transparent;
+
+    text-align: left;
+    font-size: 12px;
+}
+
+.find-menu button:hover {
+    background: #2a2a2a;
+}
+
+.find-menu .delete-btn {
+    color: #ff6c6c;
+}
+
+
+/* ==========================================
+   VIDEO
+========================================== */
 
 .find-video-wrap {
     position: relative;
 
     width: 100%;
 
-    background: #000;
-
     aspect-ratio: 16 / 10;
+
+    background: #050505;
 }
 
 .find-video {
     width: 100%;
     height: 100%;
 
-    object-fit: cover;
-
-    background: #000;
-}
-
-.find-video-wrap video {
-    width: 100%;
-    height: 100%;
+    display: block;
 
     object-fit: cover;
 }
 
-/* =========================================================
-   VIDEO OVERLAY
-   ========================================================= */
-
-.find-video-location {
+.video-gradient {
     position: absolute;
-    left: 12px;
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            to top,
+            rgba(0, 0, 0, .7),
+            transparent 45%
+        );
+}
+
+.video-location {
+    position: absolute;
+
+    left: 13px;
     bottom: 12px;
 
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 5px;
 
     padding: 7px 10px;
 
-    background: rgba(0, 0, 0, 0.68);
+    color: white;
+    background: rgba(0, 0, 0, .55);
 
     border-radius: 999px;
 
-    color: var(--white);
-
     font-size: 11px;
+
+    backdrop-filter: blur(8px);
 }
 
-.find-video-location i {
-    color: #ff4b4b;
-}
 
-/* =========================================================
-   CARD BODY
-   ========================================================= */
+/* ==========================================
+   CAPTION
+========================================== */
 
-.find-card-body {
-    padding: 14px;
+.find-content {
+    padding: 14px 16px 12px;
 }
 
 .find-caption {
-    color: var(--white);
+    margin: 0;
 
-    font-size: 15px;
-    font-weight: 650;
+    color: #f2f2f2;
 
-    line-height: 1.5;
-
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    font-size: 14px;
+    line-height: 1.55;
 }
 
-.find-meta {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 7px;
 
-    margin-top: 11px;
-}
-
-.find-category {
-    display: inline-flex;
-    align-items: center;
-
-    padding: 6px 10px;
-
-    border-radius: 999px;
-
-    background: rgba(209, 0, 0, 0.12);
-
-    color: #ff5b5b;
-
-    font-size: 10px;
-    font-weight: 800;
-}
-
-.find-location {
-    color: var(--gray);
-
-    font-size: 11px;
-}
-
-.find-location i {
-    margin-right: 3px;
-}
-
-/* =========================================================
-   CARD ACTIONS
-   ========================================================= */
+/* ==========================================
+   ACTIONS
+========================================== */
 
 .find-actions {
     display: flex;
     align-items: center;
     gap: 8px;
 
-    margin-top: 14px;
+    padding:
+        0 12px 14px;
 }
 
-.find-action-btn {
+.action-btn {
     min-height: 38px;
 
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 7px;
 
-    padding: 0 12px;
+    padding: 8px 12px;
 
-    border-radius: 11px;
+    border:
+        1px solid var(--black-border);
 
-    background: var(--black-3);
-    color: var(--gray);
+    border-radius: 999px;
 
-    font-size: 11px;
-    font-weight: 800;
+    color: #ddd;
+    background: #151515;
+
+    font-size: 12px;
+    font-weight: 700;
 
     transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
+        background .18s ease,
+        border-color .18s ease,
+        transform .18s ease;
 }
 
-.find-action-btn:hover {
-    background: #292929;
-    color: var(--white);
+.action-btn:hover {
+    background: #222;
+    border-color: #3a3a3a;
     transform: translateY(-1px);
 }
 
-.find-action-btn.reply {
+.reply-btn {
+    color: white;
     background: var(--red);
-    color: var(--white);
+    border-color: var(--red);
 }
 
-.find-action-btn.reply:hover {
+.reply-btn:hover {
     background: var(--red-dark);
+    border-color: var(--red-dark);
 }
 
-.find-action-btn i {
-    font-size: 15px;
+.action-spacer {
+    flex: 1;
 }
 
-.find-reply-count {
-    margin-left: auto;
-
-    color: var(--gray);
-
+.reply-count {
+    color: #888;
     font-size: 11px;
 }
 
-/* =========================================================
+
+/* ==========================================
    REPLIES
-   ========================================================= */
+========================================== */
 
-.find-replies {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    margin-top: 14px;
-    padding-top: 14px;
-
-    border-top: 1px solid var(--line);
+.replies-section {
+    padding:
+        0 12px 14px;
 }
 
-.replies-title {
+.replies-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    color: var(--gray);
+    padding: 12px 4px 10px;
 
-    font-size: 11px;
+    border-top:
+        1px solid var(--black-border);
+
+    color: #aaa;
+
+    font-size: 12px;
     font-weight: 800;
 }
 
-.reply-item {
+.replies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.reply-card {
     overflow: hidden;
 
-    background: #111111;
+    background: #101010;
 
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border:
+        1px solid #242424;
 
     border-radius: 15px;
 }
 
-.reply-header {
+.reply-card-header {
     display: flex;
     align-items: center;
     gap: 9px;
@@ -667,15 +756,16 @@ video {
     width: 30px;
     height: 30px;
 
-    border-radius: 50%;
+    display: grid;
+    place-items: center;
 
     overflow: hidden;
 
-    background: #292929;
+    flex: 0 0 30px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 50%;
+
+    background: #292929;
 
     font-size: 11px;
     font-weight: 800;
@@ -687,60 +777,55 @@ video {
     object-fit: cover;
 }
 
-.reply-user {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.reply-name {
+    font-size: 12px;
+    font-weight: 700;
 }
 
-.reply-user strong {
-    font-size: 11px;
-}
-
-.reply-user span {
-    color: var(--gray-2);
-    font-size: 9px;
-}
-
-.reply-menu {
+.reply-time {
     margin-left: auto;
 
-    width: 28px;
-    height: 28px;
+    color: #666;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: transparent;
-    color: var(--gray);
+    font-size: 10px;
 }
 
 .reply-video {
     width: 100%;
-    max-height: 480px;
 
-    background: #000;
+    max-height: 400px;
+
+    display: block;
+
+    background: #050505;
 }
 
-.reply-footer {
-    padding: 8px 11px;
+.reply-actions {
+    display: flex;
+    justify-content: flex-end;
 
-    color: var(--gray-2);
-
-    font-size: 9px;
+    padding: 7px;
 }
 
-/* =========================================================
-   EMPTY STATE
-   ========================================================= */
+.reply-delete {
+    border: 0;
+
+    color: #d86666;
+    background: transparent;
+
+    font-size: 11px;
+}
+
+
+/* ==========================================
+   EMPTY
+========================================== */
 
 .empty-state {
     display: none;
 
-    padding: 70px 20px;
+    padding:
+        70px 20px;
 
     text-align: center;
 }
@@ -749,223 +834,196 @@ video {
     width: 64px;
     height: 64px;
 
-    margin: 0 auto 18px;
+    display: grid;
+    place-items: center;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin: 0 auto 17px;
 
     border-radius: 50%;
 
-    background: rgba(209, 0, 0, 0.12);
+    color: #ffb0b0;
+    background: rgba(209, 0, 0, .12);
 
-    color: var(--red);
-
-    font-size: 27px;
+    font-size: 25px;
 }
 
 .empty-state h2 {
-    margin-bottom: 8px;
+    margin: 0 0 8px;
 
     font-size: 20px;
 }
 
 .empty-state p {
-    max-width: 430px;
+    max-width: 420px;
 
-    margin: 0 auto;
+    margin: 0 auto 20px;
 
-    color: var(--gray);
+    color: #888;
 
     font-size: 13px;
     line-height: 1.6;
 }
 
-.primary-btn {
-    min-height: 44px;
+.empty-state button {
+    padding: 11px 17px;
 
-    margin-top: 20px;
+    border: 0;
+    border-radius: 999px;
 
-    padding: 0 17px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    border-radius: 12px;
-
+    color: white;
     background: var(--red);
-    color: var(--white);
 
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
 }
 
-.primary-btn:hover {
-    background: var(--red-dark);
-}
 
-/* =========================================================
-   LOAD MORE
-   ========================================================= */
-
-.load-more-btn {
-    display: none;
-
-    width: 100%;
-
-    margin-top: 18px;
-
-    min-height: 44px;
-
-    border: 1px solid var(--line);
-    border-radius: 12px;
-
-    background: var(--black-2);
-    color: var(--white);
-
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.load-more-btn:hover {
-    background: var(--black-3);
-}
-
-/* =========================================================
+/* ==========================================
    MODAL
-   ========================================================= */
+========================================== */
 
 .modal {
     position: fixed;
     inset: 0;
 
-    z-index: 500;
+    z-index: 200;
 
     display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 15px;
 }
 
 .modal.open {
     display: flex;
+    align-items: flex-end;
+    justify-content: center;
 }
 
 .modal-backdrop {
     position: absolute;
     inset: 0;
 
-    background: rgba(0, 0, 0, 0.82);
+    background:
+        rgba(0, 0, 0, .75);
 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(7px);
 }
-
-/* =========================================================
-   REPLY MODAL
-   ========================================================= */
 
 .reply-modal {
     position: relative;
-    z-index: 2;
 
-    width: min(100%, 560px);
-    max-height: calc(100vh - 30px);
+    width: min(620px, 100%);
+
+    max-height: 94vh;
 
     overflow-y: auto;
 
-    background: var(--black-2);
+    padding: 18px;
 
-    border: 1px solid var(--line);
-    border-radius: 22px;
+    background:
+        #121212;
 
-    box-shadow: var(--shadow);
+    border:
+        1px solid #303030;
 
-    animation: modalIn 0.25s ease;
+    border-radius:
+        25px 25px 0 0;
+
+    box-shadow:
+        0 -20px 70px rgba(0, 0, 0, .5);
 }
 
-@keyframes modalIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.modal-header {
-    min-height: 65px;
-
+.reply-modal-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    gap: 20px;
 
-    padding: 13px 15px;
-
-    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
 }
 
-.modal-header > div {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+.modal-eyebrow {
+    color: #e55;
+
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .16em;
 }
 
-.modal-header strong {
-    font-size: 15px;
-}
+.reply-modal h2 {
+    margin: 4px 0 0;
 
-.modal-header small {
-    color: var(--gray);
-    font-size: 10px;
+    font-size: 18px;
 }
 
 .modal-close {
-    width: 35px;
-    height: 35px;
+    width: 38px;
+    height: 38px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex: 0 0 38px;
 
+    border: 0;
     border-radius: 50%;
 
-    background: #292929;
-    color: var(--white);
+    color: #ddd;
+    background: #222;
 }
 
-/* =========================================================
+
+/* ==========================================
+   TARGET PREVIEW
+========================================== */
+
+.reply-preview {
+    overflow: hidden;
+
+    margin-bottom: 14px;
+
+    background: #090909;
+
+    border-radius: 16px;
+}
+
+.reply-preview video {
+    width: 100%;
+
+    max-height: 220px;
+
+    display: block;
+
+    object-fit: cover;
+}
+
+.reply-target-caption {
+    padding: 10px 12px;
+
+    color: #bbb;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* ==========================================
    REPLY CAMERA
-   ========================================================= */
+========================================== */
 
 .reply-camera {
     position: relative;
 
-    width: 100%;
-
-    aspect-ratio: 16 / 11;
-
-    background: #000;
-
     overflow: hidden;
+
+    aspect-ratio: 16 / 10;
+
+    background: #050505;
+
+    border-radius: 17px;
 }
 
 .reply-camera video {
     width: 100%;
     height: 100%;
 
-    object-fit: cover;
-}
-
-#replyCamera {
     display: block;
+
+    object-fit: cover;
 }
 
 #replyPlayback {
@@ -981,13 +1039,11 @@ video {
     align-items: center;
     justify-content: center;
 
-    gap: 10px;
+    gap: 8px;
 
-    background: #090909;
+    color: #aaa;
 
-    color: var(--gray);
-
-    text-align: center;
+    background: #080808;
 }
 
 .reply-camera-message i {
@@ -995,434 +1051,192 @@ video {
     font-size: 30px;
 }
 
-.reply-camera-message.hidden {
-    display: none;
-}
-
 .reply-timer {
     position: absolute;
+
     top: 12px;
     left: 50%;
 
     transform: translateX(-50%);
 
-    padding: 6px 11px;
+    padding: 6px 10px;
 
     border-radius: 999px;
 
-    background: rgba(0, 0, 0, 0.70);
-
-    color: var(--white);
+    color: white;
+    background: rgba(0, 0, 0, .62);
 
     font-size: 11px;
-    font-weight: 800;
-
     font-variant-numeric: tabular-nums;
 }
 
-/* =========================================================
-   REPLY CAMERA CONTROLS
-   ========================================================= */
 
-.reply-camera-controls {
-    height: 76px;
+/* ==========================================
+   REPLY CONTROLS
+========================================== */
 
+.reply-controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 35px;
+    gap: 30px;
 
-    background: var(--black-2);
+    padding: 16px 0 11px;
 }
 
 .reply-control {
     width: 42px;
     height: 42px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 
+    border: 0;
     border-radius: 50%;
 
-    background: #292929;
-    color: var(--white);
+    color: white;
+    background: #252525;
 }
 
 .reply-record-btn {
-    width: 58px;
-    height: 58px;
+    width: 68px;
+    height: 68px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 
-    border: 3px solid var(--white);
+    border: 5px solid #333;
     border-radius: 50%;
 
-    background: transparent;
+    background: white;
 }
 
 .reply-record-btn span {
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
+
+    display: block;
 
     border-radius: 50%;
 
     background: var(--red);
 
     transition:
-        width 0.2s ease,
-        height 0.2s ease,
-        border-radius 0.2s ease;
+        border-radius .18s ease,
+        transform .18s ease;
 }
 
 .reply-record-btn.recording span {
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
 
-    border-radius: 6px;
+    border-radius: 7px;
+
+    transform: scale(1.1);
 }
 
-/* =========================================================
-   REPLY PREVIEW INFO
-   ========================================================= */
+.reply-recording-info {
+    padding: 10px 12px;
 
-.reply-preview-info {
-    padding: 11px 15px;
+    color: #777;
 
-    color: var(--gray);
+    background: #171717;
 
-    text-align: center;
+    border-radius: 11px;
 
     font-size: 11px;
     line-height: 1.5;
 }
 
-/* =========================================================
-   SEND REPLY
-   ========================================================= */
 
-.send-reply-btn {
-    width: calc(100% - 30px);
+/* ==========================================
+   MODAL ACTIONS
+========================================== */
 
-    min-height: 47px;
-
-    margin: 0 15px 15px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    border-radius: 13px;
-
-    background: var(--red);
-    color: var(--white);
-
-    font-size: 12px;
-    font-weight: 850;
-}
-
-.send-reply-btn:hover {
-    background: var(--red-dark);
-}
-
-.send-reply-btn:disabled {
-    background: #4a1111;
-}
-
-/* =========================================================
-   REPLY UPLOAD STATUS
-   ========================================================= */
-
-.reply-upload-status {
-    display: none;
-
-    padding: 0 15px 15px;
-}
-
-.reply-progress {
-    width: 100%;
-    height: 5px;
-
-    overflow: hidden;
-
-    border-radius: 999px;
-
-    background: #292929;
-}
-
-.reply-progress-bar {
-    width: 0;
-    height: 100%;
-
-    background: var(--red);
-
-    transition: width 0.2s ease;
-}
-
-#replyUploadText {
-    display: block;
-
-    margin-top: 7px;
-
-    color: var(--gray);
-
-    text-align: center;
-
-    font-size: 10px;
-}
-
-/* =========================================================
-   CONFIRM DELETE MODAL
-   ========================================================= */
-
-.confirm-modal {
-    position: relative;
-    z-index: 2;
-
-    width: min(100%, 360px);
-
-    padding: 28px 22px;
-
-    background: var(--black-2);
-
-    border: 1px solid var(--line);
-    border-radius: 20px;
-
-    text-align: center;
-
-    box-shadow: var(--shadow);
-
-    animation: modalIn 0.25s ease;
-}
-
-.confirm-icon {
-    width: 55px;
-    height: 55px;
-
-    margin: 0 auto 15px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: rgba(209, 0, 0, 0.12);
-
-    color: var(--red);
-
-    font-size: 23px;
-}
-
-.confirm-modal h2 {
-    font-size: 18px;
-}
-
-.confirm-modal p {
-    margin-top: 7px;
-
-    color: var(--gray);
-
-    font-size: 12px;
-}
-
-.confirm-actions {
+.reply-modal-actions {
     display: flex;
     gap: 9px;
 
-    margin-top: 22px;
+    margin-top: 13px;
 }
 
 .secondary-btn,
-.danger-btn {
+.primary-btn {
+    min-height: 45px;
+
     flex: 1;
 
-    min-height: 43px;
+    border-radius: 13px;
 
-    border-radius: 11px;
-
-    font-size: 12px;
     font-weight: 800;
 }
 
 .secondary-btn {
-    background: #292929;
-    color: var(--white);
+    color: #ddd;
+    background: #232323;
+
+    border:
+        1px solid #333;
 }
 
-.danger-btn {
+.primary-btn {
+    color: white;
     background: var(--red);
-    color: var(--white);
+
+    border:
+        1px solid var(--red);
 }
 
-.danger-btn:hover {
-    background: var(--red-dark);
-}
+.reply-upload-status {
+    display: none;
 
-/* =========================================================
-   TOAST
-   ========================================================= */
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
 
-.toast {
-    position: fixed;
+    margin-top: 12px;
 
-    left: 50%;
-    bottom: 25px;
-
-    z-index: 1000;
-
-    max-width: calc(100% - 30px);
-
-    padding: 11px 15px;
-
-    transform:
-        translate(-50%, 20px);
-
-    opacity: 0;
-
-    pointer-events: none;
-
-    border: 1px solid var(--line);
-    border-radius: 12px;
-
-    background: #202020;
-    color: var(--white);
-
-    box-shadow: var(--shadow);
+    color: #aaa;
 
     font-size: 12px;
-    font-weight: 700;
-
-    transition:
-        opacity 0.25s ease,
-        transform 0.25s ease;
 }
 
-.toast.show {
-    opacity: 1;
 
-    transform:
-        translate(-50%, 0);
-}
+/* ==========================================
+   MOBILE
+========================================== */
 
-.toast.success {
-    border-color: rgba(33, 198, 109, 0.35);
-}
-
-.toast.error {
-    border-color: rgba(209, 0, 0, 0.40);
-}
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (min-width: 700px) {
-
-    .find-page {
-        padding-top: 25px;
-    }
-
-    .find-card {
-        border-radius: 20px;
-    }
-
-    .find-video-wrap {
-        aspect-ratio: 16 / 9;
-    }
-
-    .find-card-body {
-        padding: 17px;
-    }
-
-}
-
-@media (max-width: 480px) {
+@media (max-width: 600px) {
 
     .find-header {
-        height: 62px;
-        padding: 0 13px;
+        height: 68px;
+        padding: 0 14px;
     }
 
     .find-page {
         padding:
-            12px
-            11px
-            90px;
-    }
-
-    .find-feed {
-        gap: 13px;
+            14px 10px
+            45px;
     }
 
     .find-card {
-        border-radius: 15px;
+        border-radius: 18px;
     }
 
-    .find-card-header {
-        padding: 10px 11px;
+    .find-video-wrap {
+        aspect-ratio: 9 / 12;
     }
 
-    .find-caption {
-        font-size: 14px;
-    }
-
-    .find-actions {
-        gap: 6px;
-    }
-
-    .find-action-btn {
-        padding: 0 10px;
-        font-size: 10px;
-    }
-
-    .find-reply-count {
-        font-size: 10px;
+    .find-content {
+        padding: 13px;
     }
 
     .reply-modal {
-        width: 100%;
-        border-radius: 20px;
+        padding: 15px;
     }
 
-    .modal {
-        padding: 8px;
-    }
-
-}
-
-@media (max-height: 650px) {
-
-    .reply-modal {
-        max-height: calc(100vh - 10px);
-    }
-
-    .reply-camera {
-        aspect-ratio: 16 / 9;
-    }
-
-    .reply-camera-controls {
-        height: 64px;
-    }
-
-}
-
-/* =========================================================
-   REDUCED MOTION
-   ========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
+    .reply-preview video {
+        max-height: 180px;
     }
 
 }

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -20,7 +19,6 @@
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     >
-
 </head>
 
 <body>
@@ -37,18 +35,13 @@
     </button>
 
     <div class="header-title">
-
-        <span>FIND</span>
-
-        <small>
-            Discover through people
-        </small>
-
+        <h1>FIND</h1>
+        <span>Discover through people</span>
     </div>
 
     <button
         id="recordFindBtn"
-        class="header-btn find-camera"
+        class="header-btn camera-btn"
         type="button"
         aria-label="Record a Find"
     >
@@ -60,26 +53,26 @@
 
 <main class="find-page">
 
-
-    <!-- =====================================
+    <!-- =========================================
          SEARCH
-    ====================================== -->
+    ========================================== -->
 
-    <section class="find-discovery">
+    <section class="search-section">
 
-        <div class="find-search">
+        <div class="search-box">
 
             <i class="bi bi-search"></i>
 
             <input
                 id="findSearch"
                 type="search"
-                placeholder="Search Finds..."
+                placeholder="Search finds..."
                 autocomplete="off"
             >
 
             <button
                 id="clearSearchBtn"
+                class="clear-search"
                 type="button"
                 aria-label="Clear search"
             >
@@ -88,118 +81,84 @@
 
         </div>
 
-
-        <div
-            id="categoryFilters"
-            class="category-filters"
-        >
-
-            <button
-                class="category-filter active"
-                type="button"
-                data-category=""
-            >
-                All
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Products"
-            >
-                Products
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Books"
-            >
-                Books
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Fashion"
-            >
-                Fashion
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Food"
-            >
-                Food
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Technology"
-            >
-                Technology
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Education"
-            >
-                Education
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Travel"
-            >
-                Travel
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Places"
-            >
-                Places
-            </button>
-
-            <button
-                class="category-filter"
-                type="button"
-                data-category="Other"
-            >
-                Other
-            </button>
-
-        </div>
-
     </section>
 
 
-    <!-- =====================================
-         LOADING
-    ====================================== -->
+    <!-- =========================================
+         TABS
+    ========================================== -->
+
+    <nav
+        class="find-tabs"
+        aria-label="Find filters"
+    >
+
+        <button
+            class="find-tab active"
+            data-tab="recent"
+            type="button"
+        >
+            Recent
+        </button>
+
+        <button
+            class="find-tab"
+            data-tab="mine"
+            type="button"
+        >
+            My Finds
+        </button>
+
+        <button
+            class="find-tab"
+            data-tab="unanswered"
+            type="button"
+        >
+            Unanswered
+        </button>
+
+    </nav>
+
+
+    <!-- =========================================
+         STATUS
+    ========================================== -->
 
     <div
         id="loading"
-        class="loading"
+        class="status-box"
     >
-
-        <div class="loading-spinner"></div>
-
-        <span>
-            Loading Finds...
-        </span>
-
+        <div class="spinner"></div>
+        <span>Loading Finds...</span>
     </div>
 
 
-    <!-- =====================================
+    <div
+        id="errorState"
+        class="status-box error-state"
+    >
+        <i class="bi bi-exclamation-circle"></i>
+
+        <strong>
+            Unable to load Finds
+        </strong>
+
+        <span id="errorText">
+            Something went wrong.
+        </span>
+
+        <button
+            id="retryBtn"
+            type="button"
+        >
+            Try again
+        </button>
+    </div>
+
+
+    <!-- =========================================
          FEED
-    ====================================== -->
+    ========================================== -->
 
     <section
         id="findFeed"
@@ -207,9 +166,9 @@
     ></section>
 
 
-    <!-- =====================================
-         EMPTY STATE
-    ====================================== -->
+    <!-- =========================================
+         EMPTY
+    ========================================== -->
 
     <section
         id="emptyState"
@@ -217,55 +176,33 @@
     >
 
         <div class="empty-icon">
-
             <i class="bi bi-search"></i>
-
         </div>
 
-        <h2>
+        <h2 id="emptyTitle">
             Nothing here yet
         </h2>
 
-        <p>
+        <p id="emptyText">
             Be the first person to record something you want the Vindarr community to help find.
         </p>
 
         <button
             id="emptyRecordBtn"
-            class="primary-btn"
             type="button"
         >
-
             <i class="bi bi-camera-video"></i>
-
             Record a Find
-
         </button>
 
     </section>
 
-
-    <!-- =====================================
-         LOAD MORE
-    ====================================== -->
-
-    <button
-        id="loadMoreBtn"
-        class="load-more-btn"
-        type="button"
-    >
-
-        Load more
-
-    </button>
-
-
 </main>
 
 
-<!-- ==========================================
-     REPLY RECORDING MODAL
-=========================================== -->
+<!-- =========================================
+     REPLY MODAL
+========================================== -->
 
 <div
     id="replyModal"
@@ -275,20 +212,23 @@
 
     <div class="modal-backdrop"></div>
 
-    <div class="reply-modal">
+    <section
+        class="reply-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="replyModalTitle"
+    >
 
-        <header class="modal-header">
+        <header class="reply-modal-header">
 
             <div>
+                <span class="modal-eyebrow">
+                    VIDEO RESPONSE
+                </span>
 
-                <strong>
-                    Video Reply
-                </strong>
-
-                <small>
-                    Help answer this Find
-                </small>
-
+                <h2 id="replyModalTitle">
+                    Reply to this Find
+                </h2>
             </div>
 
             <button
@@ -301,6 +241,22 @@
             </button>
 
         </header>
+
+
+        <div class="reply-preview">
+
+            <video
+                id="replyTargetVideo"
+                controls
+                playsinline
+            ></video>
+
+            <div
+                id="replyTargetCaption"
+                class="reply-target-caption"
+            ></div>
+
+        </div>
 
 
         <div class="reply-camera">
@@ -322,13 +278,8 @@
                 id="replyCameraMessage"
                 class="reply-camera-message"
             >
-
                 <i class="bi bi-camera-video"></i>
-
-                <span>
-                    Preparing camera...
-                </span>
-
+                <span>Preparing camera...</span>
             </div>
 
             <div
@@ -341,7 +292,7 @@
         </div>
 
 
-        <div class="reply-camera-controls">
+        <div class="reply-controls">
 
             <button
                 id="replySwitchCameraBtn"
@@ -352,24 +303,20 @@
                 <i class="bi bi-arrow-repeat"></i>
             </button>
 
-
             <button
                 id="replyRecordBtn"
                 class="reply-record-btn"
                 type="button"
-                aria-label="Start recording"
+                aria-label="Start recording reply"
             >
-
                 <span></span>
-
             </button>
-
 
             <button
                 id="replyRetakeBtn"
                 class="reply-control"
                 type="button"
-                aria-label="Retake"
+                aria-label="Retake reply"
             >
                 <i class="bi bi-arrow-counterclockwise"></i>
             </button>
@@ -378,83 +325,17 @@
 
 
         <div
-            id="replyPreviewInfo"
-            class="reply-preview-info"
+            id="replyRecordingInfo"
+            class="reply-recording-info"
         >
-            Record a video answer to this Find.
+            Record a video answer. You can review it before sending.
         </div>
 
 
-        <button
-            id="sendReplyBtn"
-            class="send-reply-btn"
-            type="button"
-        >
-
-            <i class="bi bi-send"></i>
-
-            Send Video Reply
-
-        </button>
-
-
-        <div
-            id="replyUploadStatus"
-            class="reply-upload-status"
-        >
-
-            <div class="reply-progress">
-
-                <div
-                    id="replyUploadProgress"
-                    class="reply-progress-bar"
-                ></div>
-
-            </div>
-
-            <span id="replyUploadText">
-                Uploading...
-            </span>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- ==========================================
-     DELETE CONFIRMATION
-=========================================== -->
-
-<div
-    id="deleteModal"
-    class="modal"
-    aria-hidden="true"
->
-
-    <div class="modal-backdrop"></div>
-
-    <div class="confirm-modal">
-
-        <div class="confirm-icon">
-
-            <i class="bi bi-trash3"></i>
-
-        </div>
-
-        <h2>
-            Delete this Find?
-        </h2>
-
-        <p>
-            This cannot be undone.
-        </p>
-
-        <div class="confirm-actions">
+        <div class="reply-modal-actions">
 
             <button
-                id="cancelDeleteBtn"
+                id="cancelReplyBtn"
                 class="secondary-btn"
                 type="button"
             >
@@ -462,30 +343,35 @@
             </button>
 
             <button
-                id="confirmDeleteBtn"
-                class="danger-btn"
+                id="sendReplyBtn"
+                class="primary-btn"
                 type="button"
             >
-                Delete
+                <i class="bi bi-send"></i>
+                Send Reply
             </button>
 
         </div>
 
-    </div>
+
+        <div
+            id="replyUploadStatus"
+            class="reply-upload-status"
+        >
+            <div class="spinner small"></div>
+            <span id="replyUploadText">
+                Uploading reply...
+            </span>
+        </div>
+
+    </section>
 
 </div>
 
 
-<!-- ==========================================
-     TOAST
-=========================================== -->
-
-<div
-    id="toast"
-    class="toast"
-    role="status"
-></div>
-
+<!-- =========================================
+     JAVASCRIPT
+========================================== -->
 
 <script src="js/config.js"></script>
 <script src="js/find.js"></script>
