@@ -2,50 +2,122 @@
    VINDARR — CREATE POLL
 ========================================== */
 
+"use strict";
+
+
+/* ==========================================
+   CONFIG
+========================================== */
+
 const MAX_OPTIONS = 4;
 const MIN_OPTIONS = 2;
+
+
+/* ==========================================
+   STATE
+========================================== */
 
 let optionCount = 0;
 let publishing = false;
 
+
+/*
+ * Keeps references to object URLs created
+ * for local previews.
+ */
+const objectUrls = new Set();
+
+
+/* ==========================================
+   ELEMENTS
+========================================== */
+
 const question =
-    document.getElementById("question");
+    document.getElementById(
+        "question"
+    );
+
 
 const questionCount =
-    document.getElementById("questionCount");
+    document.getElementById(
+        "questionCount"
+    );
+
 
 const category =
-    document.getElementById("category");
+    document.getElementById(
+        "category"
+    );
+
 
 const optionsGrid =
-    document.getElementById("optionsGrid");
+    document.getElementById(
+        "optionsGrid"
+    );
+
 
 const addOptionBtn =
-    document.getElementById("addOptionBtn");
+    document.getElementById(
+        "addOptionBtn"
+    );
+
 
 const preview =
-    document.getElementById("pollPreview");
+    document.getElementById(
+        "pollPreview"
+    );
+
 
 const publishBtn =
-    document.getElementById("publishBtn");
+    document.getElementById(
+        "publishBtn"
+    );
+
 
 const publishTopBtn =
-    document.getElementById("publishTopBtn");
+    document.getElementById(
+        "publishTopBtn"
+    );
+
 
 const backBtn =
-    document.getElementById("backBtn");
+    document.getElementById(
+        "backBtn"
+    );
+
 
 const statusCard =
-    document.getElementById("statusCard");
+    document.getElementById(
+        "statusCard"
+    );
+
 
 const statusTitle =
-    document.getElementById("statusTitle");
+    document.getElementById(
+        "statusTitle"
+    );
+
 
 const statusText =
-    document.getElementById("statusText");
+    document.getElementById(
+        "statusText"
+    );
+
 
 const progressBar =
-    document.getElementById("progressBar");
+    document.getElementById(
+        "progressBar"
+    );
+
+
+/* ==========================================
+   API
+========================================== */
+
+const API_BASE =
+    typeof API_BASE_URL !== "undefined"
+        ? API_BASE_URL
+        : "";
 
 
 /* ==========================================
@@ -53,7 +125,11 @@ const progressBar =
 ========================================== */
 
 function getToken() {
-    return localStorage.getItem("token");
+
+    return localStorage.getItem(
+        "token"
+    );
+
 }
 
 
@@ -61,14 +137,108 @@ function getToken() {
    ESCAPE HTML
 ========================================== */
 
-function escapeHtml(value) {
+function escapeHtml(
+    value
+) {
 
-    return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    return String(
+        value ?? ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+/* ==========================================
+   CREATE OBJECT URL
+========================================== */
+
+function createObjectUrl(
+    file
+) {
+
+    const url =
+        URL.createObjectURL(
+            file
+        );
+
+    objectUrls.add(
+        url
+    );
+
+    return url;
+
+}
+
+
+/* ==========================================
+   REMOVE OBJECT URL
+========================================== */
+
+function revokeObjectUrl(
+    url
+) {
+
+    if (!url) {
+        return;
+    }
+
+    try {
+
+        URL.revokeObjectURL(
+            url
+        );
+
+    } catch {}
+
+    objectUrls.delete(
+        url
+    );
+
+}
+
+
+/* ==========================================
+   CLEANUP ALL URLS
+========================================== */
+
+function cleanupObjectUrls() {
+
+    objectUrls.forEach(
+        url => {
+
+            try {
+
+                URL.revokeObjectURL(
+                    url
+                );
+
+            } catch {}
+
+        }
+    );
+
+    objectUrls.clear();
+
 }
 
 
@@ -78,28 +248,40 @@ function escapeHtml(value) {
 
 function addOption() {
 
-    if (optionCount >= MAX_OPTIONS) {
-
-        alert(
-            "A poll can have a maximum of 4 choices."
-        );
+    if (
+        optionCount >=
+        MAX_OPTIONS
+    ) {
 
         return;
+
     }
 
+
     optionCount++;
+
 
     const number =
         optionCount;
 
+
+    const mediaInputId =
+        `media-input-${number}`;
+
+
     const wrapper =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     wrapper.className =
         "poll-option-builder";
 
+
     wrapper.dataset.option =
-        number;
+        String(number);
+
 
     wrapper.innerHTML = `
 
@@ -107,29 +289,36 @@ function addOption() {
             ${number}
         </div>
 
+
         ${
             number > MIN_OPTIONS
                 ? `
                     <button
                         class="remove-option"
                         type="button"
-                        aria-label="Remove option"
+                        aria-label="Remove choice ${number}"
                     >
                         <i class="bi bi-x"></i>
                     </button>
-                  `
+                `
                 : ""
         }
+
 
         <div class="media-picker">
 
             <input
+                id="${mediaInputId}"
                 type="file"
                 class="media-input"
                 accept="image/*,video/*"
             >
 
-            <label class="media-picker-label">
+
+            <label
+                for="${mediaInputId}"
+                class="media-picker-label"
+            >
 
                 <i class="bi bi-image"></i>
 
@@ -143,82 +332,206 @@ function addOption() {
 
             </label>
 
-            <div class="option-media-preview"></div>
+
+            <div
+                class="option-media-preview"
+            ></div>
 
         </div>
+
 
         <input
             type="text"
             class="option-caption"
             maxlength="200"
             placeholder="Choice caption..."
+            autocomplete="off"
         >
 
     `;
 
+
     optionsGrid.appendChild(
         wrapper
     );
+
+
+    /* ======================================
+       MEDIA INPUT
+    ====================================== */
 
     const input =
         wrapper.querySelector(
             ".media-input"
         );
 
-    input.addEventListener(
+
+    const pickerLabel =
+        wrapper.querySelector(
+            ".media-picker-label"
+        );
+
+
+    /*
+     * Standard label -> input behavior.
+     */
+    pickerLabel?.addEventListener(
+        "click",
+        () => {
+
+            /*
+             * Do not preventDefault.
+             *
+             * The label already points to
+             * the input through "for".
+             *
+             * This direct click is only a
+             * safety fallback.
+             */
+        }
+    );
+
+
+    /*
+     * Additional fallback.
+     *
+     * If browser/CSS behavior prevents
+     * label activation, clicking anywhere
+     * on the picker still opens the file
+     * selector.
+     */
+    const mediaPicker =
+        wrapper.querySelector(
+            ".media-picker"
+        );
+
+
+    mediaPicker?.addEventListener(
+        "click",
+        event => {
+
+            const clickedInput =
+                event.target.closest(
+                    ".media-input"
+                );
+
+
+            const clickedButton =
+                event.target.closest(
+                    ".change-media-btn"
+                );
+
+
+            if (
+                clickedInput ||
+                clickedButton
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                input &&
+                !input.disabled
+            ) {
+
+                input.click();
+
+            }
+
+        }
+    );
+
+
+    input?.addEventListener(
         "change",
         () => {
 
+            const file =
+                input.files?.[0];
+
+
             handleMedia(
                 wrapper,
-                input.files[0]
+                file
             );
+
 
             updatePreview();
 
         }
     );
 
+
+    /* ======================================
+       CAPTION
+    ====================================== */
+
     const captionInput =
         wrapper.querySelector(
             ".option-caption"
         );
 
-    captionInput.addEventListener(
+
+    captionInput?.addEventListener(
         "input",
         updatePreview
     );
+
+
+    /* ======================================
+       REMOVE
+    ====================================== */
 
     const removeBtn =
         wrapper.querySelector(
             ".remove-option"
         );
 
-    if (removeBtn) {
 
-        removeBtn.addEventListener(
-            "click",
-            () => {
+    removeBtn?.addEventListener(
+        "click",
+        () => {
 
-                wrapper.remove();
+            const mediaPreview =
+                wrapper.querySelector(
+                    ".option-media-preview"
+                );
 
-                renumberOptions();
 
-                updatePreview();
+            const currentUrl =
+                mediaPreview?.dataset
+                    ?.objectUrl;
 
-            }
-        );
 
-    }
+            revokeObjectUrl(
+                currentUrl
+            );
+
+
+            wrapper.remove();
+
+
+            renumberOptions();
+
+
+            updatePreview();
+
+        }
+    );
+
 
     updateOptionButton();
 
     updatePreview();
+
 }
 
 
 /* ==========================================
-   MEDIA
+   HANDLE MEDIA
 ========================================== */
 
 function handleMedia(
@@ -230,60 +543,99 @@ function handleMedia(
         return;
     }
 
+
+    const validImage =
+        file.type.startsWith(
+            "image/"
+        );
+
+
+    const validVideo =
+        file.type.startsWith(
+            "video/"
+        );
+
+
+    if (
+        !validImage &&
+        !validVideo
+    ) {
+
+        alert(
+            "Please choose an image or video."
+        );
+
+        return;
+
+    }
+
+
     const previewBox =
         wrapper.querySelector(
             ".option-media-preview"
         );
+
 
     const pickerLabel =
         wrapper.querySelector(
             ".media-picker-label"
         );
 
-    const url =
-        URL.createObjectURL(
-            file
-        );
-
-    previewBox.innerHTML = "";
 
     if (
-        file.type.startsWith(
-            "video/"
-        )
+        !previewBox
     ) {
 
-        const video =
-            document.createElement(
-                "video"
-            );
-
-        video.src = url;
-
-        video.muted = true;
-
-        video.playsInline = true;
-
-        video.controls = true;
-
-        previewBox.appendChild(
-            video
-        );
+        return;
 
     }
 
-    else if (
-        file.type.startsWith(
-            "image/"
-        )
-    ) {
+
+    /* ======================================
+       REVOKE PREVIOUS URL
+    ====================================== */
+
+    const oldUrl =
+        previewBox.dataset.objectUrl;
+
+
+    revokeObjectUrl(
+        oldUrl
+    );
+
+
+    const url =
+        createObjectUrl(
+            file
+        );
+
+
+    previewBox.innerHTML = "";
+
+
+    previewBox.dataset.objectUrl =
+        url;
+
+
+    /* ======================================
+       IMAGE
+    ====================================== */
+
+    if (validImage) {
 
         const img =
             document.createElement(
                 "img"
             );
 
-        img.src = url;
+
+        img.src =
+            url;
+
+
+        img.alt =
+            "Selected poll media";
+
 
         previewBox.appendChild(
             img
@@ -291,25 +643,109 @@ function handleMedia(
 
     }
 
-    else {
 
-        alert(
-            "Please choose an image or video."
+    /* ======================================
+       VIDEO
+    ====================================== */
+
+    if (validVideo) {
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+
+        video.src =
+            url;
+
+
+        video.muted =
+            true;
+
+
+        video.playsInline =
+            true;
+
+
+        video.controls =
+            true;
+
+
+        video.preload =
+            "metadata";
+
+
+        previewBox.appendChild(
+            video
         );
 
-        return;
     }
+
+
+    /* ======================================
+       CHANGE BUTTON
+    ====================================== */
+
+    const changeButton =
+        document.createElement(
+            "button"
+        );
+
+
+    changeButton.type =
+        "button";
+
+
+    changeButton.className =
+        "change-media-btn";
+
+
+    changeButton.innerHTML = `
+        <i class="bi bi-arrow-repeat"></i>
+        Change
+    `;
+
+
+    changeButton.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            wrapper
+                .querySelector(
+                    ".media-input"
+                )
+                ?.click();
+
+        }
+    );
+
+
+    previewBox.appendChild(
+        changeButton
+    );
+
 
     previewBox.style.display =
         "block";
 
-    pickerLabel.style.display =
-        "none";
+
+    if (pickerLabel) {
+
+        pickerLabel.style.display =
+            "none";
+
+    }
+
 }
 
 
 /* ==========================================
-   RENUMBER
+   RENUMBER OPTIONS
 ========================================== */
 
 function renumberOptions() {
@@ -321,8 +757,10 @@ function renumberOptions() {
             ),
         ];
 
+
     optionCount =
         options.length;
+
 
     options.forEach(
         (
@@ -333,18 +771,137 @@ function renumberOptions() {
             const number =
                 index + 1;
 
-            option.dataset.option =
-                number;
 
-            option.querySelector(
-                ".option-number"
-            ).textContent =
-                number;
+            option.dataset.option =
+                String(number);
+
+
+            const numberBadge =
+                option.querySelector(
+                    ".option-number"
+                );
+
+
+            if (numberBadge) {
+
+                numberBadge.textContent =
+                    String(number);
+
+            }
+
+
+            const input =
+                option.querySelector(
+                    ".media-input"
+                );
+
+
+            const label =
+                option.querySelector(
+                    ".media-picker-label"
+                );
+
+
+            if (
+                input &&
+                label
+            ) {
+
+                const newId =
+                    `media-input-${number}`;
+
+
+                input.id =
+                    newId;
+
+
+                label.setAttribute(
+                    "for",
+                    newId
+                );
+
+            }
+
+
+            const removeBtn =
+                option.querySelector(
+                    ".remove-option"
+                );
+
+
+            if (number <= MIN_OPTIONS) {
+
+                removeBtn?.remove();
+
+            }
+
+            else if (!removeBtn) {
+
+                const button =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                button.type =
+                    "button";
+
+
+                button.className =
+                    "remove-option";
+
+
+                button.setAttribute(
+                    "aria-label",
+                    `Remove choice ${number}`
+                );
+
+
+                button.innerHTML =
+                    `<i class="bi bi-x"></i>`;
+
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const previewBox =
+                            option.querySelector(
+                                ".option-media-preview"
+                            );
+
+
+                        revokeObjectUrl(
+                            previewBox
+                                ?.dataset
+                                ?.objectUrl
+                        );
+
+
+                        option.remove();
+
+
+                        renumberOptions();
+
+
+                        updatePreview();
+
+                    }
+                );
+
+
+                option.appendChild(
+                    button
+                );
+
+            }
 
         }
     );
 
+
     updateOptionButton();
+
 }
 
 
@@ -354,15 +911,25 @@ function renumberOptions() {
 
 function updateOptionButton() {
 
+    if (!addOptionBtn) {
+        return;
+    }
+
+
     addOptionBtn.disabled =
-        optionCount >= MAX_OPTIONS;
+        optionCount >=
+        MAX_OPTIONS;
+
 
     if (
-        optionCount >= MAX_OPTIONS
+        optionCount >=
+        MAX_OPTIONS
     ) {
 
-        addOptionBtn.textContent =
-            "Maximum 4 choices";
+        addOptionBtn.innerHTML = `
+            <i class="bi bi-check2"></i>
+            Maximum 4 choices
+        `;
 
     }
 
@@ -372,7 +939,9 @@ function updateOptionButton() {
             <i class="bi bi-plus-lg"></i>
             Add another choice
         `;
+
     }
+
 }
 
 
@@ -384,8 +953,13 @@ question?.addEventListener(
     "input",
     () => {
 
-        questionCount.textContent =
-            `${question.value.length} / 300`;
+        if (questionCount) {
+
+            questionCount.textContent =
+                `${question.value.length} / 300`;
+
+        }
+
 
         updatePreview();
 
@@ -394,7 +968,76 @@ question?.addEventListener(
 
 
 /* ==========================================
-   PREVIEW
+   PREVIEW MEDIA HTML
+========================================== */
+
+function createPreviewMedia(
+    file,
+    caption
+) {
+
+    if (!file) {
+
+        return `
+            <div class="preview-media">
+
+                <div class="preview-placeholder">
+
+                    <i class="bi bi-image"></i>
+
+                </div>
+
+            </div>
+        `;
+
+    }
+
+
+    const url =
+        createObjectUrl(
+            file
+        );
+
+
+    if (
+        file.type.startsWith(
+            "video/"
+        )
+    ) {
+
+        return `
+            <div class="preview-media">
+
+                <video
+                    src="${url}"
+                    muted
+                    playsinline
+                    controls
+                    preload="metadata"
+                ></video>
+
+            </div>
+        `;
+
+    }
+
+
+    return `
+        <div class="preview-media">
+
+            <img
+                src="${url}"
+                alt="${escapeHtml(caption)}"
+            >
+
+        </div>
+    `;
+
+}
+
+
+/* ==========================================
+   UPDATE PREVIEW
 ========================================== */
 
 function updatePreview() {
@@ -403,9 +1046,11 @@ function updatePreview() {
         return;
     }
 
+
     const questionText =
-        question.value.trim() ||
+        question?.value.trim() ||
         "Your poll question will appear here.";
+
 
     const options =
         [
@@ -413,6 +1058,7 @@ function updatePreview() {
                 ".poll-option-builder"
             ),
         ];
+
 
     preview.innerHTML = `
 
@@ -423,105 +1069,133 @@ function updatePreview() {
         <div class="preview-options">
 
             ${
-                options.map(
-                    (
-                        option,
-                        index
-                    ) => {
+                options.length
+                    ? options.map(
+                        (
+                            option,
+                            index
+                        ) => {
 
-                        const caption =
-                            option.querySelector(
-                                ".option-caption"
-                            )?.value ||
-                            `Choice ${index + 1}`;
+                            const caption =
+                                option
+                                    .querySelector(
+                                        ".option-caption"
+                                    )
+                                    ?.value
+                                    .trim() ||
+                                `Choice ${index + 1}`;
 
-                        const media =
-                            option.querySelector(
-                                ".media-input"
-                            )?.files?.[0];
 
-                        let mediaHtml = `
-                            <div class="preview-media">
-                                <div
-                                    style="
-                                        height:100%;
-                                        display:grid;
-                                        place-items:center;
-                                        color:#777;
-                                    "
-                                >
-                                    <i
-                                        class="bi bi-image"
-                                        style="
-                                            font-size:28px;
-                                            color:#d10000;
-                                        "
-                                    ></i>
+                            const media =
+                                option
+                                    .querySelector(
+                                        ".media-input"
+                                    )
+                                    ?.files
+                                    ?.[0];
+
+
+                            let mediaHtml = `
+                                <div class="preview-media">
+
+                                    <div class="preview-placeholder">
+
+                                        <i class="bi bi-image"></i>
+
+                                    </div>
+
                                 </div>
-                            </div>
-                        `;
+                            `;
 
-                        if (media) {
 
-                            const url =
-                                URL.createObjectURL(
-                                    media
-                                );
+                            if (media) {
 
-                            if (
-                                media.type.startsWith(
-                                    "video/"
-                                )
-                            ) {
+                                const url =
+                                    createObjectUrl(
+                                        media
+                                    );
 
-                                mediaHtml = `
-                                    <div class="preview-media">
-                                        <video
-                                            src="${url}"
-                                            muted
-                                            playsinline
-                                            controls
-                                        ></video>
-                                    </div>
-                                `;
+
+                                if (
+                                    media.type.startsWith(
+                                        "video/"
+                                    )
+                                ) {
+
+                                    mediaHtml = `
+                                        <div class="preview-media">
+
+                                            <video
+                                                src="${url}"
+                                                muted
+                                                playsinline
+                                                controls
+                                                preload="metadata"
+                                            ></video>
+
+                                        </div>
+                                    `;
+
+                                }
+
+                                else {
+
+                                    mediaHtml = `
+                                        <div class="preview-media">
+
+                                            <img
+                                                src="${url}"
+                                                alt="${escapeHtml(caption)}"
+                                            >
+
+                                        </div>
+                                    `;
+
+                                }
 
                             }
 
-                            else {
 
-                                mediaHtml = `
-                                    <div class="preview-media">
-                                        <img
-                                            src="${url}"
-                                            alt=""
-                                        >
+                            return `
+
+                                <div class="preview-option">
+
+                                    ${mediaHtml}
+
+                                    <div class="preview-caption">
+                                        ${escapeHtml(caption)}
                                     </div>
-                                `;
 
-                            }
+                                </div>
+
+                            `;
 
                         }
+                    ).join("")
+                    : `
+                        <div class="preview-option">
 
-                        return `
+                            <div class="preview-media">
 
-                            <div class="preview-option">
+                                <div class="preview-placeholder">
 
-                                ${mediaHtml}
+                                    <i class="bi bi-bar-chart"></i>
 
-                                <div class="preview-caption">
-                                    ${escapeHtml(caption)}
                                 </div>
 
                             </div>
 
-                        `;
+                            <div class="preview-caption">
+                                Add your choices above.
+                            </div>
 
-                    }
-                ).join("")
+                        </div>
+                    `
             }
 
         </div>
     `;
+
 }
 
 
@@ -532,30 +1206,38 @@ function updatePreview() {
 function validatePoll() {
 
     if (
-        !question.value.trim()
+        !question?.value.trim()
     ) {
 
         alert(
             "Please enter a poll question."
         );
 
-        question.focus();
+
+        question?.focus();
+
 
         return false;
+
     }
 
+
     if (
-        !category.value
+        !category?.value
     ) {
 
         alert(
             "Please choose a category."
         );
 
-        category.focus();
+
+        category?.focus();
+
 
         return false;
+
     }
+
 
     const options =
         [
@@ -564,16 +1246,36 @@ function validatePoll() {
             ),
         ];
 
+
     if (
-        options.length < MIN_OPTIONS
+        options.length <
+        MIN_OPTIONS
     ) {
 
         alert(
             "Add at least 2 choices."
         );
 
+
         return false;
+
     }
+
+
+    if (
+        options.length >
+        MAX_OPTIONS
+    ) {
+
+        alert(
+            "A poll can have a maximum of 4 choices."
+        );
+
+
+        return false;
+
+    }
+
 
     for (
         let index = 0;
@@ -584,15 +1286,24 @@ function validatePoll() {
         const option =
             options[index];
 
+
         const file =
-            option.querySelector(
-                ".media-input"
-            )?.files?.[0];
+            option
+                .querySelector(
+                    ".media-input"
+                )
+                ?.files
+                ?.[0];
+
 
         const caption =
-            option.querySelector(
-                ".option-caption"
-            )?.value.trim();
+            option
+                .querySelector(
+                    ".option-caption"
+                )
+                ?.value
+                .trim();
+
 
         if (!file) {
 
@@ -600,8 +1311,11 @@ function validatePoll() {
                 `Please add media to choice ${index + 1}.`
             );
 
+
             return false;
+
         }
+
 
         if (!caption) {
 
@@ -609,12 +1323,23 @@ function validatePoll() {
                 `Please add a caption to choice ${index + 1}.`
             );
 
+
+            option
+                .querySelector(
+                    ".option-caption"
+                )
+                ?.focus();
+
+
             return false;
+
         }
 
     }
 
+
     return true;
+
 }
 
 
@@ -626,17 +1351,26 @@ function setProgress(
     value
 ) {
 
+    if (!progressBar) {
+        return;
+    }
+
+
     const percent =
         Math.max(
             0,
             Math.min(
                 100,
-                Math.round(value)
+                Math.round(
+                    Number(value) || 0
+                )
             )
         );
 
+
     progressBar.style.width =
         `${percent}%`;
+
 }
 
 
@@ -650,54 +1384,102 @@ async function publishPoll() {
         return;
     }
 
+
     const token =
         getToken();
+
 
     if (!token) {
 
         window.location.href =
             "login.html";
 
+
         return;
+
     }
+
 
     if (!validatePoll()) {
         return;
     }
 
-    publishing = true;
+
+    if (!API_BASE) {
+
+        alert(
+            "API configuration is missing."
+        );
+
+
+        console.error(
+            "API_BASE_URL is not defined."
+        );
+
+
+        return;
+
+    }
+
+
+    publishing =
+        true;
+
 
     publishBtn.disabled =
         true;
 
+
     publishTopBtn.disabled =
         true;
 
-    statusCard.style.display =
-        "block";
 
-    statusTitle.textContent =
-        "Publishing poll...";
+    if (statusCard) {
 
-    statusText.textContent =
-        "Preparing your choices.";
+        statusCard.style.display =
+            "block";
 
-    setProgress(0);
+    }
+
+
+    if (statusTitle) {
+
+        statusTitle.textContent =
+            "Publishing poll...";
+
+    }
+
+
+    if (statusText) {
+
+        statusText.textContent =
+            "Preparing your choices.";
+
+    }
+
+
+    setProgress(
+        0
+    );
+
 
     try {
 
         const formData =
             new FormData();
 
+
         formData.append(
             "question",
             question.value.trim()
         );
 
+
         formData.append(
             "category",
             category.value
         );
+
 
         const options =
             [
@@ -706,13 +1488,18 @@ async function publishPoll() {
                 ),
             ];
 
+
         const captions =
             options.map(
                 option =>
-                    option.querySelector(
-                        ".option-caption"
-                    ).value.trim()
+                    option
+                        .querySelector(
+                            ".option-caption"
+                        )
+                        .value
+                        .trim()
             );
+
 
         formData.append(
             "captions",
@@ -721,140 +1508,59 @@ async function publishPoll() {
             )
         );
 
+
         options.forEach(
             option => {
 
                 const file =
-                    option.querySelector(
-                        ".media-input"
-                    ).files[0];
-
-                formData.append(
-                    "media",
-                    file,
-                    file.name
-                );
-
-            }
-        );
-
-        await new Promise(
-            (
-                resolve,
-                reject
-            ) => {
-
-                const xhr =
-                    new XMLHttpRequest();
-
-                xhr.open(
-                    "POST",
-                    `${API_BASE_URL}/polls`
-                );
-
-                xhr.setRequestHeader(
-                    "Authorization",
-                    `Bearer ${token}`
-                );
-
-                xhr.upload.onprogress =
-                    event => {
-
-                        if (
-                            !event.lengthComputable
-                        ) {
-                            return;
-                        }
-
-                        const percent =
-                            (
-                                event.loaded /
-                                event.total
-                            ) * 100;
-
-                        setProgress(
-                            percent
-                        );
-
-                        statusText.textContent =
-                            `Uploading ${Math.round(percent)}%`;
-
-                    };
-
-                xhr.onload = () => {
-
-                    if (
-                        xhr.status >= 200 &&
-                        xhr.status < 300
-                    ) {
-
-                        resolve();
-
-                        return;
-                    }
-
-                    let message =
-                        "Unable to publish poll.";
-
-                    try {
-
-                        const response =
-                            JSON.parse(
-                                xhr.responseText
-                            );
-
-                        if (
-                            response?.message
-                        ) {
-
-                            message =
-                                Array.isArray(
-                                    response.message
-                                )
-                                    ? response.message.join(
-                                        ", "
-                                    )
-                                    : response.message;
-
-                        }
-
-                    }
-
-                    catch {}
-
-                    reject(
-                        new Error(
-                            message
+                    option
+                        .querySelector(
+                            ".media-input"
                         )
+                        .files
+                        ?.[0];
+
+
+                if (file) {
+
+                    formData.append(
+                        "media",
+                        file,
+                        file.name
                     );
 
-                };
-
-                xhr.onerror =
-                    () => {
-
-                        reject(
-                            new Error(
-                                "Network error while publishing poll."
-                            )
-                        );
-
-                    };
-
-                xhr.send(
-                    formData
-                );
+                }
 
             }
         );
 
-        setProgress(100);
 
-        statusTitle.textContent =
-            "Poll published";
+        await uploadPoll(
+            formData,
+            token
+        );
 
-        statusText.textContent =
-            "Your poll is now live.";
+
+        setProgress(
+            100
+        );
+
+
+        if (statusTitle) {
+
+            statusTitle.textContent =
+                "Poll published";
+
+        }
+
+
+        if (statusText) {
+
+            statusText.textContent =
+                "Your poll is now live.";
+
+        }
+
 
         setTimeout(
             () => {
@@ -875,21 +1581,195 @@ async function publishPoll() {
             error
         );
 
-        statusTitle.textContent =
-            "Publishing failed";
 
-        statusText.textContent =
-            error.message ||
-            "Something went wrong.";
+        if (statusTitle) {
+
+            statusTitle.textContent =
+                "Publishing failed";
+
+        }
+
+
+        if (statusText) {
+
+            statusText.textContent =
+                error?.message ||
+                "Something went wrong.";
+
+        }
+
 
         publishBtn.disabled =
             false;
 
+
         publishTopBtn.disabled =
             false;
 
-        publishing = false;
+
+        publishing =
+            false;
+
     }
+
+}
+
+
+/* ==========================================
+   XHR UPLOAD
+========================================== */
+
+function uploadPoll(
+    formData,
+    token
+) {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            const xhr =
+                new XMLHttpRequest();
+
+
+            xhr.open(
+                "POST",
+                `${API_BASE}/polls`
+            );
+
+
+            xhr.setRequestHeader(
+                "Authorization",
+                `Bearer ${token}`
+            );
+
+
+            xhr.upload.onprogress =
+                event => {
+
+                    if (
+                        !event.lengthComputable
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const percent =
+                        (
+                            event.loaded /
+                            event.total
+                        ) * 100;
+
+
+                    setProgress(
+                        percent
+                    );
+
+
+                    if (statusText) {
+
+                        statusText.textContent =
+                            `Uploading ${Math.round(percent)}%`;
+
+                    }
+
+                };
+
+
+            xhr.onload =
+                () => {
+
+                    if (
+                        xhr.status >= 200 &&
+                        xhr.status < 300
+                    ) {
+
+                        resolve(
+                            xhr.responseText
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    let message =
+                        "Unable to publish poll.";
+
+
+                    try {
+
+                        const response =
+                            JSON.parse(
+                                xhr.responseText
+                            );
+
+
+                        if (
+                            response?.message
+                        ) {
+
+                            message =
+                                Array.isArray(
+                                    response.message
+                                )
+                                    ? response.message.join(
+                                        ", "
+                                    )
+                                    : response.message;
+
+                        }
+
+                    }
+
+                    catch {}
+
+
+                    reject(
+                        new Error(
+                            message
+                        )
+                    );
+
+                };
+
+
+            xhr.onerror =
+                () => {
+
+                    reject(
+                        new Error(
+                            "Network error while publishing poll."
+                        )
+                    );
+
+                };
+
+
+            xhr.onabort =
+                () => {
+
+                    reject(
+                        new Error(
+                            "Poll upload was cancelled."
+                        )
+                    );
+
+                };
+
+
+            xhr.send(
+                formData
+            );
+
+        }
+    );
+
 }
 
 
@@ -897,26 +1777,43 @@ async function publishPoll() {
    EVENTS
 ========================================== */
 
-addOptionBtn.addEventListener(
+addOptionBtn?.addEventListener(
     "click",
     addOption
 );
 
-publishBtn.addEventListener(
+
+publishBtn?.addEventListener(
     "click",
     publishPoll
 );
 
-publishTopBtn.addEventListener(
+
+publishTopBtn?.addEventListener(
     "click",
     publishPoll
 );
 
-backBtn.addEventListener(
+
+backBtn?.addEventListener(
     "click",
     () => {
 
-        window.history.back();
+        if (
+            window.history.length >
+            1
+        ) {
+
+            window.history.back();
+
+        }
+
+        else {
+
+            window.location.href =
+                "poll.html";
+
+        }
 
     }
 );
@@ -926,6 +1823,52 @@ backBtn.addEventListener(
    INITIALIZE
 ========================================== */
 
-addOption();
-addOption();
-updatePreview();
+function initialize() {
+
+    if (!getToken()) {
+
+        /*
+         * Do not immediately redirect while
+         * developing if the page is opened
+         * directly. The publish action itself
+         * will still enforce authentication.
+         *
+         * If you prefer strict authentication,
+         * uncomment the redirect below.
+         */
+
+        // window.location.href = "login.html";
+
+    }
+
+
+    /*
+     * Start with exactly two choices.
+     */
+
+    addOption();
+
+    addOption();
+
+
+    updateOptionButton();
+
+    updatePreview();
+
+}
+
+
+/* ==========================================
+   PAGE LIFECYCLE
+========================================== */
+
+window.addEventListener(
+    "beforeunload",
+    cleanupObjectUrls
+);
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    initialize
+);

@@ -36,7 +36,10 @@
 
     <div class="header-title">
         <span class="eyebrow">VINDARR</span>
-        <h1>Create Poll</h1>
+
+        <h1>
+            Create Poll
+        </h1>
     </div>
 
     <button
@@ -52,6 +55,8 @@
 
 <main class="create-poll-page">
 
+    <!-- INTRO -->
+
     <section class="intro-card">
 
         <div class="intro-icon">
@@ -59,26 +64,37 @@
         </div>
 
         <div>
-            <h2>Let people choose.</h2>
+            <h2>
+                Let people choose.
+            </h2>
 
             <p>
-                Put two or more things side by side and let
-                the Vindarr community decide.
+                Put two or more things side by side
+                and let the Vindarr community decide.
             </p>
         </div>
 
     </section>
 
 
+    <!-- QUESTION -->
+
     <section class="poll-builder">
 
         <div class="section-heading">
 
-            <span>01</span>
+            <span>
+                01
+            </span>
 
             <div>
-                <h2>Your question</h2>
-                <p>What do you want people to compare?</p>
+                <h2>
+                    Your question
+                </h2>
+
+                <p>
+                    What do you want people to compare?
+                </p>
             </div>
 
         </div>
@@ -90,6 +106,7 @@
                 id="question"
                 maxlength="300"
                 placeholder="Which book should I read first?"
+                autocomplete="off"
             ></textarea>
 
             <div
@@ -169,14 +186,20 @@
     </section>
 
 
+    <!-- OPTIONS -->
+
     <section class="poll-builder">
 
         <div class="section-heading">
 
-            <span>02</span>
+            <span>
+                02
+            </span>
 
             <div>
-                <h2>Your choices</h2>
+                <h2>
+                    Your choices
+                </h2>
 
                 <p>
                     Add 2–4 images or videos for people
@@ -205,6 +228,8 @@
     </section>
 
 
+    <!-- PREVIEW -->
+
     <section
         id="previewSection"
         class="preview-section"
@@ -212,10 +237,14 @@
 
         <div class="section-heading">
 
-            <span>03</span>
+            <span>
+                03
+            </span>
 
             <div>
-                <h2>Preview</h2>
+                <h2>
+                    Preview
+                </h2>
 
                 <p>
                     This is how your poll will appear.
@@ -233,19 +262,27 @@
     </section>
 
 
+    <!-- PUBLISH -->
+
     <button
         id="publishBtn"
         class="publish-btn"
         type="button"
     >
         <i class="bi bi-bar-chart-fill"></i>
-        Publish Poll
+
+        <span>
+            Publish Poll
+        </span>
     </button>
 
+
+    <!-- STATUS -->
 
     <div
         id="statusCard"
         class="status-card"
+        aria-live="polite"
     >
 
         <div class="status-spinner"></div>
