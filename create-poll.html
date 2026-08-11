@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Poll — Vindarr</title>
+
+    <link
+        rel="stylesheet"
+        href="css/create-poll.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+</head>
+
+<body>
+
+<header class="poll-header">
+
+    <button
+        id="backBtn"
+        class="header-icon"
+        type="button"
+        aria-label="Go back"
+    >
+        <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <div class="header-title">
+        <span class="eyebrow">VINDARR</span>
+        <h1>Create Poll</h1>
+    </div>
+
+    <button
+        id="publishTopBtn"
+        class="publish-top-btn"
+        type="button"
+    >
+        Publish
+    </button>
+
+</header>
+
+
+<main class="create-poll-page">
+
+    <section class="intro-card">
+
+        <div class="intro-icon">
+            <i class="bi bi-bar-chart-fill"></i>
+        </div>
+
+        <div>
+            <h2>Let people choose.</h2>
+
+            <p>
+                Put two or more things side by side and let
+                the Vindarr community decide.
+            </p>
+        </div>
+
+    </section>
+
+
+    <section class="poll-builder">
+
+        <div class="section-heading">
+
+            <span>01</span>
+
+            <div>
+                <h2>Your question</h2>
+                <p>What do you want people to compare?</p>
+            </div>
+
+        </div>
+
+
+        <div class="question-box">
+
+            <textarea
+                id="question"
+                maxlength="300"
+                placeholder="Which book should I read first?"
+            ></textarea>
+
+            <div
+                id="questionCount"
+                class="character-count"
+            >
+                0 / 300
+            </div>
+
+        </div>
+
+
+        <div class="category-row">
+
+            <div class="field">
+
+                <label for="category">
+                    Category
+                </label>
+
+                <select id="category">
+
+                    <option value="">
+                        Choose category
+                    </option>
+
+                    <option value="Books">
+                        Books
+                    </option>
+
+                    <option value="Products">
+                        Products
+                    </option>
+
+                    <option value="Fashion">
+                        Fashion
+                    </option>
+
+                    <option value="Food">
+                        Food
+                    </option>
+
+                    <option value="Politics">
+                        Politics
+                    </option>
+
+                    <option value="Technology">
+                        Technology
+                    </option>
+
+                    <option value="Travel">
+                        Travel
+                    </option>
+
+                    <option value="Entertainment">
+                        Entertainment
+                    </option>
+
+                    <option value="Education">
+                        Education
+                    </option>
+
+                    <option value="Business">
+                        Business
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="poll-builder">
+
+        <div class="section-heading">
+
+            <span>02</span>
+
+            <div>
+                <h2>Your choices</h2>
+
+                <p>
+                    Add 2–4 images or videos for people
+                    to compare.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div
+            id="optionsGrid"
+            class="options-grid"
+        ></div>
+
+
+        <button
+            id="addOptionBtn"
+            class="add-option-btn"
+            type="button"
+        >
+            <i class="bi bi-plus-lg"></i>
+            Add another choice
+        </button>
+
+    </section>
+
+
+    <section
+        id="previewSection"
+        class="preview-section"
+    >
+
+        <div class="section-heading">
+
+            <span>03</span>
+
+            <div>
+                <h2>Preview</h2>
+
+                <p>
+                    This is how your poll will appear.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div
+            id="pollPreview"
+            class="poll-preview"
+        ></div>
+
+    </section>
+
+
+    <button
+        id="publishBtn"
+        class="publish-btn"
+        type="button"
+    >
+        <i class="bi bi-bar-chart-fill"></i>
+        Publish Poll
+    </button>
+
+
+    <div
+        id="statusCard"
+        class="status-card"
+    >
+
+        <div class="status-spinner"></div>
+
+        <strong id="statusTitle">
+            Publishing poll...
+        </strong>
+
+        <p id="statusText">
+            Uploading your media.
+        </p>
+
+        <div class="progress-track">
+
+            <div
+                id="progressBar"
+                class="progress-bar"
+            ></div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<script src="js/config.js"></script>
+<script src="js/create-poll.js"></script>
+
+</body>
+</html>

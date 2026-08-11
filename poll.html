@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Polls — Vindarr</title>
+
+    <link
+        rel="stylesheet"
+        href="css/poll.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+</head>
+
+<body>
+
+
+<header class="poll-topbar">
+
+    <button
+        id="backBtn"
+        class="top-icon"
+        type="button"
+        aria-label="Go back"
+    >
+        <i class="bi bi-arrow-left"></i>
+    </button>
+
+
+    <div class="brand-title">
+
+        <span>VINDARR</span>
+
+        <h1>Polls</h1>
+
+    </div>
+
+
+    <button
+        id="createPollBtn"
+        class="create-poll-button"
+        type="button"
+    >
+        <i class="bi bi-plus-lg"></i>
+        <span>Create</span>
+    </button>
+
+</header>
+
+
+<main class="poll-page">
+
+
+    <section class="hero">
+
+        <div>
+
+            <span class="hero-label">
+                ASK • COMPARE • VOTE
+            </span>
+
+            <h2>
+                What do you think?
+            </h2>
+
+            <p>
+                Compare books, products, fashion,
+                ideas and more with the Vindarr community.
+            </p>
+
+        </div>
+
+        <div class="hero-mark">
+            <i class="bi bi-bar-chart-fill"></i>
+        </div>
+
+    </section>
+
+
+    <section class="toolbar">
+
+        <div class="search-box">
+
+            <i class="bi bi-search"></i>
+
+            <input
+                id="searchInput"
+                type="search"
+                placeholder="Search polls..."
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <div
+            id="categoryTabs"
+            class="category-tabs"
+        >
+
+            <button
+                class="category-tab active"
+                data-category="All"
+                type="button"
+            >
+                All
+            </button>
+
+            <button
+                class="category-tab"
+                data-category="Books"
+                type="button"
+            >
+                Books
+            </button>
+
+            <button
+                class="category-tab"
+                data-category="Products"
+                type="button"
+            >
+                Products
+            </button>
+
+            <button
+                class="category-tab"
+                data-category="Fashion"
+                type="button"
+            >
+                Fashion
+            </button>
+
+            <button
+                class="category-tab"
+                data-category="Food"
+                type="button"
+            >
+                Food
+            </button>
+
+            <button
+                class="category-tab"
+                data-category="Politics"
+                type="button"
+            >
+                Politics
+            </button>
+
+            <button
+                class="category-tab"
+                data-category="Other"
+                type="button"
+            >
+                Other
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <section
+        id="pollFeed"
+        class="poll-feed"
+    ></section>
+
+
+    <div
+        id="loading"
+        class="loading-state"
+    >
+
+        <div class="spinner"></div>
+
+        <span>
+            Loading polls...
+        </span>
+
+    </div>
+
+
+    <div
+        id="emptyState"
+        class="empty-state"
+        hidden
+    >
+
+        <div class="empty-icon">
+            <i class="bi bi-bar-chart"></i>
+        </div>
+
+        <h2>
+            No polls found
+        </h2>
+
+        <p>
+            Be the first person to put two things
+            head-to-head.
+        </p>
+
+        <button
+            id="emptyCreateBtn"
+            type="button"
+        >
+            Create a Poll
+        </button>
+
+    </div>
+
+
+</main>
+
+
+<div
+    id="pollModal"
+    class="poll-modal"
+    hidden
+>
+
+    <div
+        id="modalBackdrop"
+        class="modal-backdrop"
+    ></div>
+
+
+    <section class="modal-card">
+
+        <button
+            id="closeModalBtn"
+            class="modal-close"
+            type="button"
+        >
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+
+        <div
+            id="modalContent"
+            class="modal-content"
+        ></div>
+
+    </section>
+
+</div>
+
+
+<script src="js/config.js"></script>
+<script src="js/poll.js"></script>
+
+</body>
+</html>
