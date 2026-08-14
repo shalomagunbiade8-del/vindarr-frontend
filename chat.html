@@ -1,75 +1,385 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>Chat</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<link rel="stylesheet" href="css/global.css">
+    <title>Chat — Vindarr</title>
 
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link
+        rel="stylesheet"
+        href="css/chat.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
 
 </head>
 
 <body>
 
-<nav class="chat-topbar">
+<div class="chat-page">
 
-  <div class="chat-user-info">
+    <!-- HEADER -->
 
-    <button type="button" onclick="history.back()">
-      <i class="bi bi-arrow-left"></i>
-    </button>
+    <header class="chat-header">
 
-    <img
-      id="chatAvatar"
-      src="https://i.pravatar.cc/100"
+        <button
+            id="backBtn"
+            class="icon-btn"
+            type="button"
+            aria-label="Back"
+        >
+            <i class="bi bi-arrow-left"></i>
+        </button>
+
+
+        <div class="chat-person">
+
+            <div class="avatar-wrap">
+
+                <img
+                    id="chatAvatar"
+                    src="https://i.pravatar.cc/100"
+                    alt=""
+                >
+
+                <span class="online-dot"></span>
+
+            </div>
+
+
+            <div class="chat-person-info">
+
+                <strong id="chatUsername">
+                    User
+                </strong>
+
+                <span id="chatStatus">
+                    Online
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <button
+            id="chatMoreBtn"
+            class="icon-btn"
+            type="button"
+            aria-label="More"
+        >
+            <i class="bi bi-three-dots"></i>
+        </button>
+
+    </header>
+
+
+    <!-- MESSAGES -->
+
+    <main
+        id="chatMessages"
+        class="chat-messages"
     >
 
-    <div>
+        <div class="chat-loading">
 
-      <h3 id="chatUsername">User</h3>
+            <div class="loading-spinner"></div>
 
-      <small>Online</small>
+            <span>
+                Loading conversation...
+            </span>
+
+        </div>
+
+    </main>
+
+
+    <!-- REPLY PREVIEW -->
+
+    <div
+        id="replyPreview"
+        class="reply-preview"
+    >
+
+        <div class="reply-preview-line"></div>
+
+        <div class="reply-preview-content">
+
+            <span class="reply-preview-label">
+                Replying to
+            </span>
+
+            <strong id="replyPreviewUser">
+                User
+            </strong>
+
+            <p id="replyPreviewText">
+                Message
+            </p>
+
+        </div>
+
+
+        <button
+            id="cancelReplyBtn"
+            type="button"
+            class="reply-close"
+        >
+            <i class="bi bi-x-lg"></i>
+        </button>
 
     </div>
 
-  </div>
 
-</nav>
+    <!-- ATTACHMENT PREVIEW -->
 
-<div
-id="chatMessages"
-class="chat-messages"
-></div>
+    <div
+        id="attachmentPreview"
+        class="attachment-preview"
+    >
 
-<div class="chat-input-area">
+        <div id="attachmentPreviewContent"></div>
 
-  <input
-    type="text"
-    id="chatInput"
-    placeholder="Type message..."
-  >
+        <button
+            id="removeAttachmentBtn"
+            type="button"
+            class="attachment-remove"
+        >
+            <i class="bi bi-x"></i>
+        </button>
 
-  <button
-    type="button"
-    id="sendBtn"
-  >
-    <i class="bi bi-send-fill"></i>
-  </button>
+    </div>
+
+
+    <!-- COMPOSER -->
+
+    <footer class="chat-composer">
+
+        <div class="composer-shell">
+
+            <button
+                id="attachmentBtn"
+                type="button"
+                class="composer-icon"
+                aria-label="Attach file"
+            >
+                <i class="bi bi-plus-lg"></i>
+            </button>
+
+
+            <input
+                id="attachmentInput"
+                type="file"
+                accept="image/*,.pdf"
+                hidden
+            >
+
+
+            <button
+                id="videoNoteBtn"
+                type="button"
+                class="composer-icon video-note-btn"
+                aria-label="Record video note"
+            >
+                <i class="bi bi-camera-video"></i>
+            </button>
+
+
+            <input
+                id="chatInput"
+                type="text"
+                placeholder="Write a message..."
+                autocomplete="off"
+            >
+
+
+            <button
+                id="sendBtn"
+                type="button"
+                class="send-btn"
+                aria-label="Send"
+            >
+                <i class="bi bi-arrow-up"></i>
+            </button>
+
+        </div>
+
+    </footer>
+
+
+    <!-- MESSAGE ACTION SHEET -->
+
+    <div
+        id="messageActions"
+        class="message-actions-overlay"
+    >
+
+        <div class="message-actions">
+
+            <div class="action-handle"></div>
+
+            <button
+                id="replyActionBtn"
+                type="button"
+            >
+                <i class="bi bi-reply"></i>
+                Reply
+            </button>
+
+
+            <button
+                id="deleteActionBtn"
+                type="button"
+                class="danger-action"
+            >
+                <i class="bi bi-trash3"></i>
+                Delete message
+            </button>
+
+
+            <button
+                id="closeActionsBtn"
+                type="button"
+            >
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- VIDEO NOTE MODAL -->
+
+    <div
+        id="videoModal"
+        class="video-modal"
+    >
+
+        <div class="video-modal-card">
+
+            <div class="video-modal-header">
+
+                <div>
+
+                    <span>
+                        VIDEO NOTE
+                    </span>
+
+                    <strong>
+                        Record a quick reply
+                    </strong>
+
+                </div>
+
+
+                <button
+                    id="closeVideoModalBtn"
+                    type="button"
+                    class="icon-btn"
+                >
+                    <i class="bi bi-x-lg"></i>
+                </button>
+
+            </div>
+
+
+            <div class="video-record-area">
+
+                <video
+                    id="videoPreview"
+                    autoplay
+                    muted
+                    playsinline
+                ></video>
+
+
+                <div
+                    id="videoPlaceholder"
+                    class="video-placeholder"
+                >
+
+                    <i class="bi bi-camera-video"></i>
+
+                    <span>
+                        Camera preview
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="video-controls">
+
+                <span
+                    id="recordTimer"
+                    class="record-timer"
+                >
+                    00:00
+                </span>
+
+
+                <button
+                    id="recordVideoBtn"
+                    type="button"
+                    class="record-button"
+                >
+                    <span></span>
+                </button>
+
+
+                <button
+                    id="useVideoBtn"
+                    type="button"
+                    class="use-video-btn"
+                    disabled
+                >
+                    Use video
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MORE MENU -->
+
+    <div
+        id="chatMoreMenu"
+        class="more-menu"
+    >
+
+        <button
+            id="closeMoreMenu"
+            type="button"
+        >
+            Close
+        </button>
+
+    </div>
 
 </div>
 
-<script src="js/config.js?v=2"></script>
-<script src="js/auth.js?v=2"></script>
-<script src="js/chat.js?v=2"></script>
 
-<script>
-checkAuth();
-</script>
+<script src="js/config.js"></script>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="js/chat.js"></script>
 
 </body>
+
 </html>

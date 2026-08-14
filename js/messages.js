@@ -1,126 +1,381 @@
-const token = localStorage.getItem("token");
+console.log(
+    "VINDARR MESSAGES JS LOADED"
+);
+
+
+/* ==========================================
+   AUTH
+========================================== */
+
+const token =
+    localStorage.getItem("token");
+
 
 const currentUser =
-JSON.parse(localStorage.getItem("user"));
-
-const currentUsername =
-currentUser?.username;
-
-if(!token){
-  window.location.href = "login.html";
-}
-
-async function loadInbox(){
-
-  try{
-
-    console.log("LOADING INBOX");
-
-    const res = await fetch(
-      `${API_BASE_URL}/messages/inbox`,
-      {
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
-      }
+    JSON.parse(
+        localStorage.getItem("user") || "null"
     );
 
-    console.log("INBOX STATUS:", res.status);
 
-    if(!res.ok){
+const currentUsername =
+    currentUser?.username;
 
-      const errText = await res.text();
 
-      console.log("INBOX ERROR:", errText);
+if (!token) {
 
-      document.getElementById(
+    window.location.href =
+        "login.html";
+
+}
+
+
+/* ==========================================
+   ELEMENTS
+========================================== */
+
+const inboxList =
+    document.getElementById(
         "inboxList"
-      ).innerHTML =
-      `<p>Failed to load inbox</p>`;
+    );
 
-      return;
+
+const searchInput =
+    document.getElementById(
+        "messageSearch"
+    );
+
+
+/* ==========================================
+   STATE
+========================================== */
+
+let conversations = [];
+
+
+/* ==========================================
+   ESCAPE
+========================================== */
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+/* ==========================================
+   LOAD INBOX
+========================================== */
+
+async function loadInbox() {
+
+    try {
+
+        inboxList.innerHTML = `
+            <div class="inbox-loading">
+
+                <div class="loading-spinner"></div>
+
+                Loading conversations...
+
+            </div>
+        `;
+
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/messages/inbox`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load inbox."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        conversations =
+            Array.isArray(data)
+                ? data
+                : [];
+
+
+        renderInbox(
+            conversations
+        );
+
+
+    }
+    catch (error) {
+
+        console.error(
+            "INBOX ERROR:",
+            error
+        );
+
+
+        inboxList.innerHTML = `
+            <div class="inbox-empty">
+
+                <i
+                    class="bi bi-exclamation-circle"
+                    style="
+                        font-size:32px;
+                        color:#d10000;
+                    "
+                ></i>
+
+                Unable to load messages.
+
+            </div>
+        `;
+
     }
 
-    const chats = await res.json();
+}
 
-    console.log("INBOX DATA:", chats);
 
-    renderInbox(chats);
+/* ==========================================
+   RENDER
+========================================== */
 
-  }catch(err){
+function renderInbox(
+    list
+) {
 
-    console.error("INBOX LOAD ERROR:", err);
+    if (!list.length) {
 
-  }
+        inboxList.innerHTML = `
+            <div class="inbox-empty">
+
+                <i
+                    class="bi bi-chat-heart"
+                    style="
+                        font-size:36px;
+                        color:#d10000;
+                    "
+                ></i>
+
+                <strong>
+                    No conversations yet
+                </strong>
+
+                <span>
+                    Start a conversation from a user's profile.
+                </span>
+
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    inboxList.innerHTML =
+        list
+            .map(
+                chat => {
+
+                    const otherUser =
+                        chat.senderUsername ===
+                        currentUsername
+
+                            ? chat.receiverUsername
+
+                            : chat.senderUsername;
+
+
+                    const preview =
+                        chat.text ||
+                        (
+                            chat.attachmentType?.startsWith(
+                                "image/"
+                            )
+                                ? "Photo"
+                                : "Attachment"
+                        );
+
+
+                    const time =
+                        chat.createdAt
+                            ? new Date(
+                                chat.createdAt
+                              ).toLocaleDateString(
+                                [],
+                                {
+                                    month:
+                                        "short",
+
+                                    day:
+                                        "numeric"
+                                }
+                              )
+                            : "";
+
+
+                    return `
+
+                        <div
+                            class="inbox-card"
+                            data-user="${escapeHtml(otherUser)}"
+                        >
+
+                            <img
+                                class="inbox-avatar"
+                                src="https://i.pravatar.cc/100?u=${encodeURIComponent(otherUser)}"
+                                alt=""
+                            >
+
+
+                            <div class="inbox-content">
+
+                                <div class="inbox-top">
+
+                                    <h4>
+                                        ${escapeHtml(otherUser)}
+                                    </h4>
+
+                                    <span class="inbox-time">
+                                        ${time}
+                                    </span>
+
+                                </div>
+
+
+                                <p>
+                                    ${escapeHtml(preview)}
+                                </p>
+
+                            </div>
+
+
+                            <i class="bi bi-chevron-right inbox-arrow"></i>
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    document
+        .querySelectorAll(
+            ".inbox-card"
+        )
+        .forEach(
+            card => {
+
+                card.addEventListener(
+                    "click",
+                    () => {
+
+                        const user =
+                            card.dataset.user;
+
+
+                        window.location.href =
+                            `chat.html?user=${encodeURIComponent(user)}`;
+
+                    }
+                );
+
+            }
+        );
 
 }
 
-function renderInbox(chats){
 
-  const inbox =
-  document.getElementById("inboxList");
+/* ==========================================
+   SEARCH
+========================================== */
 
-  if(!Array.isArray(chats)){
+searchInput?.addEventListener(
+    "input",
+    () => {
 
-    inbox.innerHTML =
-    `<p>Inbox failed</p>`;
+        const query =
+            searchInput.value
+                .trim()
+                .toLowerCase();
 
-    return;
 
-  }
+        if (!query) {
 
-  if(chats.length === 0){
+            renderInbox(
+                conversations
+            );
 
-    inbox.innerHTML = `
-      <div class="empty-state">
-        No conversations yet
-      </div>
-    `;
+            return;
 
-    return;
-  }
+        }
 
-  inbox.innerHTML = chats.map(chat => {
 
-    const otherUser =
-      chat.senderUsername === currentUsername
-      ? chat.receiverUsername
-      : chat.senderUsername;
+        const filtered =
+            conversations.filter(
+                chat => {
 
-    return `
+                    const otherUser =
+                        chat.senderUsername ===
+                        currentUsername
 
-      <div
-        class="inbox-card"
-        onclick="openChat('${otherUser}')"
-      >
+                            ? chat.receiverUsername
 
-        <img
-          src="https://i.pravatar.cc/100"
-        >
+                            : chat.senderUsername;
 
-        <div class="inbox-content">
 
-          <h4>${otherUser}</h4>
+                    const text =
+                        chat.text || "";
 
-          <p>
-            ${chat.text || "Attachment"}
-          </p>
 
-        </div>
+                    return (
 
-      </div>
+                        otherUser
+                            ?.toLowerCase()
+                            .includes(query)
 
-    `;
+                        ||
 
-  }).join("");
+                        text
+                            .toLowerCase()
+                            .includes(query)
 
-}
+                    );
 
-function openChat(userId){
+                }
+            );
 
-  window.location.href =
-  `chat.html?user=${userId}`;
 
-}
+        renderInbox(
+            filtered
+        );
+
+    }
+);
+
+
+/* ==========================================
+   INIT
+========================================== */
 
 loadInbox();
