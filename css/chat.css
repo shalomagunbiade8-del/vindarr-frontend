@@ -1701,3 +1701,57 @@ button {
     }
 
 }
+
+/* ==========================================
+   VIDEO ATTACHMENTS
+========================================== */
+
+.message-attachment video {
+
+    display: block;
+
+    width: min(
+        320px,
+        100%
+    );
+
+    max-height: 360px;
+
+    background:
+        #000;
+
+    border-radius:
+        13px;
+
+}
+
+
+.chat-attachment-video {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    max-width:
+        320px;
+
+    max-height:
+        360px;
+
+    object-fit:
+        contain;
+
+    background:
+        #000;
+
+}
+
+
+.message-video {
+
+    background:
+        #000;
+
+}

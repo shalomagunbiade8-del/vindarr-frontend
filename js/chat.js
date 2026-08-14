@@ -239,7 +239,107 @@ if (chatUsername) {
 
 
 /* ==========================================
-   ESCAPE
+   BACKEND URL
+========================================== */
+
+/*
+ * API_BASE_URL comes from config.js.
+ *
+ * Example:
+ *
+ * API_BASE_URL =
+ * https://vindarr-backend.onrender.com
+ *
+ */
+
+function getBackendUrl() {
+
+    return String(
+        API_BASE_URL || ""
+    ).replace(/\/+$/, "");
+
+}
+
+
+/*
+ * Convert backend-relative upload URLs
+ *
+ * /uploads/file.jpg
+ *
+ * into:
+ *
+ * https://backend-domain/uploads/file.jpg
+ *
+ */
+
+function resolveAttachmentUrl(url) {
+
+    if (!url) {
+        return "";
+    }
+
+
+    const value =
+        String(url).trim();
+
+
+    if (
+        value.startsWith("http://") ||
+        value.startsWith("https://") ||
+        value.startsWith("blob:")
+    ) {
+
+        return value;
+
+    }
+
+
+    if (
+        value.startsWith("//")
+    ) {
+
+        return (
+            window.location.protocol +
+            value
+        );
+
+    }
+
+
+    const backend =
+        getBackendUrl();
+
+
+    if (!backend) {
+
+        return value;
+
+    }
+
+
+    if (
+        value.startsWith("/")
+    ) {
+
+        return (
+            backend +
+            value
+        );
+
+    }
+
+
+    return (
+        backend +
+        "/" +
+        value
+    );
+
+}
+
+
+/* ==========================================
+   ESCAPE HTML
 ========================================== */
 
 function escapeHtml(value) {
@@ -264,16 +364,21 @@ function formatTime(dateValue) {
         return "";
     }
 
+
     const date =
         new Date(dateValue);
+
 
     if (
         Number.isNaN(
             date.getTime()
         )
     ) {
+
         return "";
+
     }
+
 
     return date.toLocaleTimeString(
         [],
@@ -335,7 +440,6 @@ async function loadChat() {
 
         renderMessages();
 
-
     }
     catch (error) {
 
@@ -347,10 +451,17 @@ async function loadChat() {
 
         chatContainer.innerHTML = `
             <div class="chat-loading">
-                <i class="bi bi-exclamation-circle"
-                   style="font-size:30px;color:#d10000">
-                </i>
-                <span>Unable to load messages.</span>
+                <i
+                    class="bi bi-exclamation-circle"
+                    style="
+                        font-size:30px;
+                        color:#d10000
+                    "
+                ></i>
+
+                <span>
+                    Unable to load messages.
+                </span>
             </div>
         `;
 
@@ -383,13 +494,15 @@ function renderMessages() {
                 </strong>
 
                 <span>
-                    Send a message to ${escapeHtml(receiverUsername)}.
+                    Send a message to
+                    ${escapeHtml(receiverUsername)}.
                 </span>
 
             </div>
         `;
 
         return;
+
     }
 
 
@@ -411,6 +524,158 @@ function renderMessages() {
 
 
 /* ==========================================
+   RENDER ATTACHMENT
+========================================== */
+
+function renderMessageAttachment(
+    message
+) {
+
+    if (!message.attachmentUrl) {
+
+        return "";
+
+    }
+
+
+    const url =
+        resolveAttachmentUrl(
+            message.attachmentUrl
+        );
+
+
+    const type =
+        String(
+            message.attachmentType || ""
+        ).toLowerCase();
+
+
+    /*
+     * IMAGE
+     */
+
+    if (
+        type.startsWith("image/")
+    ) {
+
+        return `
+            <div class="message-attachment">
+
+                <a
+                    href="${escapeHtml(url)}"
+                    target="_blank"
+                    rel="noopener"
+                >
+
+                    <img
+                        src="${escapeHtml(url)}"
+                        alt="Image attachment"
+                        loading="lazy"
+                    >
+
+                </a>
+
+            </div>
+        `;
+
+    }
+
+
+    /*
+     * VIDEO
+     */
+
+    if (
+        type.startsWith("video/")
+    ) {
+
+        return `
+            <div class="message-attachment message-video">
+
+                <video
+                    class="chat-attachment-video"
+                    controls
+                    playsinline
+                    preload="metadata"
+                >
+
+                    <source
+                        src="${escapeHtml(url)}"
+                        type="${escapeHtml(type)}"
+                    >
+
+                    Your browser does not support
+                    video playback.
+
+                </video>
+
+            </div>
+        `;
+
+    }
+
+
+    /*
+     * PDF
+     */
+
+    if (
+        type === "application/pdf"
+    ) {
+
+        return `
+            <div class="message-attachment">
+
+                <a
+                    class="message-file"
+                    href="${escapeHtml(url)}"
+                    target="_blank"
+                    rel="noopener"
+                >
+
+                    <i class="bi bi-file-earmark-pdf"></i>
+
+                    <span>
+                        Open PDF
+                    </span>
+
+                </a>
+
+            </div>
+        `;
+
+    }
+
+
+    /*
+     * UNKNOWN FILE
+     */
+
+    return `
+        <div class="message-attachment">
+
+            <a
+                class="message-file"
+                href="${escapeHtml(url)}"
+                target="_blank"
+                rel="noopener"
+            >
+
+                <i class="bi bi-file-earmark"></i>
+
+                <span>
+                    Open attachment
+                </span>
+
+            </a>
+
+        </div>
+    `;
+
+}
+
+
+/* ==========================================
    RENDER MESSAGE
 ========================================== */
 
@@ -425,61 +690,10 @@ function renderMessage(message) {
         message.text || "";
 
 
-    let attachmentHtml = "";
-
-
-    if (message.attachmentUrl) {
-
-        const url =
-            message.attachmentUrl;
-
-
-        const type =
-            message.attachmentType || "";
-
-
-        if (
-            type.startsWith("image/")
-        ) {
-
-            attachmentHtml = `
-                <div class="message-attachment">
-
-                    <img
-                        src="${escapeHtml(url)}"
-                        alt="Attachment"
-                    >
-
-                </div>
-            `;
-
-        }
-        else {
-
-            attachmentHtml = `
-                <div class="message-attachment">
-
-                    <a
-                        class="message-file"
-                        href="${escapeHtml(url)}"
-                        target="_blank"
-                        rel="noopener"
-                    >
-
-                        <i class="bi bi-file-earmark"></i>
-
-                        <span>
-                            Open attachment
-                        </span>
-
-                    </a>
-
-                </div>
-            `;
-
-        }
-
-    }
+    const attachmentHtml =
+        renderMessageAttachment(
+            message
+        );
 
 
     const replyHtml =
@@ -507,7 +721,11 @@ function renderMessage(message) {
 
     const bodyHtml =
         text
-            ? `<div>${escapeHtml(text)}</div>`
+            ? `
+                <div>
+                    ${escapeHtml(text)}
+                </div>
+            `
             : "";
 
 
@@ -560,7 +778,9 @@ function renderMessage(message) {
                 data-message-id="${message.id}"
                 aria-label="Message options"
             >
+
                 <i class="bi bi-three-dots"></i>
+
             </button>
 
         </div>
@@ -588,6 +808,7 @@ function attachMessageEvents() {
                     event => {
 
                         event.stopPropagation();
+
 
                         const id =
                             Number(
@@ -746,7 +967,6 @@ deleteActionBtn.addEventListener(
 
             renderMessages();
 
-
         }
         catch (error) {
 
@@ -829,6 +1049,7 @@ function clearReply() {
     replyTo =
         null;
 
+
     replyPreview.classList.remove(
         "active"
     );
@@ -837,7 +1058,7 @@ function clearReply() {
 
 
 /* ==========================================
-   UPLOAD ATTACHMENT
+   ATTACHMENT PREVIEW
 ========================================== */
 
 attachmentBtn.addEventListener(
@@ -863,6 +1084,51 @@ attachmentInput.addEventListener(
         }
 
 
+        /*
+         * 25 MB frontend check.
+         */
+
+        if (
+            file.size >
+            25 * 1024 * 1024
+        ) {
+
+            alert(
+                "File is too large. Maximum size is 25 MB."
+            );
+
+
+            attachmentInput.value =
+                "";
+
+
+            return;
+
+        }
+
+
+        const allowed =
+            file.type.startsWith("image/") ||
+            file.type.startsWith("video/") ||
+            file.type === "application/pdf";
+
+
+        if (!allowed) {
+
+            alert(
+                "Only images, videos and PDFs are allowed."
+            );
+
+
+            attachmentInput.value =
+                "";
+
+
+            return;
+
+        }
+
+
         selectedAttachment =
             file;
 
@@ -872,6 +1138,10 @@ attachmentInput.addEventListener(
     }
 );
 
+
+/* ==========================================
+   ATTACHMENT PREVIEW
+========================================== */
 
 function renderAttachmentPreview() {
 
@@ -886,13 +1156,16 @@ function renderAttachmentPreview() {
     }
 
 
-    attachmentPreviewContent.innerHTML = "";
+    attachmentPreviewContent.innerHTML =
+        "";
+
+
+    const file =
+        selectedAttachment;
 
 
     if (
-        selectedAttachment.type.startsWith(
-            "image/"
-        )
+        file.type?.startsWith("image/")
     ) {
 
         const img =
@@ -903,7 +1176,7 @@ function renderAttachmentPreview() {
 
         img.src =
             URL.createObjectURL(
-                selectedAttachment
+                file
             );
 
 
@@ -912,16 +1185,67 @@ function renderAttachmentPreview() {
         );
 
     }
+    else if (
+        file.type?.startsWith("video/")
+    ) {
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+
+        video.src =
+            URL.createObjectURL(
+                file
+            );
+
+
+        video.controls =
+            true;
+
+
+        video.muted =
+            true;
+
+
+        video.playsInline =
+            true;
+
+
+        video.style.width =
+            "110px";
+
+
+        video.style.height =
+            "70px";
+
+
+        video.style.objectFit =
+            "cover";
+
+
+        video.style.borderRadius =
+            "10px";
+
+
+        attachmentPreviewContent.appendChild(
+            video
+        );
+
+    }
     else {
 
         attachmentPreviewContent.innerHTML = `
-            <div style="
-                display:flex;
-                align-items:center;
-                gap:10px;
-                color:white;
-                font-size:12px;
-            ">
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    color:white;
+                    font-size:12px;
+                "
+            >
 
                 <i
                     class="bi bi-file-earmark-pdf"
@@ -932,7 +1256,7 @@ function renderAttachmentPreview() {
                 ></i>
 
                 ${escapeHtml(
-                    selectedAttachment.name
+                    file.name
                 )}
 
             </div>
@@ -976,12 +1300,33 @@ function clearAttachment() {
 
 
 /* ==========================================
-   UPLOAD FILE
+   UPLOAD ATTACHMENT
 ========================================== */
 
 async function uploadAttachment(
     file
 ) {
+
+    if (!file) {
+
+        throw new Error(
+            "No file selected."
+        );
+
+    }
+
+
+    if (
+        file.size >
+        25 * 1024 * 1024
+    ) {
+
+        throw new Error(
+            "File is too large. Maximum size is 25 MB."
+        );
+
+    }
+
 
     const formData =
         new FormData();
@@ -989,7 +1334,8 @@ async function uploadAttachment(
 
     formData.append(
         "file",
-        file
+        file,
+        file.name || "attachment"
     );
 
 
@@ -1010,14 +1356,14 @@ async function uploadAttachment(
         );
 
 
+    const data =
+        await response.json()
+            .catch(
+                () => ({})
+            );
+
+
     if (!response.ok) {
-
-        const data =
-            await response.json()
-                .catch(
-                    () => ({})
-                );
-
 
         throw new Error(
             data.message ||
@@ -1027,7 +1373,16 @@ async function uploadAttachment(
     }
 
 
-    return response.json();
+    if (!data.url) {
+
+        throw new Error(
+            "Backend did not return an attachment URL."
+        );
+
+    }
+
+
+    return data;
 
 }
 
@@ -1066,7 +1421,16 @@ async function sendMessage() {
             null;
 
 
+        /*
+         * Upload selected attachment.
+         */
+
         if (selectedAttachment) {
+
+            /*
+             * selectedAttachment must be
+             * a real File object.
+             */
 
             const uploaded =
                 await uploadAttachment(
@@ -1097,7 +1461,12 @@ async function sendMessage() {
 
             attachmentType:
                 attachmentType ||
-                undefined
+                undefined,
+
+            replyToId:
+                replyTo
+                    ? Number(replyTo.id)
+                    : undefined
 
         };
 
@@ -1128,7 +1497,10 @@ async function sendMessage() {
 
 
         const data =
-            await response.json();
+            await response.json()
+                .catch(
+                    () => ({})
+                );
 
 
         if (!response.ok) {
@@ -1150,7 +1522,26 @@ async function sendMessage() {
         clearReply();
 
 
-        await loadChat();
+        /*
+         * Do not manually push the returned
+         * message here because Socket.IO will
+         * deliver it.
+         */
+
+        if (
+            !messages.some(
+                item =>
+                    item.id === data.id
+            )
+        ) {
+
+            messages.push(
+                data
+            );
+
+            renderMessages();
+
+        }
 
     }
     catch (error) {
@@ -1176,6 +1567,10 @@ async function sendMessage() {
 
 }
 
+
+/* ==========================================
+   SEND EVENTS
+========================================== */
 
 sendBtn.addEventListener(
     "click",
@@ -1223,12 +1618,22 @@ async function openVideoRecorder() {
         "flex";
 
 
+    videoPlaceholder.innerHTML = `
+        <i class="bi bi-camera-video"></i>
+        <span>Camera preview</span>
+    `;
+
+
     useVideoBtn.disabled =
         true;
 
 
     recordedVideoBlob =
         null;
+
+
+    recordedChunks =
+        [];
 
 
     try {
@@ -1260,6 +1665,14 @@ async function openVideoRecorder() {
             "VIDEO CAMERA ERROR:",
             error
         );
+
+
+        videoPreview.style.display =
+            "none";
+
+
+        videoPlaceholder.style.display =
+            "flex";
 
 
         videoPlaceholder.innerHTML = `
@@ -1383,8 +1796,7 @@ function toggleRecording() {
 
 
             useVideoBtn.disabled =
-                recordedVideoBlob.size ===
-                0;
+                recordedVideoBlob.size === 0;
 
 
             stopTimer();
@@ -1404,6 +1816,10 @@ function toggleRecording() {
 
 }
 
+
+/* ==========================================
+   STOP RECORDING
+========================================== */
 
 function stopRecording() {
 
@@ -1496,9 +1912,14 @@ function startTimer() {
 
 function stopTimer() {
 
-    clearInterval(
-        recordingTimer
-    );
+    if (recordingTimer) {
+
+        clearInterval(
+            recordingTimer
+        );
+
+    }
+
 
     recordingTimer =
         null;
@@ -1519,7 +1940,7 @@ function updateTimer() {
 
 
     recordTimer.textContent =
-        `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+        `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
 }
 
@@ -1544,65 +1965,49 @@ useVideoBtn.addEventListener(
                     [
                         recordedVideoBlob
                     ],
-                    "video-note.webm",
+                    `video-note-${Date.now()}.webm`,
                     {
                         type:
-                            recordedVideoBlob.type
+                            recordedVideoBlob.type ||
+                            "video/webm"
                     }
                 );
 
 
             /*
-             * Current backend /messages/upload
-             * does NOT accept videos.
+             * Keep the File locally.
              *
-             * This will therefore fail until
-             * the backend accepts video uploads.
+             * It will be uploaded only when
+             * the user presses Send.
              */
 
-            const uploaded =
-                await uploadAttachment(
-                    file
-                );
-
-
             selectedAttachment =
-                {
-                    name:
-                        file.name,
+                file;
 
-                    type:
-                        file.type,
 
-                    uploadedUrl:
-                        uploaded.url
-                };
+            renderAttachmentPreview();
 
 
             closeVideoRecorder();
-
-            alert(
-                "Video note is ready to send."
-            );
 
         }
         catch (error) {
 
             console.error(
-                "VIDEO NOTE UPLOAD ERROR:",
+                "VIDEO NOTE ERROR:",
                 error
             );
 
 
             alert(
-                "Video notes require the backend upload endpoint to accept video files."
+                error.message ||
+                "Unable to prepare video note."
             );
 
         }
 
     }
 );
-
 
 /* ==========================================
    CLOSE VIDEO
@@ -1763,6 +2168,28 @@ try {
             }
         );
 
+
+        socket.on(
+            "messageDeleted",
+            data => {
+
+                if (!data?.id) {
+                    return;
+                }
+
+
+                messages =
+                    messages.filter(
+                        message =>
+                            Number(message.id) !==
+                            Number(data.id)
+                    );
+
+
+                renderMessages();
+
+            }
+        );
 
     }
 
