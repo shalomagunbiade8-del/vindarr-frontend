@@ -56,20 +56,27 @@ async function loadVideos(reset = true) {
 
   try {
 
-
     if (reset) {
 
       page = 1;
-
       hasMore = true;
+      posts = [];
 
     }
 
-    const res =
-await fetch(
-`${API_BASE_URL}/videos?page=${page}&limit=10&_=${Date.now()}`
-);
+    const requestedPage = page;
 
+    console.log(
+      "Loading videos:",
+      {
+        page: requestedPage,
+        limit: 10
+      }
+    );
+
+    const res = await fetch(
+      `${API_BASE_URL}/videos?page=${requestedPage}&limit=10&_=${Date.now()}`
+    );
 
     if (!res.ok) {
 
@@ -79,61 +86,130 @@ await fetch(
 
     }
 
+    const result = await res.json();
 
-    const result =
-      await res.json();
-
-      console.log("Page:", page);
-
-console.log(result);
-
+    console.log(
+      `Page ${requestedPage} response:`,
+      result
+    );
 
     let videos = [];
 
-if (Array.isArray(result)) {
+    if (Array.isArray(result)) {
 
-    videos = result;
-    console.log("Videos received:", videos.length);
+      videos = result;
 
-} else if (Array.isArray(result.data)) {
+    } else if (Array.isArray(result.data)) {
 
-    videos = result.data;
+      videos = result.data;
 
-} else if (Array.isArray(result.videos)) {
+    } else if (Array.isArray(result.videos)) {
 
-    videos = result.videos;
+      videos = result.videos;
 
-} else if (Array.isArray(result.results)) {
+    } else if (Array.isArray(result.results)) {
 
-    videos = result.results;
+      videos = result.results;
 
-}
+    }
 
-        if (!videos.length) {
+    console.log(
+      `Page ${requestedPage} videos received:`,
+      videos.length
+    );
 
-    hasMore = false;
+    /*
+    =====================================
+    NO MORE VIDEOS
+    =====================================
+    */
 
-    return;
+    if (!videos.length) {
 
-}
+      hasMore =
+        result.hasMore === true
+          ? true
+          : false;
 
+      return false;
 
-    // Do not assume exactly 10 means another page exists.
-hasMore = videos.length > 0;
+    }
 
+    /*
+    =====================================
+    UPDATE HAS MORE
+    =====================================
+    */
+
+    if (
+      typeof result.hasMore === "boolean"
+    ) {
+
+      hasMore =
+        result.hasMore;
+
+    } else {
+
+      hasMore =
+        videos.length === 10;
+
+    }
+
+    /*
+    =====================================
+    PAGE 1
+    =====================================
+    */
 
     if (reset) {
 
-    posts = videos;
+      posts = videos;
 
-} else {
+      renderVideos(
+        videos,
+        true,
+        0
+      );
 
-    posts.push(...videos);
+    }
 
-}
+    /*
+    =====================================
+    PAGE 2+
+    =====================================
+    */
 
-  renderVideos();
+    else {
 
+      /*
+      Save the position before adding
+      the new videos.
+      */
+
+      const startIndex =
+        posts.length;
+
+      /*
+      Add only the new page to state.
+      */
+
+      posts.push(...videos);
+
+      /*
+      IMPORTANT:
+      Render ONLY the newly received
+      videos, not the entire posts array.
+      */
+
+      renderVideos(
+        videos,
+        false,
+        startIndex
+      );
+
+    }
+
+    return true;
 
   } catch (err) {
 
@@ -142,8 +218,10 @@ hasMore = videos.length > 0;
       err
     );
 
-
-    if (feed && !posts.length) {
+    if (
+      feed &&
+      !posts.length
+    ) {
 
       feed.innerHTML = `
 
@@ -171,64 +249,13 @@ hasMore = videos.length > 0;
 
     }
 
+    /*
+    Let the caller know loading failed.
+    */
+
+    throw err;
+
   }
-
-}
-
-async function prefetchNextPage() {
-
-    if(prefetching) return;
-
-    if(!hasMore) return;
-
-    prefetching = true;
-
-    try{
-
-        const res = await fetch(
-            `${API_BASE_URL}/videos?page=${page+1}&limit=10`
-        );
-
-        if(!res.ok){
-
-            prefetching=false;
-            return;
-
-        }
-
-        const json = await res.json();
-
-        nextVideos = json.data || [];
-
-        hasMore = nextVideos.length === 10;
-
-    }catch(err){
-
-        console.error(err);
-
-    }
-
-    prefetching=false;
-
-}
-
-function appendPrefetchedVideos(){
-
-    if(nextVideos.length===0){
-
-        return;
-
-    }
-
-    page++;
-
-    posts.push(...nextVideos);
-
-    renderVideos();
-
-    nextVideos=[];
-
-    prefetchNextPage();
 
 }
 
@@ -321,14 +348,26 @@ function getCreatorAvatar(video) {
 // RENDER VIDEOS
 // =====================================
 
-function renderVideos(videosToRender = posts) {
+function renderVideos(
+  videosToRender = posts,
+  replace = false,
+  startIndex = 0
+) {
 
   if (!feed) {
     return;
   }
 
+  /*
+  =====================================
+  EMPTY FEED
+  =====================================
+  */
 
-  if(!videosToRender.length && page === 1){
+  if (
+    !videosToRender.length &&
+    posts.length === 0
+  ) {
 
     feed.innerHTML = `
 
@@ -352,19 +391,29 @@ function renderVideos(videosToRender = posts) {
 
   }
 
-
   let html = "";
 
-
   videosToRender.forEach(
- (v, i) => {
+    (v, i) => {
 
-  const videoIndex =
-      (page - 1) * 10 + i;
+      /*
+      Absolute index across the entire feed.
+
+      Page 1:
+      0-9
+
+      Page 2:
+      10-19
+
+      Page 3:
+      20-29
+      */
+
+      const videoIndex =
+        startIndex + i;
 
       const mediaUrl =
         getMediaUrl(v);
-
 
       const isVideo =
         v.type === "video" ||
@@ -372,21 +421,17 @@ function renderVideos(videosToRender = posts) {
         mediaUrl.includes(".mov") ||
         mediaUrl.includes(".webm");
 
-
       const avatar =
         getCreatorAvatar(v);
-
 
       const description =
         v.context ||
         "";
 
-
       const understandCount =
         Number(
           v.understandCount || 0
         );
-
 
       const commentCount =
         Array.isArray(v.comments)
@@ -395,10 +440,8 @@ function renderVideos(videosToRender = posts) {
               v.commentCount || 0
             );
 
-
       const saved =
         isVideoSaved(v.id);
-
 
       html += `
 
@@ -406,7 +449,6 @@ function renderVideos(videosToRender = posts) {
           class="video-card"
           id="video-${v.id}"
         >
-
 
           <!-- =================================
                MEDIA
@@ -418,7 +460,7 @@ function renderVideos(videosToRender = posts) {
               ? `
 
                 <video
-                id="video${videoIndex}"
+                  id="video${videoIndex}"
                   src="${escapeHtml(mediaUrl)}"
                   class="feed-video"
                   loop
@@ -622,9 +664,7 @@ function renderVideos(videosToRender = posts) {
 
           <div class="video-overlay-left">
 
-
             <div class="creator-row">
-
 
               <!-- AVATAR -->
 
@@ -638,9 +678,7 @@ function renderVideos(videosToRender = posts) {
 
               <div class="creator-content">
 
-
                 <div class="creator-line">
-
 
                   <div
                     class="creator-name"
@@ -656,7 +694,7 @@ function renderVideos(videosToRender = posts) {
                   </div>
 
 
-                  <!-- FOLLOW = PURVIEW REPLACEMENT -->
+                  <!-- FOLLOW -->
 
                   <button
                     class="follow-btn"
@@ -666,7 +704,6 @@ function renderVideos(videosToRender = posts) {
                     Follow
 
                   </button>
-
 
                 </div>
 
@@ -759,26 +796,34 @@ function renderVideos(videosToRender = posts) {
   );
 
 
-  if (page === 1) {
+  /*
+  =====================================
+  REPLACE OR APPEND
+  =====================================
+  */
 
-    // First load
-    feed.innerHTML = html;
+  if (replace) {
 
-} else {
+    feed.innerHTML =
+      html;
 
-    // Load more
-    feed.insertAdjacentHTML("beforeend", html);
+  } else {
+
+    feed.insertAdjacentHTML(
+      "beforeend",
+      html
+    );
+
+  }
+
+
+  setupVideoObserver();
+
+  setupLoadMore();
+
+  openRequestedVideo();
 
 }
-
-setupVideoObserver();
-
-setupLoadMore();
-
-openRequestedVideo();
-
-}
-
 
 // =====================================
 // CAPTION
