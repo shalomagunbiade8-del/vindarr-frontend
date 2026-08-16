@@ -2,96 +2,329 @@
 <html lang="en">
 <head>
 
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<title>Create Account</title>
+  <title>Create Account • Vindarr</title>
 
-<link rel="stylesheet"
-href="css/global.css">
+  <link
+    rel="stylesheet"
+    href="css/global.css"
+  >
 
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link
+    rel="stylesheet"
+    href="css/auth.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+  >
 
 </head>
+
 <body>
 
-<div class="auth-page">
+<div class="vindarr-auth-page register-page">
 
-<img
-src="interfacelog.png"
-width="70"
-style="margin-bottom:20px;"
->
 
-<h1>Create Account</h1>
+  <!-- =========================================
+       REGISTER HERO
+  ========================================== -->
 
-<input
-id="registerUsername"
-placeholder="Username"
-class="auth-input"
->
+  <section class="register-hero">
 
-<input
-id="registerEmail"
-placeholder="Email"
-class="auth-input"
->
+    <a
+      href="login.html"
+      class="auth-back"
+    >
 
-<div class="password-wrapper">
+      <i class="bi bi-arrow-left"></i>
 
-<input
-id="registerPassword"
-type="password"
-placeholder="Password"
-class="auth-input"
->
+      Back to login
 
-<i
-class="bi bi-eye-slash"
-id="registerTogglePassword"
-onclick="togglePassword('registerPassword','registerTogglePassword')"
-></i>
+    </a>
+
+
+    <div class="auth-brand">
+
+      <img
+        src="interfacelog.png"
+        alt="Vindarr"
+        class="auth-logo"
+      >
+
+      <span>Vindarr</span>
+
+    </div>
+
+
+    <div class="register-heading">
+
+      <span class="hero-eyebrow">
+        JOIN THE EXPERIENCE
+      </span>
+
+      <h1>
+        Start
+        <span>Vindarring.</span>
+      </h1>
+
+      <p>
+        Create your account and start discovering
+        products, books, stories and people through
+        video.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       REGISTER CARD
+  ========================================== -->
+
+  <section class="register-section">
+
+    <div class="register-card">
+
+
+      <div class="register-card-header">
+
+        <div class="register-icon">
+
+          <i class="bi bi-person-plus-fill"></i>
+
+        </div>
+
+        <h2>
+          Create your account
+        </h2>
+
+        <p>
+          It only takes a moment.
+        </p>
+
+      </div>
+
+
+      <div class="register-form">
+
+
+        <!-- USERNAME -->
+
+        <label for="registerUsername">
+          Username
+        </label>
+
+        <div class="input-wrapper">
+
+          <i class="bi bi-at"></i>
+
+          <input
+            id="registerUsername"
+            type="text"
+            placeholder="yourusername"
+            class="auth-input"
+            autocomplete="username"
+          >
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <label for="registerEmail">
+          Email
+        </label>
+
+        <div class="input-wrapper">
+
+          <i class="bi bi-envelope"></i>
+
+          <input
+            id="registerEmail"
+            type="email"
+            placeholder="you@example.com"
+            class="auth-input"
+            autocomplete="email"
+          >
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <label for="registerPassword">
+          Password
+        </label>
+
+        <div class="password-wrapper">
+
+          <i class="bi bi-lock"></i>
+
+          <input
+            id="registerPassword"
+            type="password"
+            placeholder="Create a password"
+            class="auth-input"
+            autocomplete="new-password"
+          >
+
+          <i
+            class="bi bi-eye-slash password-toggle"
+            id="registerTogglePassword"
+            onclick="togglePassword(
+              'registerPassword',
+              'registerTogglePassword'
+            )"
+          ></i>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="auth-btn"
+          onclick="register()"
+        >
+
+          <span>
+            Create Account
+          </span>
+
+          <i class="bi bi-arrow-right"></i>
+
+        </button>
+
+
+      </div>
+
+
+      <div class="register-footer">
+
+        <span>
+          Already have an account?
+        </span>
+
+        <a href="login.html">
+          Login
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+      </div>
+
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       WHY VINDARR
+  ========================================== -->
+
+  <section class="register-benefits">
+
+    <div class="register-benefit">
+
+      <i class="bi bi-play-circle-fill"></i>
+
+      <div>
+
+        <h3>
+          Watch
+        </h3>
+
+        <p>
+          Discover products and stories
+          through video.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="register-benefit">
+
+      <i class="bi bi-bag-heart-fill"></i>
+
+      <div>
+
+        <h3>
+          Shop
+        </h3>
+
+        <p>
+          Find products and ebooks
+          worth buying.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="register-benefit">
+
+      <i class="bi bi-chat-heart-fill"></i>
+
+      <div>
+
+        <h3>
+          Share
+        </h3>
+
+        <p>
+          Tell people what you really think.
+        </p>
+
+      </div>
+
+    </div>
+
+
+  </section>
+
+
+  <!-- =========================================
+       FOOTER
+  ========================================== -->
+
+  <footer class="auth-footer">
+
+    <div class="auth-brand">
+
+      <img
+        src="interfacelog.png"
+        alt="Vindarr"
+        class="footer-logo"
+      >
+
+      <span>Vindarr</span>
+
+    </div>
+
+    <p>
+      Discover differently.
+    </p>
+
+  </footer>
+
 
 </div>
 
-<button
-class="auth-btn"
-onclick="register()"
->
-
-Create Account
-
-</button>
-
-<p>
-
-Already have account?
-
-<a href="login.html">
-Login
-</a>
-
-</p>
-
-</div>
 
 <script src="js/config.js"></script>
 
 <script src="js/auth.js"></script>
-
-<script>
-
-if(localStorage.getItem("token")){
-
-  window.location.href =
-  "index.html";
-
-}
-
-</script>
 
 </body>
 </html>

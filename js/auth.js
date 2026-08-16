@@ -2,27 +2,32 @@
 // AUTH SYSTEM
 // ===============================
 
+
+// =================================
 // REGISTER
+// =================================
+
 async function register(){
 
   const username =
-  document.getElementById(
-    "registerUsername"
-  ).value;
+    document.getElementById(
+      "registerUsername"
+    )?.value.trim();
 
   const email =
-  document.getElementById(
-    "registerEmail"
-  ).value;
+    document.getElementById(
+      "registerEmail"
+    )?.value.trim();
 
   const password =
-  document.getElementById(
-    "registerPassword"
-  ).value;
+    document.getElementById(
+      "registerPassword"
+    )?.value;
 
   if(!username || !email || !password){
 
     alert("Fill all fields");
+
     return;
 
   }
@@ -46,46 +51,65 @@ async function register(){
       }
     );
 
-    const data = await res.json();
+    const data =
+      await res.json();
 
     if(!res.ok){
 
-      alert(data.message || "Registration failed");
+      alert(
+        data.message ||
+        "Registration failed"
+      );
+
       return;
 
     }
 
-    alert("Registration successful");
+    alert(
+      "Registration successful"
+    );
 
     window.location.href =
-    "login.html";
+      "login.html";
 
   }catch(err){
 
-    console.error(err);
+    console.error(
+      "Registration error:",
+      err
+    );
 
-    alert("Network error");
+    alert(
+      "Network error"
+    );
 
   }
 
 }
 
+
+// =================================
 // LOGIN
+// =================================
+
 async function login(){
 
   const email =
-  document.getElementById(
-    "loginEmail"
-  ).value;
+    document.getElementById(
+      "loginEmail"
+    )?.value.trim();
 
   const password =
-  document.getElementById(
-    "loginPassword"
-  ).value;
+    document.getElementById(
+      "loginPassword"
+    )?.value;
 
   if(!email || !password){
 
-    alert("Fill all fields");
+    alert(
+      "Fill all fields"
+    );
+
     return;
 
   }
@@ -108,95 +132,162 @@ async function login(){
       }
     );
 
-    const data = await res.json();
+    const data =
+      await res.json();
 
     if(!res.ok){
 
-      alert(data.message || "Login failed");
+      alert(
+        data.message ||
+        "Login failed"
+      );
+
       return;
 
     }
 
+
+    // ===============================
     // SAVE TOKEN
+    // ===============================
+
     localStorage.setItem(
       "token",
       data.access_token
     );
 
+
+    // ===============================
     // SAVE USER
+    // ===============================
+
     localStorage.setItem(
       "user",
-      JSON.stringify(data.user)
+      JSON.stringify(
+        data.user
+      )
     );
 
     localStorage.setItem(
-  "username",
-  data.user.username
-);
+      "username",
+      data.user.username
+    );
 
+
+    // ===============================
     // REDIRECT
+    // ===============================
+
     window.location.href =
-    "index.html";
+      "index.html";
 
   }catch(err){
 
-    console.error(err);
+    console.error(
+      "Login error:",
+      err
+    );
 
-    alert("Network error");
+    alert(
+      "Network error"
+    );
 
   }
 
 }
 
+
+// =================================
 // LOGOUT
+// =================================
+
 function logout(){
 
   localStorage.clear();
 
   window.location.href =
-  "login.html";
+    "login.html";
 
 }
 
+
+// =================================
 // CHECK LOGIN
+// =================================
+
 function checkAuth(){
 
   const token =
-  localStorage.getItem("token");
+    localStorage.getItem(
+      "token"
+    );
 
   if(!token){
 
     window.location.href =
-    "login.html";
+      "login.html";
 
   }
 
 }
 
+
+// =================================
 // CURRENT USER
+// =================================
+
 function getCurrentUser(){
 
-  return JSON.parse(
-    localStorage.getItem("user")
-  );
+  try{
+
+    return JSON.parse(
+      localStorage.getItem(
+        "user"
+      )
+    );
+
+  }catch(err){
+
+    return null;
+
+  }
 
 }
 
-// TOGGLE PASSWORD VISIBILITY
+
+// =================================
+// PASSWORD VISIBILITY
+// =================================
+
 function togglePassword(
   inputId,
   iconId
 ){
 
   const input =
-  document.getElementById(inputId);
+    document.getElementById(
+      inputId
+    );
 
   const icon =
-  document.getElementById(iconId);
+    document.getElementById(
+      iconId
+    );
 
-  if(input.type === "password"){
+  if(!input || !icon){
 
-    input.type = "text";
+    return;
+
+  }
+
+
+  if(
+    input.type ===
+    "password"
+  ){
+
+    input.type =
+      "text";
 
     icon.classList.remove(
       "bi-eye-slash"
@@ -208,7 +299,8 @@ function togglePassword(
 
   }else{
 
-    input.type = "password";
+    input.type =
+      "password";
 
     icon.classList.remove(
       "bi-eye"

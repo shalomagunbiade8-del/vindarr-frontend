@@ -2,39 +2,96 @@
 <html lang="en">
 <head>
 
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<title>Library</title>
+  <title>Library • Vindarr</title>
 
-<link rel="stylesheet" href="css/global.css">
+  <link
+    rel="stylesheet"
+    href="css/library.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  >
 
 </head>
+
 <body>
 
-<nav class="top-navbar">
+  <main class="library-page">
 
-<div class="top-left">
+    <!-- =================================
+         LIBRARY HEADER
+    ================================== -->
 
-<img src="interfacelog.png" width="30">
+    <header class="library-header">
 
-<span>Library</span>
+      <div class="library-header-left">
 
-</div>
+        <button
+          class="library-back-btn"
+          onclick="history.back()"
+          aria-label="Go back"
+        >
+          <i class="bi bi-arrow-left"></i>
+        </button>
 
-</nav>
+        <div>
 
-<div id="libraryGrid"
-class="library-grid"></div>
+          <span class="library-eyebrow">
+            YOUR COLLECTION
+          </span>
 
-<script src="js/config.js"></script>
-<script src="js/library.js"></script>
-<script src="js/auth.js"></script>
-<script>
-checkAuth();
-</script>
+          <h1>
+            Library
+          </h1>
+
+          <p>
+            Your purchased ebooks, all in one place.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div
+        id="libraryCount"
+        class="library-count"
+      >
+        0 books
+      </div>
+
+    </header>
+
+
+    <!-- =================================
+         LIBRARY CONTENT
+    ================================== -->
+
+    <section
+      id="libraryGrid"
+      class="library-grid"
+    ></section>
+
+  </main>
+
+
+  <script src="js/config.js"></script>
+
+  <script src="js/library.js"></script>
+
+  <script src="js/auth.js"></script>
+
+  <script>
+    checkAuth();
+  </script>
 
 </body>
 </html>

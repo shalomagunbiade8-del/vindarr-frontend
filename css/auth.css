@@ -1,0 +1,1135 @@
+/* =========================================================
+   VINDARR AUTH SYSTEM
+========================================================= */
+
+:root{
+
+  --auth-black:#070707;
+
+  --auth-dark:#0d0d0d;
+
+  --auth-card:#141414;
+
+  --auth-red:#d10000;
+
+  --auth-red-bright:#ff2929;
+
+  --auth-white:#ffffff;
+
+  --auth-muted:#8c8c8c;
+
+  --auth-border:
+    rgba(255,255,255,.08);
+
+}
+
+
+/* =========================================================
+   GLOBAL AUTH PAGE
+========================================================= */
+
+.vindarr-auth-page{
+
+  min-height:100vh;
+
+  background:
+
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(209,0,0,.18),
+      transparent 32%
+    ),
+
+    var(--auth-black);
+
+  color:var(--auth-white);
+
+  overflow:hidden;
+
+}
+
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.auth-brand{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  color:white;
+
+  font-size:18px;
+
+  font-weight:800;
+
+  letter-spacing:-.5px;
+
+}
+
+.auth-brand img{
+
+  width:42px;
+
+  height:42px;
+
+  object-fit:contain;
+
+}
+
+.footer-logo{
+
+  width:32px !important;
+
+  height:32px !important;
+
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.auth-hero{
+
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:
+    40px 30px
+    70px;
+
+}
+
+.hero-content{
+
+  max-width:850px;
+
+  margin:
+    80px auto 0;
+
+  text-align:center;
+
+}
+
+.hero-eyebrow{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:7px;
+
+  color:#ff4848;
+
+  font-size:11px;
+
+  font-weight:800;
+
+  letter-spacing:2px;
+
+  margin-bottom:20px;
+
+}
+
+.hero-content h1{
+
+  margin:0;
+
+  font-size:
+    clamp(3.2rem,8vw,7rem);
+
+  line-height:.92;
+
+  letter-spacing:-5px;
+
+  font-weight:900;
+
+}
+
+.hero-content h1 span{
+
+  color:var(--auth-red);
+
+}
+
+.hero-description{
+
+  max-width:650px;
+
+  margin:
+    30px auto 0;
+
+  color:#aaa;
+
+  font-size:17px;
+
+  line-height:1.7;
+
+}
+
+.vindarring-question{
+
+  margin-top:28px;
+
+  font-size:18px;
+
+  font-weight:700;
+
+}
+
+
+/* =========================================================
+   EXPERIENCE
+========================================================= */
+
+.experience-section{
+
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:
+    20px 30px
+    100px;
+
+}
+
+.section-heading{
+
+  margin-bottom:30px;
+
+}
+
+.section-heading > span{
+
+  color:#666;
+
+  font-size:11px;
+
+  font-weight:800;
+
+  letter-spacing:2px;
+
+}
+
+.section-heading h2{
+
+  margin-top:8px;
+
+  font-size:
+    clamp(1.8rem,4vw,3rem);
+
+  letter-spacing:-1.5px;
+
+}
+
+
+/* =========================================================
+   VIDEO GRID
+========================================================= */
+
+.experience-videos{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:16px;
+
+}
+
+.experience-card{
+
+  background:#111;
+
+  border:
+    1px solid
+    var(--auth-border);
+
+  border-radius:24px;
+
+  overflow:hidden;
+
+  transition:
+    transform .3s ease,
+    border-color .3s ease;
+
+}
+
+.experience-card:hover{
+
+  transform:translateY(-6px);
+
+  border-color:
+    rgba(209,0,0,.5);
+
+}
+
+.experience-video{
+
+  position:relative;
+
+  height:300px;
+
+  background:#000;
+
+  overflow:hidden;
+
+}
+
+.experience-video video{
+
+  width:100%;
+
+  height:100%;
+
+  display:block;
+
+  object-fit:cover;
+
+  opacity:.82;
+
+}
+
+.video-overlay{
+
+  position:absolute;
+
+  inset:0;
+
+  pointer-events:none;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(0,0,0,.82),
+      transparent 65%
+    );
+
+}
+
+.video-label{
+
+  position:absolute;
+
+  left:15px;
+
+  bottom:15px;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  font-size:12px;
+
+  font-weight:800;
+
+}
+
+.video-label i{
+
+  color:#ff3030;
+
+  font-size:18px;
+
+}
+
+.experience-info{
+
+  padding:18px;
+
+}
+
+.experience-info h3{
+
+  margin:0 0 8px;
+
+  font-size:17px;
+
+}
+
+.experience-info p{
+
+  margin:0;
+
+  color:#888;
+
+  font-size:13px;
+
+  line-height:1.6;
+
+}
+
+
+/* =========================================================
+   LOGIN SECTION
+========================================================= */
+
+.login-section{
+
+  display:flex;
+
+  justify-content:center;
+
+  padding:
+    10px 20px
+    110px;
+
+}
+
+.login-card,
+.register-card{
+
+  width:100%;
+
+  max-width:450px;
+
+  box-sizing:border-box;
+
+  padding:35px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #181818,
+      #0d0d0d
+    );
+
+  border:
+    1px solid
+    rgba(255,255,255,.09);
+
+  border-radius:30px;
+
+  box-shadow:
+    0 30px 100px
+    rgba(0,0,0,.5);
+
+}
+
+.login-card-header,
+.register-card-header{
+
+  text-align:center;
+
+  margin-bottom:30px;
+
+}
+
+.login-icon,
+.register-icon{
+
+  width:55px;
+
+  height:55px;
+
+  margin:
+    0 auto 18px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  border-radius:18px;
+
+  background:
+    rgba(209,0,0,.12);
+
+  color:#ff3535;
+
+  font-size:23px;
+
+}
+
+.login-card-header h2,
+.register-card-header h2{
+
+  margin:0;
+
+  font-size:28px;
+
+  letter-spacing:-1px;
+
+}
+
+.login-card-header p,
+.register-card-header p{
+
+  margin-top:8px;
+
+  color:#777;
+
+  font-size:14px;
+
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.login-form label,
+.register-form label{
+
+  display:block;
+
+  margin:
+    18px 0 8px;
+
+  color:#aaa;
+
+  font-size:12px;
+
+  font-weight:700;
+
+}
+
+.input-wrapper,
+.password-wrapper{
+
+  position:relative;
+
+}
+
+.input-wrapper > i,
+.password-wrapper > i:first-child{
+
+  position:absolute;
+
+  left:16px;
+
+  top:50%;
+
+  transform:translateY(-50%);
+
+  color:#666;
+
+  pointer-events:none;
+
+}
+
+.auth-input{
+
+  width:100%;
+
+  box-sizing:border-box;
+
+  padding:
+    16px
+    45px;
+
+  border-radius:15px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.08);
+
+  outline:none;
+
+  background:#090909;
+
+  color:white;
+
+  font-size:15px;
+
+  transition:
+    border-color .2s,
+    box-shadow .2s;
+
+}
+
+.auth-input::placeholder{
+
+  color:#555;
+
+}
+
+.auth-input:focus{
+
+  border-color:
+    rgba(209,0,0,.8);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(209,0,0,.1);
+
+}
+
+.password-toggle{
+
+  position:absolute;
+
+  right:16px;
+
+  top:50%;
+
+  transform:translateY(-50%);
+
+  color:#777;
+
+  cursor:pointer;
+
+  font-size:17px;
+
+}
+
+
+/* =========================================================
+   AUTH BUTTON
+========================================================= */
+
+.auth-btn{
+
+  width:100%;
+
+  margin-top:25px;
+
+  padding:16px;
+
+  border:none;
+
+  border-radius:15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #d10000,
+      #ff2020
+    );
+
+  color:white;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:10px;
+
+  font-size:15px;
+
+  font-weight:800;
+
+  cursor:pointer;
+
+  transition:
+    transform .2s,
+    box-shadow .2s;
+
+}
+
+.auth-btn:hover{
+
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 15px 30px
+    rgba(209,0,0,.25);
+
+}
+
+.auth-btn:active{
+
+  transform:scale(.98);
+
+}
+
+
+/* =========================================================
+   LOGIN / REGISTER FOOTER
+========================================================= */
+
+.login-footer,
+.register-footer{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:6px;
+
+  margin-top:25px;
+
+  padding-top:20px;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,.07);
+
+  color:#777;
+
+  font-size:13px;
+
+}
+
+.login-footer a,
+.register-footer a{
+
+  color:#ff4040;
+
+  font-weight:700;
+
+  text-decoration:none;
+
+}
+
+.login-footer a:hover,
+.register-footer a:hover{
+
+  color:white;
+
+}
+
+
+/* =========================================================
+   VINDARRING
+========================================================= */
+
+.vindarring-section{
+
+  padding:
+    100px 25px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #080808,
+      #110000
+    );
+
+  border-top:
+    1px solid
+    rgba(255,255,255,.05);
+
+}
+
+.vindarring-inner{
+
+  max-width:900px;
+
+  margin:auto;
+
+  text-align:center;
+
+}
+
+.vindarring-inner h2{
+
+  margin:
+    0 0 45px;
+
+  font-size:
+    clamp(2.5rem,6vw,5rem);
+
+  letter-spacing:-3px;
+
+}
+
+.vindarring-inner h2 span{
+
+  color:#d10000;
+
+}
+
+.vindarring-items{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:15px;
+
+}
+
+.vindarring-items div{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+
+  padding:25px 10px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.07);
+
+  border-radius:20px;
+
+  background:
+    rgba(255,255,255,.025);
+
+}
+
+.vindarring-items i{
+
+  color:#ff3030;
+
+  font-size:25px;
+
+}
+
+.vindarring-items span{
+
+  color:#aaa;
+
+  font-size:13px;
+
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.auth-footer{
+
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:
+    35px 30px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,.05);
+
+}
+
+.auth-footer p{
+
+  color:#555;
+
+  font-size:12px;
+
+}
+
+
+/* =========================================================
+   REGISTER PAGE
+========================================================= */
+
+.register-page{
+
+  min-height:100vh;
+
+}
+
+.register-hero{
+
+  max-width:900px;
+
+  margin:auto;
+
+  padding:
+    35px 25px
+    30px;
+
+}
+
+.auth-back{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  margin-bottom:45px;
+
+  color:#888;
+
+  text-decoration:none;
+
+  font-size:13px;
+
+  transition:.2s;
+
+}
+
+.auth-back:hover{
+
+  color:white;
+
+}
+
+.register-heading{
+
+  max-width:700px;
+
+  margin:
+    60px auto 0;
+
+  text-align:center;
+
+}
+
+.register-heading h1{
+
+  margin:0;
+
+  font-size:
+    clamp(3rem,8vw,6rem);
+
+  line-height:.95;
+
+  letter-spacing:-4px;
+
+  font-weight:900;
+
+}
+
+.register-heading h1 span{
+
+  color:#d10000;
+
+}
+
+.register-heading p{
+
+  max-width:600px;
+
+  margin:
+    25px auto 0;
+
+  color:#888;
+
+  font-size:16px;
+
+  line-height:1.7;
+
+}
+
+
+/* =========================================================
+   REGISTER FORM SECTION
+========================================================= */
+
+.register-section{
+
+  display:flex;
+
+  justify-content:center;
+
+  padding:
+    40px 20px
+    80px;
+
+}
+
+
+/* =========================================================
+   REGISTER BENEFITS
+========================================================= */
+
+.register-benefits{
+
+  width:
+    min(
+      900px,
+      calc(100% - 40px)
+    );
+
+  margin:
+    0 auto
+    100px;
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:15px;
+
+}
+
+.register-benefit{
+
+  display:flex;
+
+  gap:15px;
+
+  align-items:flex-start;
+
+  padding:22px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.07);
+
+  border-radius:20px;
+
+  background:
+    rgba(255,255,255,.025);
+
+}
+
+.register-benefit > i{
+
+  color:#ff3030;
+
+  font-size:23px;
+
+}
+
+.register-benefit h3{
+
+  margin:0 0 5px;
+
+  font-size:15px;
+
+}
+
+.register-benefit p{
+
+  margin:0;
+
+  color:#777;
+
+  font-size:12px;
+
+  line-height:1.5;
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:900px){
+
+  .experience-videos{
+
+    grid-template-columns:
+      repeat(2,1fr);
+
+  }
+
+  .register-benefits{
+
+    grid-template-columns:1fr;
+
+  }
+
+}
+
+
+@media(max-width:600px){
+
+  .auth-hero{
+
+    padding:
+      30px 20px
+      60px;
+
+  }
+
+  .hero-content{
+
+    margin-top:65px;
+
+  }
+
+  .hero-content h1{
+
+    font-size:
+      clamp(3rem,18vw,5rem);
+
+    letter-spacing:-4px;
+
+  }
+
+  .hero-description{
+
+    font-size:15px;
+
+  }
+
+  .experience-section{
+
+    padding:
+      20px
+      70px;
+
+  }
+
+  .experience-videos{
+
+    grid-template-columns:1fr;
+
+  }
+
+  .experience-video{
+
+    height:360px;
+
+  }
+
+  .login-card,
+  .register-card{
+
+    padding:25px;
+
+    border-radius:24px;
+
+  }
+
+  .vindarring-section{
+
+    padding:
+      80px 20px;
+
+  }
+
+  .vindarring-items{
+
+    grid-template-columns:
+      repeat(2,1fr);
+
+  }
+
+  .auth-footer{
+
+    padding:
+      25px 20px;
+
+  }
+
+  .register-heading{
+
+    margin-top:45px;
+
+  }
+
+  .register-heading h1{
+
+    font-size:
+      clamp(3rem,16vw,5rem);
+
+  }
+
+}

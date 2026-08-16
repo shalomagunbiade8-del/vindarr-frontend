@@ -1,121 +1,1181 @@
-/* ===============================
-PURVIEW BUTTON
-=============================== */
-
-.purview-btn{
-color:#fff;
-}
-
-.purview-btn:hover{
-transform:scale(1.08);
-}
-
-.purview-btn span{
-font-size:12px;
-}
-
-/* ===============================
+/* =====================================
 PURVIEW PAGE
-=============================== */
+===================================== */
 
-.purview-page{
-padding-top:90px;
-padding-bottom:90px;
+:root {
+--purview-black: #080808;
+--purview-card: #111111;
+--purview-card-2: #171717;
+--purview-red: #d10000;
+--purview-red-light: #ff2020;
+--purview-white: #ffffff;
+--purview-muted: #9a9a9a;
+--purview-border: rgba(255, 255, 255, 0.08);
 }
 
-.purview-section-title{
-font-size:18px;
-font-weight:700;
-margin:20px;
+* {
+  box-sizing: border-box;
+  }
+
+body {
+background:
+radial-gradient(
+circle at 85% 0%,
+rgba(209, 0, 0, 0.10),
+transparent 32rem
+),
+var(--purview-black);
+
+color: var(--purview-white);
+
+min-height: 100vh;
+
+margin: 0;
 }
 
-/* ===============================
+/* =====================================
+PAGE
+===================================== */
+
+.purview-page {
+
+width: min(
+1180px,
+100%
+);
+
+margin: 0 auto;
+
+padding:
+34px
+34px
+80px;
+
+}
+
+/* =====================================
+HEADER
+===================================== */
+
+.purview-header {
+
+display: flex;
+
+align-items: center;
+
+justify-content: space-between;
+
+margin-bottom: 22px;
+
+}
+
+.purview-header-brand {
+
+display: flex;
+
+align-items: center;
+
+gap: 13px;
+
+}
+
+.purview-logo {
+
+width: 44px;
+
+height: 44px;
+
+object-fit: contain;
+
+border-radius: 13px;
+
+box-shadow:
+0 10px 30px
+rgba(209, 0, 0, 0.22);
+
+}
+
+.purview-eyebrow,
+.section-kicker {
+
+display: block;
+
+font-size: 9px;
+
+font-weight: 800;
+
+letter-spacing: 0.18em;
+
+color: #858585;
+
+}
+
+.purview-header h1 {
+
+margin: 2px 0 0;
+
+font-size: 27px;
+
+line-height: 1;
+
+font-weight: 800;
+
+letter-spacing: -0.04em;
+
+}
+
+.purview-header-icon {
+
+width: 43px;
+
+height: 43px;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+border-radius: 50%;
+
+background: rgba(255,255,255,0.055);
+
+border: 1px solid var(--purview-border);
+
+color: #fff;
+
+font-size: 17px;
+
+}
+
+/* =====================================
+INTRO
+===================================== */
+
+.purview-intro {
+
+max-width: 600px;
+
+margin-bottom: 42px;
+
+}
+
+.purview-intro p {
+
+margin: 0;
+
+color: #929292;
+
+font-size: 14px;
+
+line-height: 1.65;
+
+}
+
+/* =====================================
+SECTION
+===================================== */
+
+.purview-section {
+
+margin-bottom: 48px;
+
+}
+
+.purview-section-heading {
+
+display: flex;
+
+align-items: flex-end;
+
+justify-content: space-between;
+
+margin-bottom: 18px;
+
+}
+
+.purview-section-heading h2 {
+
+margin: 5px 0 0;
+
+font-size: 22px;
+
+font-weight: 800;
+
+letter-spacing: -0.035em;
+
+}
+
+/* =====================================
 CREATOR ROW
-=============================== */
+===================================== */
 
-.purview-creators{
-display:flex;
-gap:15px;
-overflow-x:auto;
-padding:0 20px 20px;
+.purview-creators {
+
+display: flex;
+
+gap: 20px;
+
+overflow-x: auto;
+
+padding:
+3px
+3px
+12px;
+
+scrollbar-width: none;
+
 }
 
-.purview-creators::-webkit-scrollbar{
-display:none;
+.purview-creators::-webkit-scrollbar {
+display: none;
 }
 
-.purview-creator{
-min-width:80px;
-text-align:center;
-cursor:pointer;
+.purview-creator {
+
+flex:
+0 0
+88px;
+
+border: 0;
+
+background: transparent;
+
+color: inherit;
+
+padding: 0;
+
+cursor: pointer;
+
+text-align: center;
+
 }
 
-.purview-creator img{
-width:65px;
-height:65px;
-border-radius:50%;
-object-fit:cover;
-border:2px solid #d10000;
+.purview-creator-avatar-wrap {
+
+position: relative;
+
+display: block;
+
+width: 70px;
+
+height: 70px;
+
+margin:
+0
+auto
+9px;
+
+padding: 2px;
+
+border-radius: 50%;
+
+background:
+linear-gradient(
+145deg,
+var(--purview-red-light),
+var(--purview-red),
+#570000
+);
+
 }
 
-.purview-creator span{
-display:block;
-margin-top:8px;
-font-size:12px;
-color:#ddd;
+.purview-creator-avatar {
+
+display: block;
+
+width: 100%;
+
+height: 100%;
+
+object-fit: cover;
+
+border-radius: 50%;
+
+border:
+3px solid
+var(--purview-black);
+
 }
 
-/* ===============================
-PURVIEW FEED
-=============================== */
+.creator-live-dot {
 
-.purview-feed{
-padding:15px;
-display:grid;
+position: absolute;
+
+right: 1px;
+
+bottom: 3px;
+
+width: 12px;
+
+height: 12px;
+
+border-radius: 50%;
+
+background: var(--purview-red);
+
+border:
+3px solid
+var(--purview-black);
+
+}
+
+.purview-creator-name {
+
+display: block;
+
+width: 100%;
+
+overflow: hidden;
+
+text-overflow: ellipsis;
+
+white-space: nowrap;
+
+color: #cfcfcf;
+
+font-size: 11px;
+
+font-weight: 600;
+
+}
+
+/* =====================================
+CREATOR EMPTY
+===================================== */
+
+.empty-creators {
+
+display: flex;
+
+align-items: center;
+
+gap: 14px;
+
+width: 100%;
+
+padding: 18px;
+
+border:
+1px solid
+var(--purview-border);
+
+background:
+rgba(255,255,255,0.025);
+
+border-radius: 18px;
+
+}
+
+.empty-creators-icon {
+
+width: 45px;
+
+height: 45px;
+
+flex-shrink: 0;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+border-radius: 14px;
+
+background:
+rgba(209,0,0,0.12);
+
+color: var(--purview-red-light);
+
+font-size: 19px;
+
+}
+
+.empty-creators strong,
+.empty-creators span {
+
+display: block;
+
+}
+
+.empty-creators strong {
+
+font-size: 14px;
+
+margin-bottom: 4px;
+
+}
+
+.empty-creators span {
+
+color: #777;
+
+font-size: 12px;
+
+line-height: 1.5;
+
+}
+
+/* =====================================
+FEED
+===================================== */
+
+.purview-feed {
+
+display: grid;
+
 grid-template-columns:
-repeat(2,1fr);
-gap:12px;
+repeat(
+3,
+minmax(0, 1fr)
+);
+
+gap: 18px;
+
 }
 
-.purview-card{
-background:#111;
-border-radius:18px;
-overflow:hidden;
+/* =====================================
+CARD
+===================================== */
+
+.purview-card {
+
+position: relative;
+
+overflow: hidden;
+
+background:
+linear-gradient(
+180deg,
+var(--purview-card-2),
+var(--purview-card)
+);
+
+border:
+1px solid
+var(--purview-border);
+
+border-radius: 22px;
+
+cursor: pointer;
+
+transition:
+transform .25s ease,
+border-color .25s ease,
+box-shadow .25s ease;
+
 }
 
-.purview-card img,
-.purview-card video{
-width:100%;
-height:220px;
-object-fit:cover;
+.purview-card:hover {
+
+transform:
+translateY(-5px);
+
+border-color:
+rgba(209,0,0,0.35);
+
+box-shadow:
+0 20px 50px
+rgba(0,0,0,0.35);
+
 }
 
-.purview-card-info{
-padding:10px;
+/* =====================================
+MEDIA
+===================================== */
+
+.purview-media {
+
+position: relative;
+
+height: 280px;
+
+overflow: hidden;
+
+background: #050505;
+
 }
 
-.purview-card-info h4{
-font-size:14px;
-margin-bottom:5px;
+.purview-card-media {
+
+display: block;
+
+width: 100%;
+
+height: 100%;
+
+object-fit: cover;
+
+transition:
+transform .45s ease;
+
 }
 
-.purview-card-info p{
-font-size:12px;
-color:#aaa;
+.purview-card:hover
+.purview-card-media {
+
+transform:
+scale(1.035);
+
 }
 
-/* ===============================
-EMPTY PURVIEW
-=============================== */
+.purview-media-gradient {
 
-.empty-purview{
-text-align:center;
-padding:80px 20px;
-color:#888;
+position: absolute;
+
+inset:
+0;
+
+pointer-events: none;
+
+background:
+linear-gradient(
+180deg,
+rgba(0,0,0,0.22),
+transparent 45%,
+rgba(0,0,0,0.55)
+);
+
 }
 
-.empty-purview h3{
-margin-bottom:10px;
+.purview-media-placeholder {
+
+width: 100%;
+
+height: 100%;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+color: #444;
+
+font-size: 30px;
+
 }
 
+/* =====================================
+TYPE BADGE
+===================================== */
 
+.purview-type-badge {
+
+position: absolute;
+
+top: 13px;
+
+left: 13px;
+
+display: inline-flex;
+
+align-items: center;
+
+gap: 6px;
+
+padding:
+7px
+10px;
+
+border-radius: 999px;
+
+background:
+rgba(0,0,0,0.65);
+
+border:
+1px solid
+rgba(255,255,255,0.12);
+
+backdrop-filter:
+blur(12px);
+
+font-size: 9px;
+
+font-weight: 800;
+
+letter-spacing: 0.08em;
+
+text-transform: uppercase;
+
+}
+
+/* =====================================
+PLAY
+===================================== */
+
+.purview-play {
+
+position: absolute;
+
+left: 50%;
+
+top: 50%;
+
+width: 48px;
+
+height: 48px;
+
+transform:
+translate(-50%, -50%);
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+border-radius: 50%;
+
+background:
+rgba(209,0,0,0.92);
+
+box-shadow:
+0 10px 30px
+rgba(0,0,0,0.35);
+
+font-size: 22px;
+
+padding-left: 2px;
+
+}
+
+/* =====================================
+CARD INFO
+===================================== */
+
+.purview-card-info {
+
+padding:
+15px
+16px
+17px;
+
+}
+
+.purview-card-creator {
+
+display: flex;
+
+align-items: center;
+
+gap: 8px;
+
+margin-bottom: 10px;
+
+color: #999;
+
+font-size: 11px;
+
+font-weight: 600;
+
+}
+
+.purview-card-creator img {
+
+width: 25px;
+
+height: 25px;
+
+object-fit: cover;
+
+border-radius: 50%;
+
+border:
+1px solid
+rgba(209,0,0,0.5);
+
+}
+
+.purview-card-info h3 {
+
+margin:
+0
+0
+7px;
+
+font-size: 15px;
+
+line-height: 1.35;
+
+font-weight: 750;
+
+letter-spacing: -0.02em;
+
+}
+
+.purview-card-info p {
+
+margin:
+0;
+
+display:
+-webkit-box;
+
+-webkit-line-clamp: 2;
+
+-webkit-box-orient:
+vertical;
+
+overflow: hidden;
+
+color: #777;
+
+font-size: 11px;
+
+line-height: 1.5;
+
+}
+
+/* =====================================
+CARD FOOTER
+===================================== */
+
+.purview-card-footer {
+
+display: flex;
+
+align-items: center;
+
+justify-content: space-between;
+
+margin-top: 15px;
+
+padding-top: 12px;
+
+border-top:
+1px solid
+rgba(255,255,255,0.06);
+
+color: #888;
+
+font-size: 10px;
+
+font-weight: 700;
+
+text-transform: uppercase;
+
+letter-spacing: 0.08em;
+
+}
+
+.purview-card-footer i {
+
+color:
+var(--purview-red-light);
+
+font-size: 14px;
+
+}
+
+/* =====================================
+EMPTY STATE
+===================================== */
+
+.empty-purview {
+
+grid-column:
+1 / -1;
+
+min-height: 400px;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+flex-direction: column;
+
+text-align: center;
+
+padding: 50px 20px;
+
+border:
+1px solid
+var(--purview-border);
+
+border-radius: 25px;
+
+background:
+radial-gradient(
+circle at center,
+rgba(209,0,0,0.08),
+transparent 55%
+);
+
+}
+
+.empty-purview-icon {
+
+width: 68px;
+
+height: 68px;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+margin-bottom: 18px;
+
+border-radius: 22px;
+
+background:
+rgba(209,0,0,0.12);
+
+color:
+var(--purview-red-light);
+
+font-size: 27px;
+
+}
+
+.empty-purview h3 {
+
+margin:
+7px
+0
+8px;
+
+font-size: 22px;
+
+}
+
+.empty-purview p {
+
+max-width: 330px;
+
+margin:
+0
+0
+20px;
+
+color: #777;
+
+font-size: 13px;
+
+line-height: 1.6;
+
+}
+
+.empty-purview-btn,
+.purview-retry-btn {
+
+border: 0;
+
+display: inline-flex;
+
+align-items: center;
+
+gap: 8px;
+
+padding:
+11px
+17px;
+
+border-radius: 999px;
+
+background:
+var(--purview-red);
+
+color: #fff;
+
+font-weight: 700;
+
+font-size: 12px;
+
+cursor: pointer;
+
+transition:
+transform .2s ease,
+background .2s ease;
+
+}
+
+.empty-purview-btn:hover,
+.purview-retry-btn:hover {
+
+transform:
+translateY(-2px);
+
+background:
+var(--purview-red-light);
+
+}
+
+/* =====================================
+ERROR
+===================================== */
+
+.purview-inline-error {
+
+display: flex;
+
+align-items: center;
+
+gap: 8px;
+
+color: #777;
+
+font-size: 12px;
+
+}
+
+.purview-inline-error i,
+.purview-error-icon {
+
+color:
+var(--purview-red-light);
+
+}
+
+.purview-error-state {
+
+grid-column:
+1 / -1;
+
+min-height: 350px;
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+flex-direction: column;
+
+text-align: center;
+
+}
+
+.purview-error-icon {
+
+font-size: 30px;
+
+margin-bottom: 15px;
+
+}
+
+.purview-error-state h3 {
+
+margin:
+0
+0
+8px;
+
+}
+
+.purview-error-state p {
+
+margin:
+0
+0
+18px;
+
+color: #777;
+
+font-size: 13px;
+
+}
+
+/* =====================================
+RESPONSIVE
+===================================== */
+
+@media (max-width: 900px) {
+
+.purview-feed {
+
+
+grid-template-columns:
+  repeat(
+    2,
+    minmax(0, 1fr)
+  );
+
+
+}
+
+}
+
+@media (max-width: 600px) {
+
+.purview-page {
+
+
+padding:
+  24px
+  16px
+  60px;
+
+
+}
+
+.purview-header {
+
+
+margin-bottom: 18px;
+
+
+}
+
+.purview-header h1 {
+
+
+font-size: 24px;
+
+
+}
+
+.purview-intro {
+
+
+margin-bottom: 34px;
+
+
+}
+
+.purview-section {
+
+
+margin-bottom: 38px;
+
+
+}
+
+.purview-section-heading h2 {
+
+
+font-size: 20px;
+
+
+}
+
+.purview-creators {
+
+
+gap: 15px;
+
+
+}
+
+.purview-creator {
+
+
+flex-basis: 78px;
+
+
+}
+
+.purview-creator-avatar-wrap {
+
+
+width: 62px;
+
+height: 62px;
+
+
+}
+
+.purview-feed {
+
+
+grid-template-columns:
+  repeat(
+    2,
+    minmax(0, 1fr)
+  );
+
+gap: 10px;
+
+
+}
+
+.purview-card {
+
+
+border-radius: 17px;
+
+
+}
+
+.purview-media {
+
+
+height: 210px;
+
+
+}
+
+.purview-card-info {
+
+
+padding:
+  12px;
+
+
+}
+
+.purview-card-info h3 {
+
+
+font-size: 13px;
+
+
+}
+
+.purview-card-creator {
+
+
+font-size: 10px;
+
+
+}
+
+.purview-card-creator img {
+
+
+width: 22px;
+
+height: 22px;
+
+
+}
+
+.purview-card-footer {
+
+
+margin-top: 11px;
+
+padding-top: 10px;
+
+font-size: 8px;
+
+
+}
+
+}
+
+@media (max-width: 380px) {
+
+.purview-feed {
+
+
+grid-template-columns:
+  1fr;
+
+
+}
+
+.purview-media {
+
+
+height: 270px;
+
+
+}
+
+}

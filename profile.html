@@ -2,206 +2,348 @@
 <html lang="en">
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
 
-<title>Profile • Vindarr</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<link rel="stylesheet"
-href="css/global.css">
+  <meta
+    name="theme-color"
+    content="#0d0d0d"
+  >
 
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <title>Profile • Vindarr</title>
+
+  <link
+    rel="stylesheet"
+    href="css/profile.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  >
 
 </head>
 
 <body>
 
-<!-- TOP NAV -->
-<nav class="top-navbar">
+  <main class="profile-page">
 
-  <div class="top-left">
+    <!-- ================================
+         PROFILE HERO
+    ================================= -->
 
-    <img src="interfacelog.png" width="32">
+    <section class="profile-hero">
 
-    <span>Vindarr</span>
+      <div class="profile-cover">
 
-  </div>
+        <div class="profile-cover-overlay"></div>
 
-  <div class="top-right">
+        <div class="profile-hero-brand">
 
-    <i class="bi bi-gear"></i>
+          <img
+            src="interfacelog.png"
+            alt="Vindarr"
+          >
 
-  </div>
+          <span>Vindarr</span>
 
-</nav>
+        </div>
 
-<!-- PROFILE -->
-<div class="profile-page">
+        <button
+          class="hero-share-btn"
+          onclick="shareProfile()"
+          aria-label="Share profile"
+        >
+          <i class="bi bi-share"></i>
+        </button>
 
-  <!-- COVER -->
-  <div class="profile-cover"></div>
-
-  <!-- USER INFO -->
-  <div class="profile-header">
-
-    <img
-    id="profileAvatar"
-    class="profile-avatar"
-    src="https://i.pravatar.cc/200">
-
-    <h2 id="profileUsername">
-      Loading...
-    </h2>
-
-    <p id="profileBio">
-      Creator on Vindarr
-    </p>
-
-    <!-- STATS -->
-    <div class="profile-stats">
-
-      <div>
-        <strong id="postCount">0</strong>
-        <span>Posts</span>
       </div>
 
-      <div>
-        <strong id="ebookCount">0</strong>
-        <span>Ebooks</span>
+
+      <!-- ================================
+           PROFILE INFORMATION
+      ================================= -->
+
+      <div class="profile-header">
+
+        <div class="avatar-wrapper">
+
+          <img
+            id="profileAvatar"
+            class="profile-avatar"
+            src="https://i.pravatar.cc/200"
+            alt="Profile avatar"
+          >
+
+          <span class="avatar-status"></span>
+
+        </div>
+
+
+        <div class="profile-identity">
+
+          <div class="profile-name-row">
+
+            <h1 id="profileUsername">
+              Loading...
+            </h1>
+
+            <i
+              class="bi bi-patch-check-fill verified-profile-icon"
+              aria-label="Verified"
+            ></i>
+
+          </div>
+
+          <p id="profileBio">
+            Creator on Vindarr
+          </p>
+
+        </div>
+
+
+        <!-- ================================
+             STATS
+        ================================= -->
+
+        <div class="profile-stats">
+
+          <div class="profile-stat">
+
+            <strong id="postCount">
+              0
+            </strong>
+
+            <span>
+              Posts
+            </span>
+
+          </div>
+
+
+          <div class="profile-stat">
+
+            <strong id="ebookCount">
+              0
+            </strong>
+
+            <span>
+              Ebooks
+            </span>
+
+          </div>
+
+
+          <div class="profile-stat">
+
+            <strong id="productCount">
+              0
+            </strong>
+
+            <span>
+              Products
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================
+             ACTIONS
+        ================================= -->
+
+        <div
+          id="profileActions"
+          class="profile-actions"
+        ></div>
+
       </div>
 
-      <div>
-        <strong id="productCount">0</strong>
-        <span>Products</span>
+    </section>
+
+
+    <!-- ================================
+         CONTENT
+    ================================= -->
+
+    <section class="profile-content">
+
+      <!-- ================================
+           TABS
+      ================================= -->
+
+      <div class="profile-tabs">
+
+        <button
+          class="tab-btn active-tab"
+          data-tab="videos"
+          onclick="switchTab(event, 'videos')"
+        >
+          <i class="bi bi-play-btn"></i>
+          <span>Videos</span>
+        </button>
+
+
+        <button
+          class="tab-btn"
+          data-tab="ebooks"
+          onclick="switchTab(event, 'ebooks')"
+        >
+          <i class="bi bi-book"></i>
+          <span>Ebooks</span>
+        </button>
+
+
+        <button
+          class="tab-btn"
+          data-tab="products"
+          onclick="switchTab(event, 'products')"
+        >
+          <i class="bi bi-bag"></i>
+          <span>Products</span>
+        </button>
+
+      </div>
+
+
+      <!-- ================================
+           POSTS
+      ================================= -->
+
+      <div
+        id="profilePosts"
+        class="profile-grid"
+      ></div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ================================
+       EDIT PROFILE MODAL
+  ================================= -->
+
+  <div
+    id="editProfileModal"
+    class="edit-profile-modal"
+  >
+
+    <div class="edit-profile-box">
+
+      <div class="edit-modal-header">
+
+        <div>
+
+          <span class="modal-eyebrow">
+            ACCOUNT
+          </span>
+
+          <h3>
+            Edit Profile
+          </h3>
+
+        </div>
+
+        <button
+          class="modal-close-icon"
+          onclick="closeEditProfile()"
+          aria-label="Close"
+        >
+          <i class="bi bi-x-lg"></i>
+        </button>
+
+      </div>
+
+
+      <label>
+        Username
+      </label>
+
+      <input
+        id="editUsername"
+        placeholder="Username"
+        class="edit-input"
+        autocomplete="username"
+      >
+
+
+      <label>
+        Bio
+      </label>
+
+      <textarea
+        id="editBio"
+        placeholder="Tell people about yourself..."
+        class="edit-input edit-textarea"
+      ></textarea>
+
+
+      <label>
+        Profile picture
+      </label>
+
+      <input
+        type="file"
+        id="editAvatar"
+        class="edit-input"
+        accept="image/*"
+      >
+
+
+      <div class="edit-modal-actions">
+
+        <button
+          onclick="saveProfile()"
+          class="save-profile-btn"
+        >
+          Save Profile
+        </button>
+
+        <button
+          onclick="closeEditProfile()"
+          class="close-profile-btn"
+        >
+          Cancel
+        </button>
+
       </div>
 
     </div>
 
-    
-
   </div>
 
-  <!-- PROFILE ACTIONS -->
-<div id="profileActions"></div>
 
-  <!-- TABS -->
-  <div class="profile-tabs">
+  <!-- ================================
+       SHARE FEEDBACK
+  ================================= -->
 
-    <button
-    class="tab-btn active-tab"
-    onclick="switchTab(event,'videos')">
+  <div
+    id="shareToast"
+    class="share-toast"
+  >
+    <i class="bi bi-check-circle-fill"></i>
 
-      Videos
-
-    </button>
-
-    <button
-class="tab-btn"
-onclick="switchTab(event,'ebooks')">
-
-      Ebooks
-
-    </button>
-
-    <button
-class="tab-btn"
-onclick="switchTab(event,'products')">
-
-      Products
-
-    </button>
-
+    <span>
+      Profile link copied
+    </span>
   </div>
 
-  <!-- CONTENT -->
-  <div id="profilePosts"
-  class="profile-grid"></div>
 
-</div>
+  <script src="js/config.js"></script>
 
-<!-- EDIT PROFILE MODAL -->
+  <script src="js/profile.js"></script>
 
-<div
-id="editProfileModal"
-class="edit-profile-modal">
+  <script src="js/auth.js"></script>
 
-  <div class="edit-profile-box">
-
-    <h3>Edit Profile</h3>
-
-    <input
-      id="editUsername"
-      placeholder="Username"
-      class="edit-input"
-    >
-
-    <textarea
-      id="editBio"
-      placeholder="Bio"
-      class="edit-input"
-    ></textarea>
-
-    <input
-      type="file"
-      id="editAvatar"
-      class="edit-input"
-    >
-
-    <button
-      onclick="saveProfile()"
-      class="save-profile-btn"
-    >
-      Save Profile
-    </button>
-
-    <button
-      onclick="closeEditProfile()"
-      class="close-profile-btn"
-    >
-      Cancel
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-
-  <a href="index.html">
-    <i class="bi bi-house"></i>
-  </a>
-
-  <a href="search.html">
-    <i class="bi bi-search"></i>
-  </a>
-
-  <a href="market.html">
-    <i class="bi bi-bag"></i>
-  </a>
-
-  <a href="messages.html">
-    <i class="bi bi-chat"></i>
-  </a>
-
-  <a href="profile.html"
-  class="active-nav">
-
-    <i class="bi bi-person-fill"></i>
-
-  </a>
-
-</div>
-
-<script src="js/config.js"></script>
-<script src="js/profile.js"></script>
-<script src="js/auth.js"></script>
-<script>
-checkAuth();
-</script>
+  <script>
+    checkAuth();
+  </script>
 
 </body>
 </html>

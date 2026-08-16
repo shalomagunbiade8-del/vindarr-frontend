@@ -2,94 +2,486 @@
 <html lang="en">
 <head>
 
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<title>Login</title>
+  <title>Login • Vindarr</title>
 
-<link rel="stylesheet"
-href="css/global.css">
+  <link
+    rel="stylesheet"
+    href="css/global.css"
+  >
 
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link
+    rel="stylesheet"
+    href="css/auth.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+  >
 
 </head>
+
 <body>
 
-<div class="auth-page">
+<div class="vindarr-auth-page">
 
-<img
-src="interfacelog.png"
-width="70"
-style="margin-bottom:20px;"
->
+  <!-- =========================================
+       HERO
+  ========================================== -->
 
-<h1>Welcome to Vindarr</h1>
+  <section class="auth-hero">
 
-<p>Get your shopping started today with Vindarr.
-  </p>
+    <div class="auth-brand">
 
-  <p>Your video-first marketplace to explore products, ebooks 
-    and authentic reviews through real stories from real people.
-  </p>
+      <img
+        src="interfacelog.png"
+        alt="Vindarr"
+        class="auth-logo"
+      >
 
-  <p>From hidden gems to trusted recommendations, everything you need to 
-    discover, learn, and shop lives here.
-  </p>
+      <span>Vindarr</span>
 
-  <p>What are you Vindarring today?
-  </p>
+    </div>
 
 
+    <div class="hero-content">
+
+      <span class="hero-eyebrow">
+        <i class="bi bi-play-circle-fill"></i>
+        VIDEO-FIRST COMMERCE
+      </span>
+
+      <h1>
+        Discover.
+        <span>Watch.</span>
+        Shop.
+      </h1>
+
+      <p class="hero-description">
+        Vindarr brings shopping, entertainment,
+        authentic reviews and real stories together
+        in one video-first marketplace.
+      </p>
+
+      <p class="vindarring-question">
+        What are you Vindarring today?
+      </p>
+
+    </div>
+
+  </section>
 
 
-<br>
+  <!-- =========================================
+       EXPERIENCE
+  ========================================== -->
 
-<input
-id="loginEmail"
-placeholder="Email"
-class="auth-input"
->
+  <section class="experience-section">
 
-<div class="password-wrapper">
+    <div class="section-heading">
 
-<input
-id="loginPassword"
-type="password"
-placeholder="Password"
-class="auth-input"
->
+      <span>THE VINDARR EXPERIENCE</span>
 
-<i
-class="bi bi-eye-slash"
-id="loginTogglePassword"
-onclick="togglePassword('loginPassword','loginTogglePassword')"
-></i>
+      <h2>
+        Shopping should feel like entertainment.
+      </h2>
+
+    </div>
+
+
+    <div class="experience-videos">
+
+
+      <!-- SHOPPERTAINMENT -->
+
+      <article class="experience-card">
+
+        <div class="experience-video">
+
+          <video
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          >
+
+            <source
+              src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+              type="video/mp4"
+            >
+
+          </video>
+
+          <div class="video-overlay"></div>
+
+          <div class="video-label">
+
+            <i class="bi bi-bag-heart-fill"></i>
+
+            <span>Shoppertainment</span>
+
+          </div>
+
+        </div>
+
+        <div class="experience-info">
+
+          <h3>
+            Shoppertainment
+          </h3>
+
+          <p>
+            Discover products through videos,
+            stories and experiences instead of
+            endless product lists.
+          </p>
+
+        </div>
+
+      </article>
+
+
+      <!-- REVIEWS -->
+
+      <article class="experience-card">
+
+        <div class="experience-video">
+
+          <video
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          >
+
+            <source
+              src="https://www.w3schools.com/html/mov_bbb.mp4"
+              type="video/mp4"
+            >
+
+          </video>
+
+          <div class="video-overlay"></div>
+
+          <div class="video-label">
+
+            <i class="bi bi-chat-heart-fill"></i>
+
+            <span>Real Reviews</span>
+
+          </div>
+
+        </div>
+
+        <div class="experience-info">
+
+          <h3>
+            Reviews worth watching.
+          </h3>
+
+          <p>
+            See what people actually think,
+            share your experience and help
+            others discover better products.
+          </p>
+
+        </div>
+
+      </article>
+
+
+      <!-- DISCOVERY -->
+
+      <article class="experience-card">
+
+        <div class="experience-video">
+
+          <video
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          >
+
+            <source
+              src="https://media.w3.org/2010/05/sintel/trailer.mp4"
+              type="video/mp4"
+            >
+
+          </video>
+
+          <div class="video-overlay"></div>
+
+          <div class="video-label">
+
+            <i class="bi bi-compass-fill"></i>
+
+            <span>Discover</span>
+
+          </div>
+
+        </div>
+
+        <div class="experience-info">
+
+          <h3>
+            Find your next obsession.
+          </h3>
+
+          <p>
+            From hidden gems to books,
+            fashion and everyday essentials,
+            there is always something new to discover.
+          </p>
+
+        </div>
+
+      </article>
+
+
+      <!-- STORIES -->
+
+      <article class="experience-card">
+
+        <div class="experience-video">
+
+          <video
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          >
+
+            <source
+              src="https://media.w3.org/2010/05/bunny/trailer.mp4"
+              type="video/mp4"
+            >
+
+          </video>
+
+          <div class="video-overlay"></div>
+
+          <div class="video-label">
+
+            <i class="bi bi-camera-video-fill"></i>
+
+            <span>Your Story</span>
+
+          </div>
+
+        </div>
+
+        <div class="experience-info">
+
+          <h3>
+            Your experience matters.
+          </h3>
+
+          <p>
+            Share what you bought,
+            what you loved and what others
+            should know.
+          </p>
+
+        </div>
+
+      </article>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       LOGIN
+  ========================================== -->
+
+  <section class="login-section">
+
+    <div class="login-card">
+
+      <div class="login-card-header">
+
+        <div class="login-icon">
+
+          <i class="bi bi-person-fill"></i>
+
+        </div>
+
+        <h2>
+          Welcome back.
+        </h2>
+
+        <p>
+          Continue your Vindarr experience.
+        </p>
+
+      </div>
+
+
+      <div class="login-form">
+
+        <label for="loginEmail">
+          Email
+        </label>
+
+        <div class="input-wrapper">
+
+          <i class="bi bi-envelope"></i>
+
+          <input
+            id="loginEmail"
+            type="email"
+            placeholder="you@example.com"
+            class="auth-input"
+            autocomplete="email"
+          >
+
+        </div>
+
+
+        <label for="loginPassword">
+          Password
+        </label>
+
+        <div class="password-wrapper">
+
+          <i class="bi bi-lock"></i>
+
+          <input
+            id="loginPassword"
+            type="password"
+            placeholder="Your password"
+            class="auth-input"
+            autocomplete="current-password"
+          >
+
+          <i
+            class="bi bi-eye-slash password-toggle"
+            id="loginTogglePassword"
+            onclick="togglePassword(
+              'loginPassword',
+              'loginTogglePassword'
+            )"
+          ></i>
+
+        </div>
+
+
+        <button
+          class="auth-btn"
+          onclick="login()"
+          type="button"
+        >
+
+          <span>
+            Login
+          </span>
+
+          <i class="bi bi-arrow-right"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="login-footer">
+
+        <span>
+          New to Vindarr?
+        </span>
+
+        <a href="register.html">
+          Create an account
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================
+       VINDARRING
+  ========================================== -->
+
+  <section class="vindarring-section">
+
+    <div class="vindarring-inner">
+
+      <span class="hero-eyebrow">
+        YOUR WORLD. YOUR DISCOVERY.
+      </span>
+
+      <h2>
+        What are you
+        <span>Vindarring?</span>
+      </h2>
+
+      <div class="vindarring-items">
+
+        <div>
+          <i class="bi bi-bag-heart-fill"></i>
+          <span>Shopping</span>
+        </div>
+
+        <div>
+          <i class="bi bi-book-fill"></i>
+          <span>Reading</span>
+        </div>
+
+        <div>
+          <i class="bi bi-stars"></i>
+          <span>Discovering</span>
+        </div>
+
+        <div>
+          <i class="bi bi-camera-video-fill"></i>
+          <span>Sharing</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <footer class="auth-footer">
+
+    <div class="auth-brand">
+
+      <img
+        src="interfacelog.png"
+        alt="Vindarr"
+        class="footer-logo"
+      >
+
+      <span>Vindarr</span>
+
+    </div>
+
+    <p>
+      Discover differently.
+    </p>
+
+  </footer>
 
 </div>
 
-<button
-class="auth-btn"
-onclick="login()"
->
-
-Login
-
-</button>
-
-<p>
-
-No account?
-
-<a href="register.html">
-Create one
-</a>
-
-</p>
-
-</div>
 
 <script src="js/config.js"></script>
 
@@ -100,7 +492,7 @@ Create one
 if(localStorage.getItem("token")){
 
   window.location.href =
-  "index.html";
+    "index.html";
 
 }
 
