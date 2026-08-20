@@ -1,93 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<title>Dashboard</title>
+  <title>Creator Studio • Vindarr</title>
 
-<link rel="stylesheet" href="css/global.css">
+  <link
+    rel="stylesheet"
+    href="css/global.css"
+  >
 
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link
+    rel="stylesheet"
+    href="css/dashboard.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+  >
 
 </head>
 
 <body>
 
-<!-- TOP NAV -->
-<nav class="top-navbar">
+  <main class="dashboard-page">
 
-  <div class="top-left">
+    <!-- =================================
+    CREATOR HEADER
+    ================================= -->
 
-    <img src="interfacelog.png" width="30">
+    <header class="creator-studio-header">
 
-    <span>Creator Dashboard</span>
+      <div class="studio-brand">
 
-  </div>
+        <div class="studio-logo">
 
-  <div class="top-right">
+          <img
+            src="interfacelog.png"
+            alt="Vindarr"
+          >
 
-    <a href="publish.html" class="dashboard-upload-btn">
-      <i class="bi bi-plus-lg"></i>
-    </a>
+        </div>
 
-  </div>
+        <div>
 
-</nav>
+          <span class="studio-eyebrow">
+            VINDARR
+          </span>
 
-<!-- PAGE -->
-<div class="dashboard-page">
+          <h1>
+            Creator Studio
+          </h1>
 
-  <!-- STATS -->
-  <div class="dashboard-cards">
+        </div>
 
-    <div class="dash-card">
+      </div>
 
-      <h3 id="totalSales">₦0</h3>
+      <a
+        href="publish.html"
+        class="studio-publish-btn"
+      >
 
-      <p>Total Sales</p>
+        <i class="bi bi-plus-lg"></i>
 
-    </div>
+        <span>
+          Create
+        </span>
 
-    <div class="dash-card">
+      </a>
 
-      <h3 id="totalBooks">0</h3>
+    </header>
 
-      <p>Ebooks</p>
 
-    </div>
+    <!-- =================================
+    WELCOME HERO
+    ================================= -->
 
-    <div class="dash-card">
+    <section class="dashboard-hero">
 
-      <h3 id="totalProducts">0</h3>
+      <div class="hero-copy">
 
-      <p>Products</p>
+        <span class="hero-label">
+          YOUR CREATOR SPACE
+        </span>
 
-    </div>
+        <h2>
+          Turn your ideas into
+          <span>Vindarr moments.</span>
+        </h2>
 
-  </div>
+        <p>
+          Manage your videos, ebooks and products,
+          track performance and share your work
+          with your audience.
+        </p>
 
-  <!-- POSTS -->
-  <div
-    id="dashboardPosts"
-    class="dashboard-posts"
-  ></div>
+      </div>
 
-</div>
+      <a
+        href="publish.html"
+        class="hero-create-btn"
+      >
 
-<script src="js/config.js"></script>
+        <i class="bi bi-camera-video"></i>
 
-<script src="js/dashboard.js"></script>
+        Publish something
 
-<script src="js/auth.js"></script>
+        <i class="bi bi-arrow-up-right"></i>
 
-<script>
-checkAuth();
-</script>
+      </a>
+
+    </section>
+
+
+    <!-- =================================
+    STATS
+    ================================= -->
+
+    <section class="dashboard-overview">
+
+      <div class="overview-heading">
+
+        <div>
+
+          <span>
+            OVERVIEW
+          </span>
+
+          <h2>
+            Your performance
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div class="dashboard-cards">
+
+
+        <!-- SALES -->
+
+        <div class="dash-card revenue-card">
+
+          <div class="metric-top">
+
+            <div class="metric-icon">
+
+              <i class="bi bi-wallet2"></i>
+
+            </div>
+
+            <span>
+              Revenue
+            </span>
+
+          </div>
+
+          <h3 id="totalSales">
+            ₦0
+          </h3>
+
+          <p>
+            Estimated total sales
+          </p>
+
+        </div>
+
+
+        <!-- EBOOKS -->
+
+        <div class="dash-card">
+
+          <div class="metric-top">
+
+            <div class="metric-icon">
+
+              <i class="bi bi-book"></i>
+
+            </div>
+
+            <span>
+              Ebooks
+            </span>
+
+          </div>
+
+          <h3 id="totalBooks">
+            0
+          </h3>
+
+          <p>
+            Published books
+          </p>
+
+        </div>
+
+
+        <!-- PRODUCTS -->
+
+        <div class="dash-card">
+
+          <div class="metric-top">
+
+            <div class="metric-icon">
+
+              <i class="bi bi-bag"></i>
+
+            </div>
+
+            <span>
+              Products
+            </span>
+
+          </div>
+
+          <h3 id="totalProducts">
+            0
+          </h3>
+
+          <p>
+            Products in your store
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================
+    CONTENT HEADER
+    ================================= -->
+
+    <section class="content-section">
+
+      <div class="content-heading">
+
+        <div>
+
+          <span>
+            CONTENT
+          </span>
+
+          <h2>
+            Your creations
+          </h2>
+
+        </div>
+
+        <a
+          href="publish.html"
+          class="content-add-btn"
+        >
+
+          <i class="bi bi-plus-lg"></i>
+
+          Add content
+
+        </a>
+
+      </div>
+
+
+      <!-- POSTS -->
+
+      <div
+        id="dashboardPosts"
+        class="dashboard-posts"
+      ></div>
+
+    </section>
+
+  </main>
+
+
+  <script src="js/config.js"></script>
+
+  <script src="js/dashboard.js"></script>
+
+  <script src="js/auth.js"></script>
+
+  <script>
+    checkAuth();
+  </script>
 
 </body>
+
 </html>

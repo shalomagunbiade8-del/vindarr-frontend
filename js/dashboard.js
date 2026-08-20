@@ -1,252 +1,713 @@
-const token = localStorage.getItem("token");
+const token =
+  localStorage.getItem("token");
 
-if(!token){
-  window.location.href = "login.html";
+if (!token) {
+
+  window.location.href =
+    "login.html";
+
 }
+
 
 let creatorPosts = [];
 
+
+/* =================================
+INIT
+================================= */
+
 loadDashboard();
 
-async function loadDashboard(){
 
-  try{
+/* =================================
+LOAD DASHBOARD
+================================= */
 
-    // LOAD USER POSTS
-    const res = await fetch(`${API_BASE_URL}/videos/me`,{
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    });
+async function loadDashboard() {
 
-    const posts = await res.json();
+  try {
 
-    creatorPosts = posts || [];
+    const res =
+      await fetch(
+        `${API_BASE_URL}/videos/me`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    if (!res.ok) {
+
+      throw new Error(
+        "Failed to load creator content"
+      );
+
+    }
+
+
+    const posts =
+      await res.json();
+
+
+    creatorPosts =
+      Array.isArray(posts)
+        ? posts
+        : [];
+
 
     renderDashboardStats();
+
     renderDashboardPosts();
 
-  }catch(err){
 
-    console.error(err);
+  } catch (err) {
+
+    console.error(
+      "Dashboard error:",
+      err
+    );
+
+
+    const container =
+      document.getElementById(
+        "dashboardPosts"
+      );
+
+
+    if (container) {
+
+      container.innerHTML = `
+
+        <div class="dashboard-error">
+
+          <div class="error-icon">
+            <i class="bi bi-cloud-slash"></i>
+          </div>
+
+          <h3>
+            Couldn't load your content
+          </h3>
+
+          <p>
+            Check your connection and try again.
+          </p>
+
+          <button
+            onclick="loadDashboard()"
+            class="retry-btn"
+          >
+            Try again
+          </button>
+
+        </div>
+
+      `;
+
+    }
 
   }
 
 }
 
-function renderDashboardStats(){
 
-  // TOTAL SALES
+/* =================================
+MEDIA URL
+================================= */
+
+function getMediaUrl(url) {
+
+  if (!url) {
+    return "";
+  }
+
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  ) {
+
+    return url;
+
+  }
+
+
+  return `${API_BASE_URL}${url}`;
+
+}
+
+
+/* =================================
+ESCAPE HTML
+================================= */
+
+function escapeDashboardHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =================================
+STATS
+================================= */
+
+function renderDashboardStats() {
+
   let totalSales = 0;
+
 
   creatorPosts.forEach(post => {
 
-    const price = Number(post.price || 0);
+    const price =
+      Number(post.price || 0);
 
-    const sales = Number(post.salesCount || 0);
+    const sales =
+      Number(post.salesCount || 0);
 
-    totalSales += (price * sales);
+
+    totalSales +=
+      price * sales;
 
   });
 
-  document.getElementById("totalSales").innerText =
-    `₦${totalSales.toLocaleString()}`;
 
-  // TOTAL EBOOKS
+  const totalSalesElement =
+    document.getElementById(
+      "totalSales"
+    );
+
+
+  const totalBooksElement =
+    document.getElementById(
+      "totalBooks"
+    );
+
+
+  const totalProductsElement =
+    document.getElementById(
+      "totalProducts"
+    );
+
+
+  if (totalSalesElement) {
+
+    totalSalesElement.innerText =
+      `₦${totalSales.toLocaleString()}`;
+
+  }
+
+
   const ebooks =
-    creatorPosts.filter(p => p.type === "ebook");
+    creatorPosts.filter(
+      post =>
+        post.type === "ebook"
+    );
 
-  document.getElementById("totalBooks").innerText =
-    ebooks.length;
 
-  // TOTAL PRODUCTS
   const products =
-    creatorPosts.filter(p => p.type === "fashion");
+    creatorPosts.filter(
+      post =>
+        post.type === "fashion"
+    );
 
-  document.getElementById("totalProducts").innerText =
-    products.length;
+
+  if (totalBooksElement) {
+
+    totalBooksElement.innerText =
+      ebooks.length;
+
+  }
+
+
+  if (totalProductsElement) {
+
+    totalProductsElement.innerText =
+      products.length;
+
+  }
 
 }
 
-function renderDashboardPosts(){
+
+/* =================================
+RENDER POSTS
+================================= */
+
+function renderDashboardPosts() {
 
   const container =
-    document.getElementById("dashboardPosts");
+    document.getElementById(
+      "dashboardPosts"
+    );
 
-  if(!creatorPosts.length){
+
+  if (!container) return;
+
+
+  if (!creatorPosts.length) {
 
     container.innerHTML = `
-      <div class="empty-state">
-        <h3>No content yet</h3>
-        <p>Start uploading videos, ebooks or products.</p>
 
-        <a href="publish.html" class="publish-link">
-          Upload Content
+      <div class="dashboard-empty">
+
+        <div class="empty-icon">
+
+          <i class="bi bi-stars"></i>
+
+        </div>
+
+        <span class="empty-label">
+          YOUR STUDIO
+        </span>
+
+        <h3>
+          Your canvas is empty.
+        </h3>
+
+        <p>
+          Publish your first video, ebook
+          or product and start building
+          your Vindarr presence.
+        </p>
+
+        <a
+          href="publish.html"
+          class="empty-publish-btn"
+        >
+
+          <i class="bi bi-plus-lg"></i>
+
+          Publish your first creation
+
         </a>
+
       </div>
+
     `;
 
     return;
+
   }
 
-  container.innerHTML = creatorPosts.map(post => `
 
-    <div class="dashboard-post-card">
+  container.innerHTML =
+    creatorPosts.map(post => {
 
-      <div class="dashboard-media">
+      const title =
+        escapeDashboardHtml(
+          post.title || "Untitled"
+        );
 
-        ${
-          post.type === "video"
-          ?
-          `
-          <video
-  src="${post.videoUrl || post.file || ''}"
-          ></video>
-          `
-          :
-          `
-          <img
-  src="${post.coverUrl || post.thumbnail || ''}"
->
-          `
+
+      const type =
+        escapeDashboardHtml(
+          post.type || "content"
+        );
+
+
+      const understandCount =
+        Number(
+          post.understandCount || 0
+        );
+
+
+      const views =
+        Number(
+          post.views || 0
+        );
+
+
+      const comments =
+        Array.isArray(post.comments)
+          ? post.comments.length
+          : Number(
+              post.commentCount || 0
+            );
+
+
+      let media = "";
+
+
+      if (post.type === "video") {
+
+        const video =
+          post.videoUrl ||
+          post.file ||
+          post.fileUrl ||
+          "";
+
+
+        const videoUrl =
+          getMediaUrl(video);
+
+
+        if (videoUrl) {
+
+          media = `
+
+            <video
+              src="${videoUrl}"
+              muted
+              playsinline
+              preload="metadata"
+              controls
+            ></video>
+
+          `;
+
+        } else {
+
+          media = `
+
+            <div class="media-placeholder">
+
+              <i class="bi bi-camera-video"></i>
+
+              <span>
+                Video unavailable
+              </span>
+
+            </div>
+
+          `;
+
         }
 
-      </div>
+      } else {
 
-      <div class="dashboard-info">
+        const image =
+          post.coverUrl ||
+          post.thumbnail ||
+          post.coverImage ||
+          post.fileUrl ||
+          post.videoUrl ||
+          "";
 
-        <h3>${post.title || "Untitled"}</h3>
 
-        <p class="dash-type">
-          ${post.type || "content"}
-        </p>
+        const imageUrl =
+          getMediaUrl(image);
 
-        <div class="dash-stats">
 
-          <span>
-            ❤️ ${post.understandCount || 0}
-          </span>
+        if (imageUrl) {
 
-          <span>
-            💬 ${post.comments?.length || 0}
-          </span>
+          media = `
 
-          <span>
-            👁️ ${post.views || 0}
-          </span>
+            <img
+              src="${imageUrl}"
+              alt="${title}"
+              loading="lazy"
+            >
 
-        </div>
+          `;
 
-        ${
-          post.price
-          ?
+        } else {
+
+          media = `
+
+            <div class="media-placeholder">
+
+              <i class="bi bi-image"></i>
+
+              <span>
+                No preview
+              </span>
+
+            </div>
+
+          `;
+
+        }
+
+      }
+
+
+      const price =
+        post.price
+          ? `
+
+            <div class="dash-price">
+
+              ₦${Number(
+                post.price
+              ).toLocaleString()}
+
+            </div>
+
           `
-          <div class="dash-price">
-            ₦${Number(post.price).toLocaleString()}
+          : "";
+
+
+      return `
+
+        <article
+          class="dashboard-post-card"
+        >
+
+          <div class="dashboard-media">
+
+            ${media}
+
+            <div class="media-type">
+
+              ${
+                post.type === "video"
+                  ? `<i class="bi bi-play-fill"></i>`
+                  : post.type === "ebook"
+                  ? `<i class="bi bi-book"></i>`
+                  : `<i class="bi bi-bag"></i>`
+              }
+
+              ${type}
+
+            </div>
+
           </div>
-          `
-          :
-          ``
-        }
 
-        <div class="dashboard-actions">
 
-          <button
-            class="edit-btn"
-            onclick="editPost('${post.id}')"
-          >
-            Edit
-          </button>
+          <div class="dashboard-info">
 
-          <button
-            class="delete-btn"
-            onclick="deletePost('${post.id}')"
-          >
-            Delete
-          </button>
+            <div class="post-heading">
 
-          <button
-  class="share-btn"
-  onclick="sharePost('${post.id}')"
->
-  Share
-</button>
+              <div>
 
-        </div>
+                <h3>
+                  ${title}
+                </h3>
 
-      </div>
+                <span class="dash-type">
+                  ${type}
+                </span>
 
-    </div>
+              </div>
 
-  `).join("");
+              ${price}
+
+            </div>
+
+
+            <div class="dash-stats">
+
+              <span>
+
+                <i class="bi bi-hand-thumbs-up"></i>
+
+                ${understandCount}
+
+              </span>
+
+
+              <span>
+
+                <i class="bi bi-chat"></i>
+
+                ${comments}
+
+              </span>
+
+
+              <span>
+
+                <i class="bi bi-eye"></i>
+
+                ${views}
+
+              </span>
+
+            </div>
+
+
+            <div class="dashboard-actions">
+
+              <button
+                class="edit-btn"
+                onclick="editPost('${post.id}')"
+              >
+
+                <i class="bi bi-pencil"></i>
+
+                Edit
+
+              </button>
+
+
+              <button
+                class="delete-btn"
+                onclick="deletePost('${post.id}')"
+              >
+
+                <i class="bi bi-trash3"></i>
+
+                Delete
+
+              </button>
+
+
+              <button
+                class="share-btn"
+                onclick="sharePost('${post.id}')"
+              >
+
+                <i class="bi bi-share"></i>
+
+                Share
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      `;
+
+    }).join("");
 
 }
 
-function editPost(id){
+
+/* =================================
+EDIT
+================================= */
+
+function editPost(id) {
 
   window.location.href =
     `publish.html?edit=${id}`;
 
 }
 
-async function deletePost(id){
+
+/* =================================
+DELETE
+================================= */
+
+async function deletePost(id) {
 
   const confirmDelete =
-    confirm("Delete this content?");
+    confirm(
+      "Delete this content?"
+    );
 
-  if(!confirmDelete) return;
 
-  try{
+  if (!confirmDelete) {
+    return;
+  }
 
-    const res = await fetch(`${API_BASE_URL}/videos/${id}`,{
-      method:"DELETE",
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    });
 
-    if(res.ok){
+  try {
 
-      creatorPosts =
-        creatorPosts.filter(p => p.id != id);
+    const res =
+      await fetch(
+        `${API_BASE_URL}/videos/${id}`,
+        {
+          method: "DELETE",
 
-      renderDashboardStats();
-      renderDashboardPosts();
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
 
-      alert("Deleted");
 
-    }else{
+    if (!res.ok) {
 
-      alert("Delete failed");
+      alert(
+        "Delete failed"
+      );
+
+      return;
 
     }
 
-  }catch(err){
 
-    console.error(err);
+    creatorPosts =
+      creatorPosts.filter(
+        post =>
+          post.id != id
+      );
+
+
+    renderDashboardStats();
+
+    renderDashboardPosts();
+
+
+  } catch (err) {
+
+    console.error(
+      "Delete error:",
+      err
+    );
+
+
+    alert(
+      "Network error"
+    );
 
   }
 
 }
 
-function sharePost(id){
+
+/* =================================
+SHARE
+================================= */
+
+async function sharePost(id) {
 
   const url =
     `${window.location.origin}/product.html?id=${id}`;
 
-  if(navigator.share){
- 
-    navigator.share({
-      title:"Vindarr",
-      text:"Check this out on Vindarr",
+
+  try {
+
+    if (
+      navigator.share
+    ) {
+
+      await navigator.share({
+
+        title:
+          "Vindarr",
+
+        text:
+          "Check this out on Vindarr",
+
+        url
+
+      });
+
+      return;
+
+    }
+
+
+    await navigator.clipboard.writeText(
       url
-    });
+    );
 
-  }else{
 
-    navigator.clipboard.writeText(url);
+    alert(
+      "Link copied"
+    );
 
-    alert("Link copied");
+
+  } catch (err) {
+
+    console.error(
+      "Share error:",
+      err
+    );
 
   }
 
