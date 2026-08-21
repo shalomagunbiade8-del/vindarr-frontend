@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
   <meta charset="UTF-8">
@@ -10,7 +11,6 @@
   >
 
   <title>Vindarr • Ebook</title>
-
 
   <link
     rel="stylesheet"
@@ -28,7 +28,10 @@
 
   <main class="ebook-reader-page">
 
-    <!-- READER TOPBAR -->
+    <!-- ================================
+         TOP BAR
+    ================================= -->
+
     <header class="ebook-topbar">
 
       <button
@@ -37,20 +40,29 @@
         onclick="goBack()"
         aria-label="Go back"
       >
+
         <i class="bi bi-arrow-left"></i>
+
         <span>Back</span>
+
       </button>
+
 
       <div class="reader-brand">
 
-        <img
-          src="interfacelog.png"
-          alt="Vindarr"
-        >
+        <div class="reader-brand-logo">
+
+          <img
+            src="interfacelog.png"
+            alt="Vindarr"
+          >
+
+        </div>
 
         <span>Vindarr</span>
 
       </div>
+
 
       <div class="reader-title-wrap">
 
@@ -58,11 +70,15 @@
           YOUR LIBRARY
         </span>
 
-        <h1 id="ebookTitle">
+        <h1
+          id="ebookTitle"
+          title="Loading..."
+        >
           Loading...
         </h1>
 
       </div>
+
 
       <div class="reader-actions">
 
@@ -72,8 +88,11 @@
           type="button"
           onclick="toggleFullscreen()"
           aria-label="Fullscreen"
+          title="Fullscreen"
         >
+
           <i class="bi bi-fullscreen"></i>
+
         </button>
 
       </div>
@@ -81,13 +100,17 @@
     </header>
 
 
-    <!-- READER BODY -->
+    <!-- ================================
+         READER
+    ================================= -->
+
     <section
       id="viewerContainer"
       class="ebook-viewer-container"
     >
 
-      <!-- LOADING -->
+      <!-- Loading state -->
+
       <div
         id="ebookLoading"
         class="ebook-loading"
@@ -102,9 +125,14 @@
 
         </div>
 
+
         <div class="loading-spinner"></div>
 
-        <h2>Opening your book</h2>
+
+        <h2>
+          Opening your book
+        </h2>
+
 
         <p>
           Preparing your Vindarr reading experience...
@@ -113,7 +141,8 @@
       </div>
 
 
-      <!-- ERROR -->
+      <!-- Error state -->
+
       <div
         id="ebookError"
         class="ebook-error"
@@ -121,39 +150,53 @@
       >
 
         <div class="error-icon">
+
           <i class="bi bi-book"></i>
+
         </div>
 
-        <h2>We couldn't open this ebook</h2>
 
-        <p>
-          Please check your connection and try again.
+        <h2>
+          Ebook unavailable
+        </h2>
+
+
+        <p id="ebookErrorMessage">
+          We couldn't open this ebook.
         </p>
+
 
         <button
           type="button"
           class="retry-btn"
           onclick="loadBook()"
         >
+
           <i class="bi bi-arrow-clockwise"></i>
+
           Try Again
+
         </button>
 
       </div>
 
 
-      <!-- PDF -->
+      <!-- PDF viewer -->
+
       <iframe
         id="ebookFrame"
         class="ebook-frame"
-        title="Ebook reader"
+        title="Vindarr ebook reader"
         allowfullscreen
       ></iframe>
 
     </section>
 
 
-    <!-- READER FOOTER -->
+    <!-- ================================
+         FOOTER
+    ================================= -->
+
     <footer class="ebook-reader-footer">
 
       <div class="reader-footer-left">
@@ -166,6 +209,7 @@
 
       </div>
 
+
       <div class="reader-footer-center">
 
         <span>
@@ -174,11 +218,15 @@
 
       </div>
 
+
       <div class="reader-footer-right">
 
         <span>
+
           <i class="bi bi-shield-check"></i>
+
           Private library
+
         </span>
 
       </div>
@@ -190,11 +238,8 @@
 
   <script src="js/config.js"></script>
 
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"
-  ></script>
-
   <script src="js/ebook-detail.js"></script>
 
 </body>
+
 </html>

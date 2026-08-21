@@ -1,5 +1,22 @@
 // =====================================
-// VINDARR EBOOK READER
+// VINDARR EBOOK DETAIL
+// =====================================
+// IMPORTANT:
+// This version intentionally preserves
+// the original working PDF architecture:
+//
+// GET /library/ebook/:id
+//        ↓
+// book.fileUrl
+//        ↓
+// Mozilla PDF.js hosted viewer
+//        ↓
+// iframe
+// =====================================
+
+
+// =====================================
+// URL PARAMETER
 // =====================================
 
 const params =
@@ -15,42 +32,35 @@ const id =
 // ELEMENTS
 // =====================================
 
-const ebookTitle =
+const titleElement =
   document.getElementById(
     "ebookTitle"
   );
 
-const ebookFrame =
+const viewerContainer =
+  document.getElementById(
+    "viewerContainer"
+  );
+
+const viewer =
   document.getElementById(
     "ebookFrame"
   );
 
-const ebookLoading =
+const loadingElement =
   document.getElementById(
     "ebookLoading"
   );
 
-const ebookError =
+const errorElement =
   document.getElementById(
     "ebookError"
   );
 
-
-// =====================================
-// INITIALIZE
-// =====================================
-
-if (!id) {
-
-  showReaderError(
-    "No ebook was specified."
+const errorMessageElement =
+  document.getElementById(
+    "ebookErrorMessage"
   );
-
-} else {
-
-  loadBook();
-
-}
 
 
 // =====================================
@@ -59,12 +69,47 @@ if (!id) {
 
 async function loadBook() {
 
-  hideReaderError();
+  console.log(
+    "====================================="
+  );
 
-  showLoading();
+  console.log(
+    "VINDARR EBOOK LOADING"
+  );
+
+  console.log(
+    "EBOOK ID:",
+    id
+  );
+
+  console.log(
+    "====================================="
+  );
+
+
+  // -----------------------------------
+  // Validate ID
+  // -----------------------------------
+
+  if (!id) {
+
+    showReaderError(
+      "No ebook was specified."
+    );
+
+    return;
+
+  }
+
+
+  // -----------------------------------
+  // Authentication
+  // -----------------------------------
 
   const token =
-    localStorage.getItem("token");
+    localStorage.getItem(
+      "token"
+    );
 
 
   if (!token) {
@@ -77,12 +122,46 @@ async function loadBook() {
   }
 
 
+  // -----------------------------------
+  // Show loading
+  // -----------------------------------
+
+  showLoading();
+
+
+  // -----------------------------------
+  // Reset iframe
+  // -----------------------------------
+
+  if (viewer) {
+
+    viewer.src = "";
+
+  }
+
+
   try {
+
+    // =================================
+    // REQUEST OWNED EBOOK
+    // =================================
+
+    const endpoint =
+      `${API_BASE_URL}/library/ebook/${id}`;
+
+
+    console.log(
+      "REQUESTING:",
+      endpoint
+    );
+
 
     const res =
       await fetch(
-        `${API_BASE_URL}/library/ebook/${id}`,
+        endpoint,
         {
+          method: "GET",
+
           headers: {
             Authorization:
               `Bearer ${token}`
@@ -91,14 +170,53 @@ async function loadBook() {
       );
 
 
+    console.log(
+      "LIBRARY RESPONSE:",
+      res.status
+    );
+
+
+    // =================================
+    // HANDLE API ERROR
+    // =================================
+
     if (!res.ok) {
 
-      throw new Error(
-        `Failed to load ebook: ${res.status}`
+      let message =
+        "Failed to load ebook.";
+
+
+      try {
+
+        const errorData =
+          await res.json();
+
+
+        message =
+          errorData.message ||
+          message;
+
+      } catch (error) {
+
+        console.warn(
+          "Could not read API error response."
+        );
+
+      }
+
+
+      showReaderError(
+        message
       );
+
+      return;
 
     }
 
+
+    // =================================
+    // READ BOOK
+    // =================================
 
     const book =
       await res.json();
@@ -114,162 +232,179 @@ async function loadBook() {
     // TITLE
     // =================================
 
-    ebookTitle.innerText =
+    const title =
       book.title ||
       "Untitled Ebook";
 
 
-    // =================================
-    // PDF URL
-    // =================================
+    if (titleElement) {
 
-    const fileUrl =
-      getFileUrl(
-        book.fileUrl
-      );
+      titleElement.innerText =
+        title;
 
-
-    if (!fileUrl) {
-
-      throw new Error(
-        "Ebook file URL is missing."
-      );
+      titleElement.title =
+        title;
 
     }
 
 
+    // =================================
+    // FILE URL
+    // =================================
+
+    const pdfUrl =
+      book.fileUrl;
+
+
     console.log(
-      "PDF URL:",
-      fileUrl
+      "FILE URL FROM API:",
+      pdfUrl
     );
 
 
     // =================================
-    // PDF.JS VIEWER
+    // VALIDATE FILE URL
     // =================================
 
+    if (!pdfUrl) {
+
+      showReaderError(
+        "This ebook does not have a PDF file."
+      );
+
+      return;
+
+    }
+
+
+    // =================================
+    // IMPORTANT
+    // =================================
+    //
+    // DO NOT use:
+    //
+    // pdfjsLib.getDocument()
+    //
+    // DO NOT create:
+    //
+    // /library/ebook/:id/file
+    //
+    // DO NOT proxy the PDF through
+    // the NestJS backend.
+    //
+    // We retain the original working
+    // Mozilla PDF.js hosted viewer.
+    // =================================
+
+
     const viewerUrl =
-      "https://mozilla.github.io/pdf.js/web/viewer.html" +
-      `?file=${encodeURIComponent(fileUrl)}`;
+      "https://mozilla.github.io/pdf.js/web/viewer.html?file=" +
+      encodeURIComponent(
+        pdfUrl
+      );
 
 
     console.log(
-      "VIEWER URL:",
+      "PDF VIEWER URL:",
       viewerUrl
     );
 
 
-    ebookFrame.src =
-      viewerUrl;
+    // =================================
+    // SHOW IFRAME
+    // =================================
+
+    if (!viewer) {
+
+      showReaderError(
+        "PDF viewer could not be initialized."
+      );
+
+      return;
+
+    }
 
 
-    ebookFrame.onload =
+    viewer.onload =
       function () {
+
+        console.log(
+          "PDF VIEWER IFRAME LOADED"
+        );
+
 
         hideLoading();
 
       };
 
 
-    ebookFrame.onerror =
+    viewer.onerror =
       function () {
 
+        console.error(
+          "PDF VIEWER IFRAME ERROR"
+        );
+
+
         showReaderError(
-          "The ebook viewer could not be loaded."
+          "The PDF reader could not be opened."
         );
 
       };
 
 
-    // Fallback in case iframe
-    // does not fire correctly.
+    // =================================
+    // LOAD PDF
+    // =================================
 
-    setTimeout(
-      () => {
+    viewer.src =
+      viewerUrl;
 
-        if (
-          ebookFrame.src &&
-          !ebookLoading.hidden
-        ) {
 
-          hideLoading();
-
-        }
-
-      },
-      5000
+    console.log(
+      "PDF VIEWER STARTED"
     );
 
 
-  } catch (err) {
+    // =================================
+    // FALLBACK
+    // =================================
+    //
+    // Some browsers/webviews do not
+    // reliably fire iframe.onload.
+    //
+    // Give the hosted PDF.js viewer
+    // enough time to initialize before
+    // removing our loading screen.
+    //
+    // We intentionally DON'T show an
+    // error just because the iframe
+    // takes time.
+    // =================================
+
+    setTimeout(
+      function () {
+
+        hideLoading();
+
+      },
+      3000
+    );
+
+
+  } catch (error) {
 
     console.error(
       "EBOOK LOAD ERROR:",
-      err
+      error
     );
 
 
     showReaderError(
-      "We couldn't open this ebook."
+      "Unable to load this ebook. Please try again."
     );
 
   }
-
-}
-
-
-// =====================================
-// FILE URL HELPER
-// =====================================
-
-function getFileUrl(
-  fileUrl
-) {
-
-  if (!fileUrl) {
-
-    return "";
-
-  }
-
-
-  const value =
-    String(fileUrl);
-
-
-  if (
-    value.startsWith("http://") ||
-    value.startsWith("https://")
-  ) {
-
-    return value;
-
-  }
-
-
-  if (
-    value.startsWith("//")
-  ) {
-
-    return window.location.protocol +
-      value;
-
-  }
-
-
-  if (
-    value.startsWith("/")
-  ) {
-
-    return API_BASE_URL +
-      value;
-
-  }
-
-
-  return API_BASE_URL +
-    "/" +
-    value;
 
 }
 
@@ -280,86 +415,107 @@ function getFileUrl(
 
 function showLoading() {
 
-  ebookLoading.hidden =
-    false;
+  if (loadingElement) {
 
-  ebookError.hidden =
-    true;
+    loadingElement.hidden =
+      false;
 
-  ebookFrame.style.visibility =
-    "hidden";
-
-}
+  }
 
 
-function hideLoading() {
+  if (errorElement) {
 
-  ebookLoading.hidden =
-    true;
+    errorElement.hidden =
+      true;
 
-  ebookFrame.style.visibility =
-    "visible";
-
-}
+  }
 
 
-// =====================================
-// ERROR STATE
-// =====================================
+  if (viewer) {
 
-function showReaderError(
-  message
-) {
-
-  ebookLoading.hidden =
-    true;
-
-  ebookFrame.style.visibility =
-    "hidden";
-
-  ebookError.hidden =
-    false;
-
-
-  const paragraph =
-    ebookError.querySelector("p");
-
-
-  if (paragraph) {
-
-    paragraph.innerText =
-      message ||
-      "Something went wrong.";
+    viewer.style.visibility =
+      "hidden";
 
   }
 
 }
 
 
-function hideReaderError() {
+// =====================================
+// HIDE LOADING
+// =====================================
 
-  ebookError.hidden =
-    true;
+function hideLoading() {
+
+  if (loadingElement) {
+
+    loadingElement.hidden =
+      true;
+
+  }
+
+
+  if (errorElement) {
+
+    errorElement.hidden =
+      true;
+
+  }
+
+
+  if (viewer) {
+
+    viewer.style.visibility =
+      "visible";
+
+  }
 
 }
 
 
 // =====================================
-// BACK
+// ERROR
 // =====================================
 
-function goBack() {
+function showReaderError(
+  message
+) {
 
-  if (
-    window.history.length > 1
-  ) {
+  console.error(
+    "EBOOK READER ERROR:",
+    message
+  );
 
-    window.history.back();
 
-  } else {
+  if (loadingElement) {
 
-    window.location.href =
-      "library.html";
+    loadingElement.hidden =
+      true;
+
+  }
+
+
+  if (viewer) {
+
+    viewer.style.visibility =
+      "hidden";
+
+  }
+
+
+  if (errorMessageElement) {
+
+    errorMessageElement.innerText =
+      message ||
+      "We couldn't open this ebook.";
+
+  }
+
+
+  if (errorElement) {
+
+    errorElement.hidden =
+      false;
 
   }
 
@@ -378,7 +534,16 @@ function toggleFullscreen() {
     );
 
 
-  if (!document.fullscreenElement) {
+  if (!page) {
+
+    return;
+
+  }
+
+
+  if (
+    !document.fullscreenElement
+  ) {
 
     if (
       page.requestFullscreen
@@ -404,38 +569,87 @@ function toggleFullscreen() {
 
 
 // =====================================
-// FULLSCREEN ICON
+// UPDATE FULLSCREEN ICON
 // =====================================
 
 document.addEventListener(
   "fullscreenchange",
-  () => {
+  function () {
 
     const button =
       document.getElementById(
         "fullscreenBtn"
       );
 
-    if (!button) return;
+
+    if (!button) {
+
+      return;
+
+    }
 
 
     const icon =
-      button.querySelector("i");
+      button.querySelector(
+        "i"
+      );
 
-    if (!icon) return;
+
+    if (!icon) {
+
+      return;
+
+    }
 
 
-    if (document.fullscreenElement) {
+    if (
+      document.fullscreenElement
+    ) {
 
       icon.className =
         "bi bi-fullscreen-exit";
+
+      button.title =
+        "Exit fullscreen";
 
     } else {
 
       icon.className =
         "bi bi-fullscreen";
 
+      button.title =
+        "Fullscreen";
+
     }
 
   }
 );
+
+
+// =====================================
+// BACK
+// =====================================
+
+function goBack() {
+
+  if (
+    window.history.length > 1
+  ) {
+
+    window.history.back();
+
+  } else {
+
+    window.location.href =
+      "library.html";
+
+  }
+
+}
+
+
+// =====================================
+// START
+// =====================================
+
+loadBook();
