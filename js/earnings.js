@@ -1,85 +1,183 @@
-const token = localStorage.getItem("token");
+// ===============================
+// EARNINGS
+// ===============================
 
-if(!token){
-  window.location.href = "login.html";
+const token =
+  localStorage.getItem("token");
+
+if (!token) {
+
+  window.location.href =
+    "login.html";
+
 }
+
 
 let earningsData = [];
 let totalEarnings = 0;
 let walletBalance = 0;
 let withdrawals = [];
 
+
+// ===============================
+// INIT
+// ===============================
+
 loadEarnings();
 loadWallet();
 loadBankDetails();
 loadWithdrawals();
 
-async function loadEarnings(){
 
-  try{
+// ===============================
+// LOAD EARNINGS
+// ===============================
 
-    const res = await fetch(`${API_BASE_URL}/earnings/me`,{
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    });
+async function loadEarnings() {
 
-    const data = await res.json();
+  try {
+
+    const res =
+      await fetch(
+        `${API_BASE_URL}/earnings/me`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+
+      throw new Error(
+        data.message ||
+        "Failed to load earnings"
+      );
+
+    }
 
     earningsData =
       data.transactions || [];
 
     totalEarnings =
-      data.totalEarnings || 0;
+      Number(
+        data.totalEarnings || 0
+      );
 
     renderEarnings();
 
-  }catch(err){
+  }
+
+  catch (err) {
 
     console.error(err);
 
-    document.getElementById("transactions").innerHTML = `
-      <div class="earnings-empty">
-        Failed to load earnings
-      </div>
-    `;
+    const container =
+      document.getElementById(
+        "transactions"
+      );
+
+    if (container) {
+
+      container.innerHTML = `
+        <div class="earnings-empty compact-empty">
+
+          <i class="bi bi-exclamation-circle"></i>
+
+          <h3>
+            Unable to load earnings
+          </h3>
+
+          <p>
+            Please try again later.
+          </p>
+
+        </div>
+      `;
+
+    }
 
   }
 
 }
 
-function renderEarnings(){
 
-  document.getElementById("earningsAmount").innerText =
-    `₦${Number(totalEarnings).toLocaleString()}`;
+// ===============================
+// RENDER EARNINGS
+// ===============================
+
+function renderEarnings() {
+
+  const amount =
+    document.getElementById(
+      "earningsAmount"
+    );
+
+  if (amount) {
+
+    amount.innerText =
+      `₦${Number(
+        totalEarnings
+      ).toLocaleString()}`;
+
+  }
+
 
   const container =
-    document.getElementById("transactions");
+    document.getElementById(
+      "transactions"
+    );
 
-  if(!earningsData.length){
+  if (!container) return;
+
+
+  if (!earningsData.length) {
 
     container.innerHTML = `
+
       <div class="earnings-empty">
 
-        <h3>No earnings yet</h3>
+        <div class="empty-finance-icon">
+
+          <i class="bi bi-bar-chart"></i>
+
+        </div>
+
+        <h3>
+          No earnings yet
+        </h3>
 
         <p>
           Start selling ebooks and products
-          to earn on Vindarr.
+          to begin earning on Vindarr.
         </p>
 
-        <a href="publish.html" class="earn-btn">
-          Upload Content
+        <a
+          href="publish.html"
+          class="empty-action">
+
+          Upload content
+
+          <i class="bi bi-arrow-right"></i>
+
         </a>
 
       </div>
+
     `;
 
     return;
+
   }
 
+
   container.innerHTML =
-    earningsData.map(item => `
+    earningsData.map(
+      item => `
 
       <div class="transaction-card">
 
@@ -89,56 +187,99 @@ function renderEarnings(){
 
             ${
               item.type === "ebook"
-              ? "📚"
-              : item.type === "fashion"
-              ? "🛍️"
-              : "🎥"
+                ? `<i class="bi bi-book"></i>`
+                : item.type === "fashion"
+                ? `<i class="bi bi-bag"></i>`
+                : `<i class="bi bi-play-btn"></i>`
             }
 
           </div>
 
-          <div>
+
+          <div class="transaction-details">
 
             <h4>
-              ${item.title || "Content Sale"}
+              ${escapeEarningsHtml(
+                item.title ||
+                "Content Sale"
+              )}
             </h4>
 
             <p>
-              ${formatDate(item.createdAt)}
+
+              ${
+                item.type
+                  ? item.type
+                  : "Sale"
+              }
+
+              <span>•</span>
+
+              ${formatDate(
+                item.createdAt
+              )}
+
             </p>
 
           </div>
 
         </div>
 
+
         <div class="transaction-right">
 
-          +₦${Number(item.amount || 0).toLocaleString()}
+          +₦${Number(
+            item.amount || 0
+          ).toLocaleString()}
 
         </div>
 
       </div>
 
-    `).join("");
+    `
+    ).join("");
 
 }
 
-function formatDate(date){
 
-  if(!date) return "";
+// ===============================
+// DATE
+// ===============================
 
-  return new Date(date)
-    .toLocaleDateString("en-NG",{
-      day:"numeric",
-      month:"short",
-      year:"numeric"
-    });  
+function formatDate(date) {
+
+  if (!date) return "";
+
+  try {
+
+    return new Date(date)
+      .toLocaleDateString(
+        "en-NG",
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        }
+      );
+
+  }
+
+  catch {
+
+    return "";
+
+  }
 
 }
+
+
+// ===============================
+// WITHDRAW
+// ===============================
 
 document
   .getElementById("withdrawBtn")
-  .addEventListener(
+  ?.addEventListener(
     "click",
     async () => {
 
@@ -147,7 +288,29 @@ document
           "Enter withdrawal amount"
         );
 
+
       if (!amount) return;
+
+
+      const numericAmount =
+        Number(amount);
+
+
+      if (
+        !Number.isFinite(
+          numericAmount
+        ) ||
+        numericAmount <= 0
+      ) {
+
+        alert(
+          "Enter a valid amount"
+        );
+
+        return;
+
+      }
+
 
       try {
 
@@ -162,18 +325,21 @@ document
                   "application/json",
 
                 Authorization:
-                  `Bearer ${token}`,
+                  `Bearer ${token}`
               },
 
-              body: JSON.stringify({
-                amount:
-                  Number(amount),
-              }),
+              body:
+                JSON.stringify({
+                  amount:
+                    numericAmount
+                })
             }
           );
 
+
         const data =
           await res.json();
+
 
         if (!res.ok) {
 
@@ -183,16 +349,23 @@ document
           );
 
           return;
+
         }
+
 
         alert(
           "Withdrawal request submitted"
         );
 
+
         loadWallet();
         loadWithdrawals();
 
-      } catch (err) {
+      }
+
+      catch (err) {
+
+        console.error(err);
 
         alert(
           "Withdrawal failed"
@@ -201,182 +374,417 @@ document
       }
 
     }
-);
+  );
 
-async function loadWallet(){
 
-  const res =
-    await fetch(
-      `${API_BASE_URL}/wallets/me`,
-      {
-        headers:{
-          Authorization:`Bearer ${token}`
+// ===============================
+// WALLET
+// ===============================
+
+async function loadWallet() {
+
+  try {
+
+    const res =
+      await fetch(
+        `${API_BASE_URL}/wallets/me`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
         }
-      }
-    );
+      );
 
-  const data =
-    await res.json();
 
-  walletBalance =
-    data.balance || 0;
+    const data =
+      await res.json();
 
-  document.getElementById(
-    "walletBalance"
-  ).innerText =
-    `₦${Number(walletBalance)
-      .toLocaleString()}`;
+
+    if (!res.ok) return;
+
+
+    walletBalance =
+      Number(
+        data.balance || 0
+      );
+
+
+    const element =
+      document.getElementById(
+        "walletBalance"
+      );
+
+
+    if (element) {
+
+      element.innerText =
+        `₦${walletBalance
+          .toLocaleString()}`;
+
+    }
+
+  }
+
+  catch (err) {
+
+    console.error(err);
+
+  }
 
 }
 
-async function loadBankDetails(){
 
-  const res =
-    await fetch(
-      `${API_BASE_URL}/users/bank-details`,
-      {
-        headers:{
-          Authorization:`Bearer ${token}`
+// ===============================
+// BANK DETAILS
+// ===============================
+
+async function loadBankDetails() {
+
+  try {
+
+    const res =
+      await fetch(
+        `${API_BASE_URL}/users/bank-details`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
         }
-      }
-    );
+      );
 
-  const user =
-    await res.json();
 
-  document.getElementById(
-    "bankName"
-  ).value =
-    user.bankName || "";
+    const user =
+      await res.json();
 
-  document.getElementById(
-    "accountNumber"
-  ).value =
-    user.accountNumber || "";
 
-  document.getElementById(
-    "accountName"
-  ).value =
-    user.accountName || "";
+    if (!res.ok) return;
+
+
+    document.getElementById(
+      "bankName"
+    ).value =
+      user.bankName || "";
+
+
+    document.getElementById(
+      "accountNumber"
+    ).value =
+      user.accountNumber || "";
+
+
+    document.getElementById(
+      "accountName"
+    ).value =
+      user.accountName || "";
+
+  }
+
+  catch (err) {
+
+    console.error(err);
+
+  }
 
 }
 
-async function loadWithdrawals(){
 
-  const res =
-    await fetch(
-      `${API_BASE_URL}/withdrawals/me`,
-      {
-        headers:{
-          Authorization:`Bearer ${token}`
+// ===============================
+// WITHDRAWALS
+// ===============================
+
+async function loadWithdrawals() {
+
+  try {
+
+    const res =
+      await fetch(
+        `${API_BASE_URL}/withdrawals/me`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
         }
-      }
-    );
+      );
 
-  withdrawals =
-    await res.json();
 
-  renderWithdrawals();
+    const data =
+      await res.json();
+
+
+    if (!res.ok) return;
+
+
+    withdrawals =
+      data || [];
+
+
+    renderWithdrawals();
+
+  }
+
+  catch (err) {
+
+    console.error(err);
+
+  }
 
 }
 
-function renderWithdrawals(){
+
+// ===============================
+// RENDER WITHDRAWALS
+// ===============================
+
+function renderWithdrawals() {
 
   const container =
     document.getElementById(
       "withdrawalHistory"
     );
 
-  if(!withdrawals.length){
 
-    container.innerHTML =
-      "<p>No withdrawals yet</p>";
+  if (!container) return;
+
+
+  if (!withdrawals.length) {
+
+    container.innerHTML = `
+
+      <div class="earnings-empty compact-empty">
+
+        <i class="bi bi-wallet2"></i>
+
+        <h3>
+          No withdrawals yet
+        </h3>
+
+        <p>
+          Your payout history will appear here.
+        </p>
+
+      </div>
+
+    `;
 
     return;
 
   }
 
+
   container.innerHTML =
-    withdrawals.map(w => `
+    withdrawals.map(
+      withdrawal => {
 
-      <div class="transaction-card">
+        const status =
+          String(
+            withdrawal.status ||
+            "pending"
+          ).toLowerCase();
 
-        <div>
 
-          ₦${Number(w.amount)
-            .toLocaleString()}
+        return `
 
-        </div>
+          <div class="transaction-card withdrawal-card">
 
-        <div>
+            <div class="transaction-left">
 
-          ${w.status}
+              <div class="transaction-icon withdrawal-icon">
 
-        </div>
+                <i class="bi bi-arrow-up-right"></i>
 
-      </div>
+              </div>
 
-    `).join("");
+
+              <div class="transaction-details">
+
+                <h4>
+                  Withdrawal
+                </h4>
+
+                <p>
+
+                  ${formatDate(
+                    withdrawal.createdAt
+                  )}
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="withdrawal-right">
+
+              <strong>
+                ₦${Number(
+                  withdrawal.amount || 0
+                ).toLocaleString()}
+              </strong>
+
+              <span class="
+                withdrawal-status
+                status-${status}
+              ">
+
+                ${status}
+
+              </span>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    ).join("");
 
 }
 
+
+// ===============================
+// SAVE BANK DETAILS
+// ===============================
+
 document
   .getElementById("saveBankBtn")
-  .addEventListener(
+  ?.addEventListener(
     "click",
-  async (e) => {
+    async () => {
 
-    if(
-      e.target.id !==
-      "saveBankBtn"
-    ) return;
+      const bankName =
+        document.getElementById(
+          "bankName"
+        ).value.trim();
 
-    const bankName =
-      document.getElementById(
-        "bankName"
-      ).value;
 
-    const accountNumber =
-      document.getElementById(
-        "accountNumber"
-      ).value;
+      const accountNumber =
+        document.getElementById(
+          "accountNumber"
+        ).value.trim();
 
-    const accountName =
-      document.getElementById(
-        "accountName"
-      ).value;
 
-    const res =
-      await fetch(
-        `${API_BASE_URL}/users/bank-details`,
-        {
-          method:"PATCH",
+      const accountName =
+        document.getElementById(
+          "accountName"
+        ).value.trim();
 
-          headers:{
-            "Content-Type":
-              "application/json",
 
-            Authorization:
-              `Bearer ${token}`,
-          },
+      if (
+        !bankName ||
+        !accountNumber ||
+        !accountName
+      ) {
 
-          body:JSON.stringify({
+        alert(
+          "Please complete all bank details"
+        );
 
-            bankName,
-            accountNumber,
-            accountName,
+        return;
 
-          }),
+      }
+
+
+      try {
+
+        const res =
+          await fetch(
+            `${API_BASE_URL}/users/bank-details`,
+            {
+              method: "PATCH",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json",
+
+                Authorization:
+                  `Bearer ${token}`
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  bankName,
+                  accountNumber,
+                  accountName
+
+                })
+
+            }
+          );
+
+
+        const data =
+          await res.json();
+
+
+        if (res.ok) {
+
+          alert(
+            "Bank details saved"
+          );
+
         }
-      );
 
-    if(res.ok){
+        else {
 
-      alert(
-        "Bank details saved"
-      );
+          alert(
+            data.message ||
+            "Unable to save bank details"
+          );
+
+        }
+
+      }
+
+      catch (err) {
+
+        console.error(err);
+
+        alert(
+          "Network error"
+        );
+
+      }
 
     }
+  );
 
-  }
-);
+
+// ===============================
+// HTML ESCAPE
+// ===============================
+
+function escapeEarningsHtml(value) {
+
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+
+}

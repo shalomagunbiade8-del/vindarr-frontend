@@ -7,41 +7,96 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>Notifications</title>
+<title>Notifications • Vindarr</title>
 
 <link rel="stylesheet"
-href="css/global.css">
+href="css/notifications.css">
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 </head>
+
 <body>
 
 <div class="notifications-page">
 
-  <div class="notifications-header">
+  <!-- HEADER -->
 
-    <h1>
-      Notifications
-    </h1>
+  <header class="notifications-header">
+
+    <div class="notifications-heading">
+
+      <span class="notifications-eyebrow">
+        VINDARR
+      </span>
+
+      <h1>
+        Notifications
+      </h1>
+
+      <p>
+        Stay updated on your Vindarr activity.
+      </p>
+
+    </div>
 
     <button
+      type="button"
       class="mark-all-btn"
       onclick="markAllRead()"
     >
-      Mark all read
+
+      <i class="bi bi-check2-all"></i>
+
+      <span>Mark all read</span>
+
     </button>
+
+  </header>
+
+
+  <!-- NOTIFICATION SUMMARY -->
+
+  <div
+    id="notificationSummary"
+    class="notification-summary"
+  >
+
+    <div class="summary-icon">
+
+      <i class="bi bi-bell-fill"></i>
+
+    </div>
+
+    <div>
+
+      <strong id="unreadCount">
+        0
+      </strong>
+
+      <span>
+        unread notifications
+      </span>
+
+    </div>
 
   </div>
 
-  <div
+
+  <!-- NOTIFICATIONS -->
+
+  <main
     id="notificationsList"
     class="notifications-list"
-  ></div>
+  ></main>
 
-</div>  
+</div>
+
 
 <script src="js/config.js"></script>
+
 <script src="js/notifications.js"></script>
-<script src="js/nav.js"></script>
 
 </body>
 </html>

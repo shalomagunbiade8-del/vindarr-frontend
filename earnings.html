@@ -5,100 +5,356 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+      content="width=device-width, initial-scale=1.0">
 
-<title>Earnings</title>
+<title>Earnings • Vindarr</title>
 
-<link rel="stylesheet" href="css/global.css">
+
+<link rel="stylesheet"
+      href="css/earnings.css">
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 </head>
+
 <body>
 
-<nav class="top-navbar">
+<main class="earnings-page">
 
-<div class="top-left">
+  <!-- HEADER -->
+  <section class="earnings-header">
 
-<img src="interfacelog.png" width="30">
+    <div>
+      <span class="eyebrow">
+        CREATOR FINANCE
+      </span>
 
-<span>Earnings</span>
+      <h1>
+        Earnings
+      </h1>
 
-</div>
+      <p>
+        Track your sales, wallet balance and withdrawals.
+      </p>
+    </div>
 
-</nav>
+    <a href="dashboard.html"
+       class="back-dashboard">
 
-<div class="earnings-page">
+      <i class="bi bi-arrow-left"></i>
 
-    <div class="earnings-card">
+      Dashboard
 
-  <h1 id="walletBalance">
-    ₦0
-  </h1>
+    </a>
 
-  <p>Wallet Balance</p>
+  </section>
 
-</div>
 
-<div class="earnings-card">
+  <!-- OVERVIEW -->
+  <section class="earnings-overview">
 
-  <h3>Bank Details</h3>
+    <!-- WALLET -->
+    <div class="wallet-card">
 
-  <input
-    id="bankName"
-    placeholder="Bank Name"
-  >
+      <div class="wallet-top">
 
-  <input
-    id="accountNumber"
-    placeholder="Account Number"
-  >
+        <div>
+          <span class="wallet-label">
+            Available balance
+          </span>
 
-  <input
-    id="accountName"
-    placeholder="Account Name"
-  >
+          <h2 id="walletBalance">
+            ₦0
+          </h2>
+        </div>
 
-  <button
-  type="button"
-  id="saveBankBtn"
-  class="earn-btn"
->
-    Save Bank Details
-  </button>
+        <div class="wallet-icon">
+          <i class="bi bi-wallet2"></i>
+        </div>
 
-</div>
+      </div>
 
-<div class="earnings-card">
+      <div class="wallet-bottom">
 
-<h1 id="earningsAmount">
-₦0
-</h1>
+        <span>
+          Ready for withdrawal
+        </span>
 
-<p>Total Earnings</p>
+        <i class="bi bi-shield-check"></i>
 
-<button
-  id="withdrawBtn"
-  class="earn-btn"
->
-  Withdraw Earnings
-</button>
+      </div>
 
-</div>
+    </div>
 
-<div id="transactions"></div>
 
-<h2>
-  Withdrawal History
-</h2>
+    <!-- TOTAL EARNINGS -->
+    <div class="earnings-summary-card">
 
-<div
-  id="withdrawalHistory"
-></div>
+      <div class="summary-icon">
+        <i class="bi bi-graph-up-arrow"></i>
+      </div>
 
-</div>
+      <div>
+
+        <span>
+          Total earnings
+        </span>
+
+        <h2 id="earningsAmount">
+          ₦0
+        </h2>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- BANK DETAILS -->
+  <section class="finance-section">
+
+    <div class="section-heading">
+
+      <div>
+        <span class="section-kicker">
+          PAYOUT ACCOUNT
+        </span>
+
+        <h2>
+          Bank details
+        </h2>
+
+        <p>
+          Keep your payout information up to date.
+        </p>
+      </div>
+
+      <div class="section-heading-icon">
+        <i class="bi bi-bank"></i>
+      </div>
+
+    </div>
+
+
+    <div class="bank-card">
+
+      <div class="form-grid">
+
+        <div class="form-field">
+
+          <label for="bankName">
+            Bank name
+          </label>
+
+          <div class="input-shell">
+
+            <i class="bi bi-building"></i>
+
+            <input
+              id="bankName"
+              placeholder="e.g. GTBank"
+              autocomplete="off"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-field">
+
+          <label for="accountName">
+            Account name
+          </label>
+
+          <div class="input-shell">
+
+            <i class="bi bi-person"></i>
+
+            <input
+              id="accountName"
+              placeholder="Account name"
+              autocomplete="off"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-field full-field">
+
+          <label for="accountNumber">
+            Account number
+          </label>
+
+          <div class="input-shell">
+
+            <i class="bi bi-credit-card"></i>
+
+            <input
+              id="accountNumber"
+              placeholder="10-digit account number"
+              inputmode="numeric"
+              autocomplete="off"
+            >
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        id="saveBankBtn"
+        class="primary-finance-btn">
+
+        <i class="bi bi-check2-circle"></i>
+
+        Save bank details
+
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- WITHDRAW -->
+  <section class="withdraw-card">
+
+    <div class="withdraw-content">
+
+      <div class="withdraw-icon">
+        <i class="bi bi-arrow-down-left-circle"></i>
+      </div>
+
+      <div>
+
+        <span class="section-kicker">
+          PAYOUT
+        </span>
+
+        <h2>
+          Withdraw your earnings
+        </h2>
+
+        <p>
+          Transfer available funds to your saved bank account.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <button
+      type="button"
+      id="withdrawBtn"
+      class="withdraw-btn">
+
+      Withdraw earnings
+
+      <i class="bi bi-arrow-right"></i>
+
+    </button>
+
+  </section>
+
+
+  <!-- SALES -->
+  <section class="finance-section">
+
+    <div class="section-heading">
+
+      <div>
+
+        <span class="section-kicker">
+          ACTIVITY
+        </span>
+
+        <h2>
+          Recent earnings
+        </h2>
+
+        <p>
+          Your latest sales on Vindarr.
+        </p>
+
+      </div>
+
+      <div class="section-heading-icon">
+        <i class="bi bi-receipt"></i>
+      </div>
+
+    </div>
+
+
+    <div id="transactions"
+         class="transactions-list">
+
+    </div>
+
+  </section>
+
+
+  <!-- WITHDRAWAL HISTORY -->
+  <section class="finance-section">
+
+    <div class="section-heading">
+
+      <div>
+
+        <span class="section-kicker">
+          PAYOUT HISTORY
+        </span>
+
+        <h2>
+          Withdrawals
+        </h2>
+
+        <p>
+          Review your previous withdrawal requests.
+        </p>
+
+      </div>
+
+      <div class="section-heading-icon">
+        <i class="bi bi-clock-history"></i>
+      </div>
+
+    </div>
+
+
+    <div id="withdrawalHistory"
+         class="withdrawal-list">
+
+    </div>
+
+  </section>
+
+
+  <footer class="earnings-footer">
+
+    <i class="bi bi-lock-fill"></i>
+
+    Your financial information is securely handled by Vindarr.
+
+  </footer>
+
+</main>
+
 
 <script src="js/config.js"></script>
+
 <script src="js/earnings.js"></script>
+
 <script src="js/auth.js"></script>
+
 <script>
 checkAuth();
 </script>
