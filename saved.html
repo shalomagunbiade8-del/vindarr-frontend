@@ -19,281 +19,568 @@
 
   <link
     rel="stylesheet"
+    href="css/saved.css"
+  >
+
+  <link
+    rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
   >
 
 </head>
 
-
 <body class="saved-page">
 
+  <!-- =========================================
+       HEADER
+  ========================================== -->
 
-<header class="saved-header">
+  <header class="saved-header">
 
-  <button
-    onclick="history.back()"
-    class="saved-back"
-  >
+    <button
+      class="saved-icon-btn"
+      onclick="history.back()"
+      aria-label="Go back"
+    >
+      <i class="bi bi-arrow-left"></i>
+    </button>
 
-    <i class="bi bi-arrow-left"></i>
+    <div class="saved-header-title">
+      <span>Vindarr</span>
+      <h1>Saved</h1>
+    </div>
 
-  </button>
+    <button
+      class="saved-icon-btn"
+      onclick="openSavedMenu()"
+      aria-label="More options"
+    >
+      <i class="bi bi-three-dots"></i>
+    </button>
 
-
-  <h1>
-    Saved
-  </h1>
-
-
-  <div style="width:42px"></div>
-
-</header>
-
-
-
-<main
-  id="savedGrid"
-  class="saved-grid"
->
-
-  <div class="saved-loading">
-
-    Loading saved content...
-
-  </div>
-
-</main>
+  </header>
 
 
+  <!-- =========================================
+       PAGE
+  ========================================== -->
 
-<script src="js/config.js"></script>
+  <main class="saved-main">
 
-<script>
+    <!-- =======================================
+         HERO
+    ======================================== -->
 
-async function loadSavedVideos(){
+    <section class="saved-hero">
 
-  const savedIds =
-    JSON.parse(
-      localStorage.getItem(
-        "savedVideos"
-      ) || "[]"
-    );
+      <div class="saved-hero-copy">
 
-
-  const container =
-    document.getElementById(
-      "savedGrid"
-    );
-
-
-  if(!savedIds.length){
-
-    container.innerHTML = `
-
-      <div class="saved-empty">
-
-        <i class="bi bi-bookmark"></i>
+        <span class="saved-eyebrow">
+          YOUR PERSONAL LIBRARY
+        </span>
 
         <h2>
-          Nothing saved yet
+          Keep the things
+          worth coming back to.
         </h2>
 
         <p>
-          Save videos from your Vindarr feed
-          and they'll appear here.
+          Save videos, books and products,
+          then organize them into collections
+          that make sense to you.
         </p>
 
+      </div>
+
+      <div class="saved-hero-icon">
+
+        <i class="bi bi-bookmark-heart-fill"></i>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================
+         STREAKS
+    ======================================== -->
+
+    <section class="streak-section">
+
+      <div class="streak-card saving-streak-card">
+
+        <div class="streak-icon">
+          <i class="bi bi-fire"></i>
+        </div>
+
+        <div class="streak-copy">
+
+          <span>
+            Saving streak
+          </span>
+
+          <strong id="savingStreak">
+            0 days
+          </strong>
+
+          <small id="savingStreakMessage">
+            Save something today to start.
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="streak-card collection-streak-card">
+
+        <div class="streak-icon">
+          <i class="bi bi-collection-fill"></i>
+        </div>
+
+        <div class="streak-copy">
+
+          <span>
+            Collection streak
+          </span>
+
+          <strong id="collectionStreak">
+            0 days
+          </strong>
+
+          <small id="collectionStreakMessage">
+            Organize something today.
+          </small>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================
+         FILTERS
+    ======================================== -->
+
+    <section class="saved-filter-section">
+
+      <div class="saved-filter-scroll">
+
         <button
-          onclick="location.href='index.html'"
+          class="saved-filter active"
+          data-filter="all"
+          onclick="setFilter('all')"
         >
-          Explore Videos
+          <i class="bi bi-grid-fill"></i>
+          All
+        </button>
+
+        <button
+          class="saved-filter"
+          data-filter="video"
+          onclick="setFilter('video')"
+        >
+          <i class="bi bi-play-btn-fill"></i>
+          Videos
+        </button>
+
+        <button
+          class="saved-filter"
+          data-filter="ebook"
+          onclick="setFilter('ebook')"
+        >
+          <i class="bi bi-book-fill"></i>
+          Books
+        </button>
+
+        <button
+          class="saved-filter"
+          data-filter="fashion"
+          onclick="setFilter('fashion')"
+        >
+          <i class="bi bi-bag-fill"></i>
+          Products
+        </button>
+
+        <button
+          class="saved-filter"
+          data-filter="essential"
+          onclick="setFilter('essential')"
+        >
+          <i class="bi bi-box-seam-fill"></i>
+          Essentials
         </button>
 
       </div>
 
-    `;
-
-    return;
-
-  }
+    </section>
 
 
-  const results = [];
+    <!-- =======================================
+         COLLECTIONS
+    ======================================== -->
 
+    <section class="collections-section">
 
-  for(
-    const id of savedIds
-  ){
+      <div class="section-heading">
 
-    try{
+        <div>
+          <span class="section-kicker">
+            ORGANIZE
+          </span>
 
-      const res =
-        await fetch(
-          `${API_BASE_URL}/videos/${id}`
-        );
+          <h2>
+            Collections
+          </h2>
+        </div>
 
-
-      if(
-        res.ok
-      ){
-
-        const video =
-          await res.json();
-
-        results.push(
-          video
-        );
-
-      }
-
-    }catch(err){
-
-      console.error(
-        err
-      );
-
-    }
-
-  }
-
-
-  if(!results.length){
-
-    container.innerHTML = `
-
-      <div class="saved-empty">
-
-        <i class="bi bi-bookmark-x"></i>
-
-        <h2>
-          Saved content unavailable
-        </h2>
-
-        <p>
-          Some saved videos may have been removed.
-        </p>
+        <button
+          class="create-collection-btn"
+          onclick="openCreateCollection()"
+        >
+          <i class="bi bi-plus-lg"></i>
+          Create
+        </button>
 
       </div>
 
-    `;
 
-    return;
+      <div
+        id="collectionsGrid"
+        class="collections-grid"
+      >
 
-  }
+        <div class="collections-loading">
 
+          <div class="loading-pulse"></div>
+          <div class="loading-pulse short"></div>
 
-  container.innerHTML =
-    results.map(
-      video => {
+        </div>
 
-        const media =
-          video.videoUrl ||
-          video.fileUrl ||
-          video.coverUrl ||
-          "";
+      </div>
 
-
-        const mediaUrl =
-          media.startsWith("http")
-            ? media
-            : API_BASE_URL + media;
+    </section>
 
 
-        const avatar =
-          video.creatorAvatar
-            ? (
-                video.creatorAvatar.startsWith("http")
-                  ? video.creatorAvatar
-                  : API_BASE_URL +
-                    video.creatorAvatar
-              )
-            : "https://i.pravatar.cc/100";
+    <!-- =======================================
+         ALL SAVED
+    ======================================== -->
+
+    <section class="all-saved-section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <span class="section-kicker">
+            LIBRARY
+          </span>
+
+          <h2>
+            All Saved
+          </h2>
+
+        </div>
+
+        <span
+          id="savedCount"
+          class="saved-count"
+        >
+          0 saves
+        </span>
+
+      </div>
 
 
-        return `
+      <div
+        id="savedGrid"
+        class="saved-grid"
+      >
 
-          <article
-            class="saved-card"
-            onclick="openSavedVideo(${video.id})"
-          >
+        <div class="saved-loading">
 
-            <div class="saved-thumbnail">
+          <div class="loading-spinner"></div>
 
-              <video
-                src="${mediaUrl}"
-                muted
-                playsinline
-                preload="metadata"
-              ></video>
+          <span>
+            Loading your saved content...
+          </span>
 
-            </div>
+        </div>
 
+      </div>
 
-            <div class="saved-content">
+    </section>
 
-              <h3>
-                ${escapeSaved(video.title || "Untitled")}
-              </h3>
+  </main>
 
 
-              <div class="saved-creator">
+  <!-- =========================================
+       CREATE COLLECTION MODAL
+  ========================================== -->
 
-                <img
-                  src="${avatar}"
-                  alt=""
-                >
+  <div
+    id="collectionModal"
+    class="saved-modal"
+    aria-hidden="true"
+  >
 
-                <span>
-                  @${escapeSaved(video.creatorUsername || "creator")}
-                </span>
+    <div
+      class="saved-modal-backdrop"
+      onclick="closeCreateCollection()"
+    ></div>
 
-              </div>
+    <div class="saved-modal-sheet">
+
+      <button
+        class="modal-close"
+        onclick="closeCreateCollection()"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <span class="modal-kicker">
+        NEW COLLECTION
+      </span>
+
+      <h2>
+        Give your saves a home.
+      </h2>
+
+      <p>
+        Create a collection and organize
+        your saved videos, books and products.
+      </p>
+
+      <label>
+        Collection name
+      </label>
+
+      <input
+        id="collectionName"
+        type="text"
+        maxlength="80"
+        placeholder="e.g. Things I want to learn"
+      >
+
+      <div class="collection-cover-options">
+
+        <button
+          type="button"
+          class="cover-option active"
+          data-cover="auto"
+          onclick="selectCoverOption('auto')"
+        >
+          <i class="bi bi-stars"></i>
+          <span>
+            <strong>Automatic</strong>
+            <small>Use your saved content</small>
+          </span>
+        </button>
+
+      </div>
+
+      <button
+        class="modal-primary-btn"
+        onclick="createCollection()"
+      >
+        Create collection
+      </button>
+
+    </div>
+
+  </div>
 
 
-              <div class="saved-understands">
+  <!-- =========================================
+       COLLECTION DETAIL MODAL
+  ========================================== -->
 
-                ${Number(
-                  video.understandCount || 0
-                ).toLocaleString()}
-                Understands
+  <div
+    id="collectionDetailModal"
+    class="saved-modal"
+    aria-hidden="true"
+  >
 
-              </div>
+    <div
+      class="saved-modal-backdrop"
+      onclick="closeCollectionDetail()"
+    ></div>
 
-            </div>
+    <div class="saved-modal-sheet collection-detail-sheet">
 
-          </article>
+      <button
+        class="modal-close"
+        onclick="closeCollectionDetail()"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
 
-        `;
+      <div
+        id="collectionDetailContent"
+      ></div>
 
-      }
-    ).join("");
+    </div>
 
-}
-
-
-function openSavedVideo(id){
-
-  window.location.href =
-    `video.html?id=${id}`;
-
-}
-
-
-function escapeSaved(value){
-
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-
-}
+  </div>
 
 
-loadSavedVideos();
+  <!-- =========================================
+       ITEM ACTION MODAL
+  ========================================== -->
 
-</script>
+  <div
+    id="itemActionModal"
+    class="saved-modal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="saved-modal-backdrop"
+      onclick="closeItemActions()"
+    ></div>
+
+    <div class="saved-action-sheet">
+
+      <button
+        class="modal-close"
+        onclick="closeItemActions()"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <span class="modal-kicker">
+        SAVED CONTENT
+      </span>
+
+      <h2 id="itemActionTitle">
+        Saved item
+      </h2>
+
+      <button
+        class="action-sheet-btn"
+        onclick="openMoveCollection()"
+      >
+        <i class="bi bi-collection"></i>
+
+        <span>
+          <strong>Move to collection</strong>
+          <small>Organize this save</small>
+        </span>
+
+        <i class="bi bi-chevron-right"></i>
+      </button>
+
+      <button
+        class="action-sheet-btn"
+        onclick="shareCurrentItem()"
+      >
+        <i class="bi bi-share"></i>
+
+        <span>
+          <strong>Share</strong>
+          <small>Share this with others</small>
+        </span>
+
+        <i class="bi bi-chevron-right"></i>
+      </button>
+
+      <button
+        class="action-sheet-btn danger"
+        onclick="removeCurrentSavedItem()"
+      >
+        <i class="bi bi-bookmark-x"></i>
+
+        <span>
+          <strong>Remove from saved</strong>
+          <small>This does not delete the content</small>
+        </span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       MOVE TO COLLECTION
+  ========================================== -->
+
+  <div
+    id="moveCollectionModal"
+    class="saved-modal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="saved-modal-backdrop"
+      onclick="closeMoveCollection()"
+    ></div>
+
+    <div class="saved-modal-sheet">
+
+      <button
+        class="modal-close"
+        onclick="closeMoveCollection()"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <span class="modal-kicker">
+        ORGANIZE
+      </span>
+
+      <h2>
+        Move to collection
+      </h2>
+
+      <div
+        id="moveCollectionList"
+        class="move-collection-list"
+      ></div>
+
+      <button
+        class="modal-secondary-btn"
+        onclick="openCreateCollectionFromMove()"
+      >
+        <i class="bi bi-plus-lg"></i>
+        Create new collection
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       PAGE MENU
+  ========================================== -->
+
+  <div
+    id="savedMenu"
+    class="saved-menu"
+  >
+
+    <button onclick="closeSavedMenu()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <button onclick="scrollToCollections(); closeSavedMenu()">
+      <i class="bi bi-collection"></i>
+      View collections
+    </button>
+
+    <button onclick="openCreateCollection(); closeSavedMenu()">
+      <i class="bi bi-plus-circle"></i>
+      Create collection
+    </button>
+
+  </div>
+
+
+  <script src="js/config.js"></script>
+  <script src="js/saved.js"></script>
 
 </body>
 

@@ -463,30 +463,282 @@ function followCreator() {
 // SAVE VIDEO
 // =====================================
 
-function saveVideo() {
+// =====================================
+// SAVE VIDEO / CONTENT
+// =====================================
 
-  if (!currentVideo) return;
+async function saveVideo() {
 
-  const saved =
-    JSON.parse(
-      localStorage.getItem("savedVideos") || "[]"
-    );
+  if (!currentVideo) {
+    return;
+  }
 
-  if (saved.includes(currentVideo.id)) {
+  const token =
+    localStorage.getItem("token");
 
-    alert("Already saved");
+  if (!token) {
+
+    window.location.href =
+      "login.html";
+
     return;
 
   }
 
-  saved.push(currentVideo.id);
+  try {
 
-  localStorage.setItem(
-    "savedVideos",
-    JSON.stringify(saved)
-  );
+    /*
+     * First determine the real server state.
+     */
 
-  alert("Saved successfully");
+    const checkRes =
+      await fetch(
+        `${API_BASE_URL}/saved/check/${encodeURIComponent(currentVideo.id)}`,
+        {
+          method: "GET",
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    if (checkRes.status === 401) {
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href =
+        "login.html";
+
+      return;
+
+    }
+
+
+    if (!checkRes.ok) {
+
+      throw new Error(
+        "Unable to check saved status."
+      );
+
+    }
+
+
+    const state =
+      await checkRes.json();
+
+
+    /*
+     * =====================================
+     * REMOVE
+     * =====================================
+     */
+
+    if (state.saved) {
+
+      if (!state.savedId) {
+
+        throw new Error(
+          "Saved item ID was not returned."
+        );
+
+      }
+
+
+      const deleteRes =
+        await fetch(
+          `${API_BASE_URL}/saved/${encodeURIComponent(state.savedId)}`,
+          {
+            method: "DELETE",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+
+      if (!deleteRes.ok) {
+
+        const data =
+          await safeVideoJson(
+            deleteRes
+          );
+
+        throw new Error(
+          data?.message ||
+          "Unable to remove saved content."
+        );
+
+      }
+
+
+      updateVideoSaveButton(
+        false
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+     * =====================================
+     * SAVE
+     * =====================================
+     */
+
+    const saveRes =
+      await fetch(
+        `${API_BASE_URL}/saved`,
+        {
+          method: "POST",
+
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+              contentId:
+                Number(currentVideo.id)
+            })
+        }
+      );
+
+
+    if (saveRes.status === 401) {
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href =
+        "login.html";
+
+      return;
+
+    }
+
+
+    const data =
+      await safeVideoJson(
+        saveRes
+      );
+
+
+    if (!saveRes.ok) {
+
+      throw new Error(
+        data?.message ||
+        "Unable to save content."
+      );
+
+    }
+
+
+    updateVideoSaveButton(
+      true
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Save content failed:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Unable to update saved content."
+    );
+
+  }
+
+}
+
+
+function updateVideoSaveButton(
+  isSaved
+) {
+
+  /*
+   * Your current video page does not
+   * give the save button a unique ID.
+   *
+   * The selector below targets the
+   * third action item.
+   */
+
+  const button =
+    document.querySelector(
+      ".video-actions .action-item:nth-child(3) .action-btn"
+    );
+
+
+  if (!button) {
+    return;
+  }
+
+
+  if (isSaved) {
+
+    button.innerHTML =
+      "🔖";
+
+    button.classList.add(
+      "saved"
+    );
+
+  } else {
+
+    button.innerHTML =
+      "🔖";
+
+    button.classList.remove(
+      "saved"
+    );
+
+  }
+
+}
+
+
+async function safeVideoJson(
+  response
+) {
+
+  const text =
+    await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+
+    return JSON.parse(
+      text
+    );
+
+  } catch {
+
+    return {
+      message: text
+    };
+
+  }
 
 }
 

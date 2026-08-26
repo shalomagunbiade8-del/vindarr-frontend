@@ -163,13 +163,17 @@ async function loadVideos(reset = true) {
 
     if (reset) {
 
-      posts = videos;
+      posts.push(...videos);
 
-      renderVideos(
-        videos,
-        true,
-        0
-      );
+await loadSavedStates(
+  videos
+);
+
+renderVideos(
+  videos,
+  false,
+  startIndex
+);
 
     }
 
@@ -1335,115 +1339,397 @@ function openCommentsPage(
 // SAVE VIDEO
 // =====================================
 
-function getSavedVideos() {
+// =====================================
+// SAVED CONTENT
+// =====================================
+
+const savedState = new Map();
+
+async function checkSavedContent(contentId) {
+
+  const token =
+    localStorage.getItem("token");
+
+  if (!token) {
+    return {
+      saved: false,
+      savedId: null
+    };
+  }
 
   try {
 
-    return JSON.parse(
+    const res =
+      await fetch(
+        `${API_BASE_URL}/saved/check/${encodeURIComponent(contentId)}`,
+        {
+          method: "GET",
 
-      localStorage.getItem(
-        "savedVideos"
-      ) || "[]"
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
 
+    if (res.status === 401) {
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      return {
+        saved: false,
+        savedId: null
+      };
+    }
+
+    if (!res.ok) {
+
+      throw new Error(
+        `Saved check failed: ${res.status}`
+      );
+
+    }
+
+    const data =
+      await res.json();
+
+    const state = {
+      saved:
+        Boolean(data.saved),
+
+      savedId:
+        data.savedId || null
+    };
+
+    savedState.set(
+      String(contentId),
+      state
     );
 
-  } catch {
+    return state;
 
-    return [];
+  } catch (error) {
+
+    console.error(
+      "Check saved state failed:",
+      error
+    );
+
+    return {
+      saved: false,
+      savedId: null
+    };
 
   }
 
 }
 
 
-function isVideoSaved(
-  videoId
-) {
+function isVideoSaved(contentId) {
 
-  const saved =
-    getSavedVideos();
+  const state =
+    savedState.get(
+      String(contentId)
+    );
 
-
-  return saved.some(
-    id =>
-      String(id) ===
-      String(videoId)
+  return Boolean(
+    state?.saved
   );
 
 }
 
 
-function toggleSaveVideo(
-  videoId,
+async function loadSavedStates(videos) {
+
+  const token =
+    localStorage.getItem("token");
+
+  if (!token) {
+    return;
+  }
+
+  await Promise.all(
+    videos.map(
+      video =>
+        checkSavedContent(
+          video.id
+        )
+    )
+  );
+
+}
+
+
+async function toggleSaveVideo(
+  contentId,
   event
 ) {
 
   if (event) {
 
     event.preventDefault();
-
     event.stopPropagation();
 
   }
 
+  const token =
+    localStorage.getItem("token");
 
-  let saved =
-    getSavedVideos();
+  if (!token) {
 
+    window.location.href =
+      "login.html";
 
-  const existingIndex =
-    saved.findIndex(
-      id =>
-        String(id) ===
-        String(videoId)
-    );
-
-
-  if (
-    existingIndex >= 0
-  ) {
-
-    saved.splice(
-      existingIndex,
-      1
-    );
-
-  } else {
-
-    saved.push(
-      videoId
-    );
+    return;
 
   }
 
+  const key =
+    String(contentId);
 
-  localStorage.setItem(
+  let state =
+    savedState.get(key);
 
-    "savedVideos",
+  try {
 
-    JSON.stringify(saved)
+    /*
+     * If we don't know the current
+     * server state, check it first.
+     */
 
-  );
+    if (!state) {
+
+      state =
+        await checkSavedContent(
+          contentId
+        );
+
+    }
 
 
-  updateSaveButton(
-    videoId,
-    existingIndex < 0
-  );
+    /*
+     * =====================================
+     * UNSAVE
+     * =====================================
+     */
+
+    if (state?.saved) {
+
+      if (!state.savedId) {
+
+        /*
+         * We cannot safely delete without
+         * the Saved record ID.
+         */
+
+        state =
+          await checkSavedContent(
+            contentId
+          );
+
+      }
+
+
+      if (!state.savedId) {
+
+        throw new Error(
+          "Saved item ID was not returned by the server."
+        );
+
+      }
+
+
+      const res =
+        await fetch(
+          `${API_BASE_URL}/saved/${encodeURIComponent(state.savedId)}`,
+          {
+            method: "DELETE",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+
+      if (res.status === 401) {
+
+        localStorage.removeItem(
+          "token"
+        );
+
+        localStorage.removeItem(
+          "user"
+        );
+
+        window.location.href =
+          "login.html";
+
+        return;
+
+      }
+
+
+      if (!res.ok) {
+
+        const data =
+          await safeJsonResponse(
+            res
+          );
+
+        throw new Error(
+          data?.message ||
+          "Unable to remove saved content."
+        );
+
+      }
+
+
+      savedState.set(
+        key,
+        {
+          saved: false,
+          savedId: null
+        }
+      );
+
+
+      updateSaveButton(
+        contentId,
+        false
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+     * =====================================
+     * SAVE
+     * =====================================
+     */
+
+    const res =
+      await fetch(
+        `${API_BASE_URL}/saved`,
+        {
+          method: "POST",
+
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+              contentId:
+                Number(contentId)
+            })
+        }
+      );
+
+
+    if (res.status === 401) {
+
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
+
+      window.location.href =
+        "login.html";
+
+      return;
+
+    }
+
+
+    const data =
+      await safeJsonResponse(
+        res
+      );
+
+
+    if (!res.ok) {
+
+      throw new Error(
+        data?.message ||
+        "Unable to save content."
+      );
+
+    }
+
+
+    /*
+     * Your SavedService returns:
+     *
+     * {
+     *   data: {
+     *     id: Saved.id,
+     *     contentId: ...
+     *   },
+     *   alreadySaved: false
+     * }
+     */
+
+    const savedId =
+      data?.data?.id ||
+      state?.savedId ||
+      null;
+
+
+    savedState.set(
+      key,
+      {
+        saved: true,
+        savedId
+      }
+    );
+
+
+    updateSaveButton(
+      contentId,
+      true
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Save content failed:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Unable to update saved content."
+    );
+
+  }
 
 }
 
 
 function updateSaveButton(
-  videoId,
+  contentId,
   isSaved
 ) {
 
   const button =
     document.getElementById(
-      `save-action-${videoId}`
+      `save-action-${contentId}`
     );
-
 
   if (!button) {
     return;
@@ -1451,9 +1737,7 @@ function updateSaveButton(
 
 
   const icon =
-    button.querySelector(
-      "i"
-    );
+    button.querySelector("i");
 
 
   if (isSaved) {
@@ -1461,7 +1745,6 @@ function updateSaveButton(
     button.classList.add(
       "saved"
     );
-
 
     if (icon) {
 
@@ -1476,13 +1759,40 @@ function updateSaveButton(
       "saved"
     );
 
-
     if (icon) {
 
       icon.className =
         "bi bi-bookmark";
 
     }
+
+  }
+
+}
+
+
+async function safeJsonResponse(
+  response
+) {
+
+  const text =
+    await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+
+    return JSON.parse(
+      text
+    );
+
+  } catch {
+
+    return {
+      message: text
+    };
 
   }
 
