@@ -27,6 +27,10 @@ let videoObserver = null;
 let lastTap = 0;
 
 
+// Saved state
+const savedState = new Map();
+
+
 // =====================================
 // FEED
 // =====================================
@@ -54,17 +58,43 @@ const videoId =
 
 async function loadVideos(reset = true) {
 
+  if (!feed) {
+
+    console.error(
+      "Feed element #feed was not found."
+    );
+
+    return false;
+
+  }
+
+
   try {
+
+    // ===================================
+    // RESET
+    // ===================================
 
     if (reset) {
 
       page = 1;
+
       hasMore = true;
+
+      loadingMore = false;
+
       posts = [];
+
+      savedState.clear();
+
+      feed.innerHTML = "";
 
     }
 
-    const requestedPage = page;
+
+    const requestedPage =
+      page;
+
 
     console.log(
       "Loading videos:",
@@ -74,9 +104,12 @@ async function loadVideos(reset = true) {
       }
     );
 
-    const res = await fetch(
-      `${API_BASE_URL}/videos?page=${requestedPage}&limit=10&_=${Date.now()}`
-    );
+
+    const res =
+      await fetch(
+        `${API_BASE_URL}/videos?page=${requestedPage}&limit=10&_=${Date.now()}`
+      );
+
 
     if (!res.ok) {
 
@@ -86,134 +119,182 @@ async function loadVideos(reset = true) {
 
     }
 
-    const result = await res.json();
+
+    const result =
+      await res.json();
+
 
     console.log(
       `Page ${requestedPage} response:`,
       result
     );
 
+
+    // ===================================
+    // NORMALIZE RESPONSE
+    // ===================================
+
     let videos = [];
+
 
     if (Array.isArray(result)) {
 
       videos = result;
 
-    } else if (Array.isArray(result.data)) {
+    }
 
-      videos = result.data;
+    else if (
+      result &&
+      Array.isArray(result.data)
+    ) {
 
-    } else if (Array.isArray(result.videos)) {
-
-      videos = result.videos;
-
-    } else if (Array.isArray(result.results)) {
-
-      videos = result.results;
+      videos =
+        result.data;
 
     }
+
+    else if (
+      result &&
+      Array.isArray(result.videos)
+    ) {
+
+      videos =
+        result.videos;
+
+    }
+
+    else if (
+      result &&
+      Array.isArray(result.results)
+    ) {
+
+      videos =
+        result.results;
+
+    }
+
 
     console.log(
       `Page ${requestedPage} videos received:`,
       videos.length
     );
 
-    /*
-    =====================================
-    NO MORE VIDEOS
-    =====================================
-    */
+
+    // ===================================
+    // NO MORE VIDEOS
+    // ===================================
 
     if (!videos.length) {
 
-      hasMore =
-        result.hasMore === true
-          ? true
-          : false;
+      hasMore = false;
+
+      console.log(
+        "No more videos."
+      );
 
       return false;
 
     }
 
-    /*
-    =====================================
-    UPDATE HAS MORE
-    =====================================
-    */
+
+    // ===================================
+    // REMOVE DUPLICATES
+    // ===================================
+
+    const existingIds =
+      new Set(
+        posts.map(
+          post =>
+            String(post.id)
+        )
+      );
+
+
+    const newVideos =
+      videos.filter(
+        video =>
+          video &&
+          video.id != null &&
+          !existingIds.has(
+            String(video.id)
+          )
+      );
+
+
+    if (!newVideos.length) {
+
+      hasMore = false;
+
+      console.log(
+        "No new videos returned."
+      );
+
+      return false;
+
+    }
+
+
+    // ===================================
+    // HAS MORE
+    // ===================================
 
     if (
+      result &&
       typeof result.hasMore === "boolean"
     ) {
 
       hasMore =
         result.hasMore;
 
-    } else {
+    }
+
+    else {
 
       hasMore =
         videos.length === 10;
 
     }
 
-    /*
-    =====================================
-    PAGE 1
-    =====================================
-    */
 
-    if (reset) {
+    // ===================================
+    // POSITION BEFORE APPENDING
+    // ===================================
 
-      posts.push(...videos);
+    const startIndex =
+      posts.length;
 
-await loadSavedStates(
-  videos
-);
 
-renderVideos(
-  videos,
-  false,
-  startIndex
-);
+    // ===================================
+    // ADD TO STATE
+    // ===================================
 
-    }
+    posts.push(
+      ...newVideos
+    );
 
-    /*
-    =====================================
-    PAGE 2+
-    =====================================
-    */
 
-    else {
+    // ===================================
+    // LOAD SAVED STATES
+    // ===================================
 
-      /*
-      Save the position before adding
-      the new videos.
-      */
+    await loadSavedStates(
+      newVideos
+    );
 
-      const startIndex =
-        posts.length;
 
-      /*
-      Add only the new page to state.
-      */
+    // ===================================
+    // RENDER
+    // ===================================
 
-      posts.push(...videos);
+    renderVideos(
+      newVideos,
+      reset,
+      startIndex
+    );
 
-      /*
-      IMPORTANT:
-      Render ONLY the newly received
-      videos, not the entire posts array.
-      */
-
-      renderVideos(
-        videos,
-        false,
-        startIndex
-      );
-
-    }
 
     return true;
+
 
   } catch (err) {
 
@@ -222,9 +303,10 @@ renderVideos(
       err
     );
 
+
     if (
       feed &&
-      !posts.length
+      posts.length === 0
     ) {
 
       feed.innerHTML = `
@@ -242,7 +324,8 @@ renderVideos(
           </p>
 
           <button
-            onclick="loadVideos()"
+            type="button"
+            onclick="loadVideos(true)"
           >
             Try Again
           </button>
@@ -253,9 +336,6 @@ renderVideos(
 
     }
 
-    /*
-    Let the caller know loading failed.
-    */
 
     throw err;
 
@@ -270,15 +350,25 @@ renderVideos(
 
 function getMediaUrl(video) {
 
+  if (!video) {
+    return "";
+  }
+
+
   let media = "";
 
 
-  if (video.type === "ebook") {
+  if (
+    video.type === "ebook"
+  ) {
 
     media =
-      video.coverUrl || "";
+      video.coverUrl ||
+      "";
 
-  } else {
+  }
+
+  else {
 
     media =
       video.videoUrl ||
@@ -290,13 +380,20 @@ function getMediaUrl(video) {
 
 
   if (!media) {
+
     return "";
+
   }
+
+
+  media =
+    String(media);
 
 
   if (
     media.startsWith("http://") ||
-    media.startsWith("https://")
+    media.startsWith("https://") ||
+    media.startsWith("data:")
   ) {
 
     return media;
@@ -304,8 +401,21 @@ function getMediaUrl(video) {
   }
 
 
+  if (
+    media.startsWith("/")
+  ) {
+
+    return (
+      API_BASE_URL +
+      media
+    );
+
+  }
+
+
   return (
     API_BASE_URL +
+    "/" +
     media
   );
 
@@ -319,7 +429,7 @@ function getMediaUrl(video) {
 function getCreatorAvatar(video) {
 
   const avatar =
-    video.creatorAvatar;
+    video?.creatorAvatar;
 
 
   if (!avatar) {
@@ -329,23 +439,40 @@ function getCreatorAvatar(video) {
   }
 
 
+  const value =
+    String(avatar);
+
+
   if (
-    avatar.startsWith("http://") ||
-    avatar.startsWith("https://")
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("data:")
   ) {
 
-    return avatar;
+    return value;
+
+  }
+
+
+  if (
+    value.startsWith("/")
+  ) {
+
+    return (
+      API_BASE_URL +
+      value
+    );
 
   }
 
 
   return (
     API_BASE_URL +
-    avatar
+    "/" +
+    value
   );
 
 }
-
 
 
 // =====================================
@@ -359,14 +486,15 @@ function renderVideos(
 ) {
 
   if (!feed) {
+
     return;
+
   }
 
-  /*
-  =====================================
-  EMPTY FEED
-  =====================================
-  */
+
+  // ===================================
+  // EMPTY
+  // ===================================
 
   if (
     !videosToRender.length &&
@@ -395,47 +523,72 @@ function renderVideos(
 
   }
 
+
   let html = "";
+
 
   videosToRender.forEach(
     (v, i) => {
 
-      /*
-      Absolute index across the entire feed.
+      if (!v) {
+        return;
+      }
 
-      Page 1:
-      0-9
 
-      Page 2:
-      10-19
-
-      Page 3:
-      20-29
-      */
+      // =================================
+      // ABSOLUTE INDEX
+      // =================================
 
       const videoIndex =
         startIndex + i;
 
+
+      // =================================
+      // MEDIA
+      // =================================
+
       const mediaUrl =
         getMediaUrl(v);
 
+
+      const lowerMediaUrl =
+        mediaUrl.toLowerCase();
+
+
       const isVideo =
         v.type === "video" ||
-        mediaUrl.includes(".mp4") ||
-        mediaUrl.includes(".mov") ||
-        mediaUrl.includes(".webm");
+        lowerMediaUrl.includes(".mp4") ||
+        lowerMediaUrl.includes(".mov") ||
+        lowerMediaUrl.includes(".webm") ||
+        lowerMediaUrl.includes(".m3u8");
+
+
+      // =================================
+      // AVATAR
+      // =================================
 
       const avatar =
         getCreatorAvatar(v);
+
+
+      // =================================
+      // DESCRIPTION
+      // =================================
 
       const description =
         v.context ||
         "";
 
+
+      // =================================
+      // COUNTS
+      // =================================
+
       const understandCount =
         Number(
           v.understandCount || 0
         );
+
 
       const commentCount =
         Array.isArray(v.comments)
@@ -444,14 +597,40 @@ function renderVideos(
               v.commentCount || 0
             );
 
+
+      // =================================
+      // SAVED
+      // =================================
+
       const saved =
-        isVideoSaved(v.id);
+        isVideoSaved(
+          v.id
+        );
+
+
+      // =================================
+      // TYPE
+      // =================================
+
+      const isEbook =
+        v.type === "ebook";
+
+
+      const isProduct =
+        v.type === "fashion" ||
+        v.type === "essential";
+
+
+      // =================================
+      // CARD
+      // =================================
 
       html += `
 
         <article
           class="video-card"
-          id="video-${v.id}"
+          id="video-${escapeHtml(v.id)}"
+          data-video-id="${escapeHtml(v.id)}"
         >
 
           <!-- =================================
@@ -470,7 +649,7 @@ function renderVideos(
                   loop
                   playsinline
                   preload="metadata"
-                  onclick="handleVideoTap(${videoIndex}, ${v.id}, event)"
+                  onclick="handleVideoTap(${videoIndex}, ${Number(v.id)}, event)"
                 ></video>
 
               `
@@ -480,8 +659,18 @@ function renderVideos(
                 <img
                   src="${escapeHtml(mediaUrl)}"
                   class="feed-image"
-                  alt="${escapeHtml(v.title || "Vindarr content")}"
-                  onclick="openProduct('${v.id}')"
+                  alt="${escapeHtml(
+                    v.title ||
+                    "Vindarr content"
+                  )}"
+                  onclick="${
+                    isProduct
+                      ? `openProduct(${Number(v.id)}, event)`
+                      : isEbook
+                        ? `openEbook(${Number(v.id)}, event)`
+                        : ""
+                  }"
+                  onerror="this.style.display='none'"
                 >
 
               `
@@ -492,7 +681,9 @@ function renderVideos(
                DARK GRADIENT
           ================================= -->
 
-          <div class="feed-video-gradient"></div>
+          <div
+            class="feed-video-gradient"
+          ></div>
 
 
           <!-- =================================
@@ -502,8 +693,9 @@ function renderVideos(
           <div class="video-card-top">
 
             <button
+              type="button"
               class="glass-circle"
-              onclick="openNotifications()"
+              onclick="openNotifications(event)"
               aria-label="Notifications"
             >
 
@@ -513,8 +705,9 @@ function renderVideos(
 
 
             <button
+              type="button"
               class="glass-circle"
-              onclick="openFeedMenu()"
+              onclick="openFeedMenu(event)"
               aria-label="Menu"
             >
 
@@ -535,16 +728,19 @@ function renderVideos(
             <!-- UNDERSTAND -->
 
             <button
+              type="button"
               class="video-action"
-              onclick="pressUnderstand(${v.id}, event)"
+              onclick="pressUnderstand(${Number(v.id)}, event)"
             >
 
               <i class="bi bi-heart"></i>
 
               <span
-                id="understand-${v.id}"
+                id="understand-${Number(v.id)}"
               >
-                ${formatCount(understandCount)}
+                ${formatCount(
+                  understandCount
+                )}
               </span>
 
             </button>
@@ -553,14 +749,17 @@ function renderVideos(
             <!-- COMMENTS -->
 
             <button
+              type="button"
               class="video-action"
-              onclick="openCommentsPage(${v.id}, event)"
+              onclick="openCommentsPage(${Number(v.id)}, event)"
             >
 
               <i class="bi bi-chat-circle"></i>
 
               <span>
-                ${formatCount(commentCount)}
+                ${formatCount(
+                  commentCount
+                )}
               </span>
 
             </button>
@@ -569,9 +768,19 @@ function renderVideos(
             <!-- SAVE -->
 
             <button
-              id="save-action-${v.id}"
-              class="video-action ${saved ? "saved" : ""}"
-              onclick="toggleSaveVideo(${v.id}, event)"
+              type="button"
+              id="save-action-${Number(v.id)}"
+              class="video-action ${
+                saved
+                  ? "saved"
+                  : ""
+              }"
+              onclick="toggleSaveVideo(${Number(v.id)}, event)"
+              aria-label="${
+                saved
+                  ? "Remove from saved"
+                  : "Save content"
+              }"
             >
 
               <i
@@ -592,8 +801,9 @@ function renderVideos(
             <!-- SHARE -->
 
             <button
+              type="button"
               class="video-action"
-              onclick="shareContent(${v.id}, event)"
+              onclick="shareContent(${Number(v.id)}, event)"
             >
 
               <i class="bi bi-send"></i>
@@ -608,13 +818,14 @@ function renderVideos(
             <!-- EBOOK -->
 
             ${
-              v.type === "ebook"
+              isEbook
 
                 ? `
 
                   <button
+                    type="button"
                     class="video-action"
-                    onclick="openEbook('${v.id}', event)"
+                    onclick="openEbook(${Number(v.id)}, event)"
                   >
 
                     <i class="bi bi-book"></i>
@@ -634,16 +845,14 @@ function renderVideos(
             <!-- PRODUCT -->
 
             ${
-              (
-                v.type === "fashion" ||
-                v.type === "essential"
-              )
+              isProduct
 
                 ? `
 
                   <button
+                    type="button"
                     class="video-action"
-                    onclick="openProduct('${v.id}', event)"
+                    onclick="openProduct(${Number(v.id)}, event)"
                   >
 
                     <i class="bi bi-bag"></i>
@@ -675,8 +884,17 @@ function renderVideos(
               <img
                 src="${escapeHtml(avatar)}"
                 class="creator-avatar"
-                onclick="openCreatorProfile('${escapeHtml(v.creatorUsername || "creator")}', event)"
-                alt="${escapeHtml(v.creatorUsername || "creator")}"
+                onclick="openCreatorProfile(
+                  '${escapeHtml(
+                    v.creatorUsername ||
+                    "creator"
+                  )}',
+                  event
+                )"
+                alt="${escapeHtml(
+                  v.creatorUsername ||
+                  "creator"
+                )}"
               >
 
 
@@ -686,10 +904,19 @@ function renderVideos(
 
                   <div
                     class="creator-name"
-                    onclick="openCreatorProfile('${escapeHtml(v.creatorUsername || "creator")}', event)"
+                    onclick="openCreatorProfile(
+                      '${escapeHtml(
+                        v.creatorUsername ||
+                        "creator"
+                      )}',
+                      event
+                    )"
                   >
 
-                    @${escapeHtml(v.creatorUsername || "creator")}
+                    @${escapeHtml(
+                      v.creatorUsername ||
+                      "creator"
+                    )}
 
                     <i
                       class="bi bi-patch-check-fill verified-icon"
@@ -701,8 +928,16 @@ function renderVideos(
                   <!-- FOLLOW -->
 
                   <button
+                    type="button"
                     class="follow-btn"
-                    onclick="followCreator(${v.creatorId || 0}, '${escapeHtml(v.creatorUsername || "")}', event)"
+                    onclick="followCreator(
+                      ${Number(v.creatorId || 0)},
+                      '${escapeHtml(
+                        v.creatorUsername ||
+                        ""
+                      )}',
+                      event
+                    )"
                   >
 
                     Follow
@@ -721,12 +956,12 @@ function renderVideos(
 
                       <div
                         class="video-caption"
-                        id="caption-${v.id}"
+                        id="caption-${Number(v.id)}"
                       >
 
                         ${renderCaption(
                           description,
-                          v.id
+                          Number(v.id)
                         )}
 
                       </div>
@@ -734,7 +969,6 @@ function renderVideos(
                     `
 
                     : ""
-
                 }
 
 
@@ -742,7 +976,9 @@ function renderVideos(
 
                 <div class="audio-pill">
 
-                  <i class="bi bi-music-note-beamed"></i>
+                  <i
+                    class="bi bi-music-note-beamed"
+                  ></i>
 
                   <span>
                     Original Audio · Vindarr
@@ -762,13 +998,19 @@ function renderVideos(
           ================================= -->
 
           <button
+            type="button"
             class="feed-comment-bar"
-            onclick="openCommentsPage(${v.id}, event)"
+            onclick="openCommentsPage(
+              ${Number(v.id)},
+              event
+            )"
           >
 
             <span class="comment-face">
 
-              <i class="bi bi-emoji-smile"></i>
+              <i
+                class="bi bi-emoji-smile"
+              ></i>
 
             </span>
 
@@ -779,11 +1021,17 @@ function renderVideos(
           </button>
 
 
-          <!-- SHARE BUTTON -->
+          <!-- =================================
+               SHARE BUTTON
+          ================================= -->
 
           <button
+            type="button"
             class="feed-share-button"
-            onclick="shareContent(${v.id}, event)"
+            onclick="shareContent(
+              ${Number(v.id)},
+              event
+            )"
             aria-label="Share"
           >
 
@@ -800,18 +1048,18 @@ function renderVideos(
   );
 
 
-  /*
-  =====================================
-  REPLACE OR APPEND
-  =====================================
-  */
+  // ===================================
+  // INSERT
+  // ===================================
 
   if (replace) {
 
     feed.innerHTML =
       html;
 
-  } else {
+  }
+
+  else {
 
     feed.insertAdjacentHTML(
       "beforeend",
@@ -821,6 +1069,10 @@ function renderVideos(
   }
 
 
+  // ===================================
+  // VIDEO / PAGINATION
+  // ===================================
+
   setupVideoObserver();
 
   setupLoadMore();
@@ -828,6 +1080,7 @@ function renderVideos(
   openRequestedVideo();
 
 }
+
 
 // =====================================
 // CAPTION
@@ -842,11 +1095,15 @@ function renderCaption(
     escapeHtml(text);
 
 
-  if (text.length <= 110) {
+  if (
+    String(text).length <= 110
+  ) {
 
     return `
 
-      <div class="description-text collapsed">
+      <div
+        class="description-text collapsed"
+      >
 
         ${safeText}
 
@@ -865,12 +1122,16 @@ function renderCaption(
     >
 
       ${escapeHtml(
-        text.slice(0, 110)
+        String(text).slice(0, 110)
       )}...
 
       <button
+        type="button"
         class="read-more"
-        onclick="expandCaption(${id}, event)"
+        onclick="expandCaption(
+          ${id},
+          event
+        )"
       >
         Read more
       </button>
@@ -887,8 +1148,12 @@ function renderCaption(
       ${safeText}
 
       <button
+        type="button"
         class="read-more"
-        onclick="collapseCaption(${id}, event)"
+        onclick="collapseCaption(
+          ${id},
+          event
+        )"
       >
         Show less
       </button>
@@ -906,12 +1171,29 @@ function renderCaption(
 
 function escapeHtml(value) {
 
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 
 }
 
@@ -926,7 +1208,9 @@ function formatCount(number) {
     Number(number || 0);
 
 
-  if (value >= 1000000) {
+  if (
+    value >= 1000000
+  ) {
 
     return (
       (value / 1000000)
@@ -938,7 +1222,9 @@ function formatCount(number) {
   }
 
 
-  if (value >= 1000) {
+  if (
+    value >= 1000
+  ) {
 
     return (
       (value / 1000)
@@ -965,13 +1251,34 @@ function setupVideoObserver() {
 
     videoObserver.disconnect();
 
+    videoObserver = null;
+
+  }
+
+
+  if (!feed) {
+    return;
   }
 
 
   const videos =
-    document.querySelectorAll(
-      "#feed video"
+    feed.querySelectorAll(
+      "video.feed-video"
     );
+
+
+  if (!videos.length) {
+    return;
+  }
+
+
+  if (
+    !("IntersectionObserver" in window)
+  ) {
+
+    return;
+
+  }
 
 
   videoObserver =
@@ -987,14 +1294,18 @@ function setupVideoObserver() {
 
 
             if (
-              entry.isIntersecting
+              entry.isIntersecting &&
+              entry.intersectionRatio >= 0.7
             ) {
 
               video.play()
-                .catch(() => {});
+                .catch(
+                  () => {}
+                );
 
+            }
 
-            } else {
+            else {
 
               video.pause();
 
@@ -1006,7 +1317,12 @@ function setupVideoObserver() {
       },
 
       {
-        threshold: 0.7
+        threshold: [
+          0,
+          0.7,
+          1
+        ]
+
       }
 
     );
@@ -1057,7 +1373,9 @@ function handleVideoTap(
   }
 
 
+  // ===================================
   // DOUBLE TAP
+  // ===================================
 
   if (
     now - lastTap < 300
@@ -1067,19 +1385,26 @@ function handleVideoTap(
       videoId
     );
 
+  }
 
-  } else {
+  else {
 
+    // =================================
     // SINGLE TAP
+    // =================================
 
     if (
       video.paused
     ) {
 
       video.play()
-        .catch(() => {});
+        .catch(
+          () => {}
+        );
 
-    } else {
+    }
+
+    else {
 
       video.pause();
 
@@ -1088,7 +1413,8 @@ function handleVideoTap(
   }
 
 
-  lastTap = now;
+  lastTap =
+    now;
 
 }
 
@@ -1104,20 +1430,28 @@ function openCreatorProfile(
 
   if (event) {
 
+    event.preventDefault();
+
     event.stopPropagation();
 
   }
 
 
+  if (!username) {
+    return;
+  }
+
+
   window.location.href =
-    `profile.html?user=${encodeURIComponent(username)}`;
+    `profile.html?user=${encodeURIComponent(
+      username
+    )}`;
 
 }
 
 
 // =====================================
 // FOLLOW CREATOR
-// REPLACES PURVIEW
 // =====================================
 
 async function followCreator(
@@ -1127,6 +1461,8 @@ async function followCreator(
 ) {
 
   if (event) {
+
+    event.preventDefault();
 
     event.stopPropagation();
 
@@ -1164,29 +1500,39 @@ async function followCreator(
 
     const res =
       await fetch(
-
         `${API_BASE_URL}/purview/${creatorId}`,
-
         {
-
           method: "POST",
 
           headers: {
-
             Authorization:
               `Bearer ${token}`
-
           }
-
         }
-
       );
+
+
+    if (
+      res.status === 401
+    ) {
+
+      logoutUser();
+
+      return;
+
+    }
 
 
     if (!res.ok) {
 
+      const data =
+        await safeJsonResponse(
+          res
+        );
+
       throw new Error(
-        "Follow request failed"
+        data?.message ||
+        "Follow request failed."
       );
 
     }
@@ -1216,7 +1562,8 @@ async function followCreator(
     );
 
     alert(
-      "Unable to follow creator"
+      err?.message ||
+      "Unable to follow creator."
     );
 
   }
@@ -1234,6 +1581,8 @@ async function pressUnderstand(
 ) {
 
   if (event) {
+
+    event.preventDefault();
 
     event.stopPropagation();
 
@@ -1260,27 +1609,43 @@ async function pressUnderstand(
 
     const res =
       await fetch(
-
         `${API_BASE_URL}/videos/${videoId}/understand`,
-
         {
-
           method: "POST",
 
           headers: {
-
             Authorization:
               `Bearer ${token}`
-
           }
-
         }
-
       );
 
 
+    if (
+      res.status === 401
+    ) {
+
+      logoutUser();
+
+      return;
+
+    }
+
+
     const data =
-      await res.json();
+      await safeJsonResponse(
+        res
+      );
+
+
+    if (!res.ok) {
+
+      throw new Error(
+        data?.message ||
+        "Unable to update understanding."
+      );
+
+    }
 
 
     const countEl =
@@ -1293,7 +1658,8 @@ async function pressUnderstand(
 
       countEl.innerText =
         formatCount(
-          data.understandCount || 0
+          data?.understandCount ||
+          0
         );
 
     }
@@ -1312,7 +1678,6 @@ async function pressUnderstand(
 
 // =====================================
 // COMMENTS
-// COMPLETELY REPLACES MODAL
 // =====================================
 
 function openCommentsPage(
@@ -1330,38 +1695,49 @@ function openCommentsPage(
 
 
   window.location.href =
-    `comments.html?video=${encodeURIComponent(videoId)}`;
+    `comments.html?video=${encodeURIComponent(
+      videoId
+    )}`;
 
 }
 
 
 // =====================================
-// SAVE VIDEO
-// =====================================
-
-// =====================================
 // SAVED CONTENT
 // =====================================
 
-const savedState = new Map();
 
-async function checkSavedContent(contentId) {
+// =====================================
+// CHECK SAVED
+// =====================================
+
+async function checkSavedContent(
+  contentId
+) {
 
   const token =
-    localStorage.getItem("token");
+    localStorage.getItem(
+      "token"
+    );
+
 
   if (!token) {
+
     return {
       saved: false,
       savedId: null
     };
+
   }
+
 
   try {
 
     const res =
       await fetch(
-        `${API_BASE_URL}/saved/check/${encodeURIComponent(contentId)}`,
+        `${API_BASE_URL}/saved/check/${encodeURIComponent(
+          contentId
+        )}`,
         {
           method: "GET",
 
@@ -1372,16 +1748,20 @@ async function checkSavedContent(contentId) {
         }
       );
 
-    if (res.status === 401) {
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+    if (
+      res.status === 401
+    ) {
+
+      logoutUser();
 
       return {
         saved: false,
         savedId: null
       };
+
     }
+
 
     if (!res.ok) {
 
@@ -1391,23 +1771,35 @@ async function checkSavedContent(contentId) {
 
     }
 
+
     const data =
-      await res.json();
+      await safeJsonResponse(
+        res
+      );
+
 
     const state = {
+
       saved:
-        Boolean(data.saved),
+        Boolean(
+          data?.saved
+        ),
 
       savedId:
-        data.savedId || null
+        data?.savedId ||
+        null
+
     };
+
 
     savedState.set(
       String(contentId),
       state
     );
 
+
     return state;
+
 
   } catch (error) {
 
@@ -1416,9 +1808,13 @@ async function checkSavedContent(contentId) {
       error
     );
 
+
     return {
+
       saved: false,
+
       savedId: null
+
     };
 
   }
@@ -1426,12 +1822,19 @@ async function checkSavedContent(contentId) {
 }
 
 
-function isVideoSaved(contentId) {
+// =====================================
+// IS SAVED
+// =====================================
+
+function isVideoSaved(
+  contentId
+) {
 
   const state =
     savedState.get(
       String(contentId)
     );
+
 
   return Boolean(
     state?.saved
@@ -1440,26 +1843,63 @@ function isVideoSaved(contentId) {
 }
 
 
-async function loadSavedStates(videos) {
+// =====================================
+// LOAD SAVED STATES
+// =====================================
+
+async function loadSavedStates(
+  videos
+) {
 
   const token =
-    localStorage.getItem("token");
+    localStorage.getItem(
+      "token"
+    );
+
 
   if (!token) {
     return;
   }
 
+
+  if (
+    !Array.isArray(videos) ||
+    !videos.length
+  ) {
+
+    return;
+
+  }
+
+
   await Promise.all(
     videos.map(
-      video =>
-        checkSavedContent(
+      video => {
+
+        if (
+          !video ||
+          video.id == null
+        ) {
+
+          return Promise.resolve();
+
+        }
+
+
+        return checkSavedContent(
           video.id
-        )
+        );
+
+      }
     )
   );
 
 }
 
+
+// =====================================
+// TOGGLE SAVE
+// =====================================
 
 async function toggleSaveVideo(
   contentId,
@@ -1469,12 +1909,17 @@ async function toggleSaveVideo(
   if (event) {
 
     event.preventDefault();
+
     event.stopPropagation();
 
   }
 
+
   const token =
-    localStorage.getItem("token");
+    localStorage.getItem(
+      "token"
+    );
+
 
   if (!token) {
 
@@ -1485,18 +1930,40 @@ async function toggleSaveVideo(
 
   }
 
+
   const key =
     String(contentId);
 
+
   let state =
-    savedState.get(key);
+    savedState.get(
+      key
+    );
+
+
+  // ===================================
+  // TEMPORARILY DISABLE BUTTON
+  // ===================================
+
+  const button =
+    document.getElementById(
+      `save-action-${contentId}`
+    );
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+  }
+
 
   try {
 
-    /*
-     * If we don't know the current
-     * server state, check it first.
-     */
+    // =================================
+    // UNKNOWN STATE
+    // =================================
 
     if (!state) {
 
@@ -1508,20 +1975,15 @@ async function toggleSaveVideo(
     }
 
 
-    /*
-     * =====================================
-     * UNSAVE
-     * =====================================
-     */
+    // =================================
+    // UNSAVE
+    // =================================
 
-    if (state?.saved) {
+    if (
+      state?.saved
+    ) {
 
       if (!state.savedId) {
-
-        /*
-         * We cannot safely delete without
-         * the Saved record ID.
-         */
 
         state =
           await checkSavedContent(
@@ -1531,7 +1993,7 @@ async function toggleSaveVideo(
       }
 
 
-      if (!state.savedId) {
+      if (!state?.savedId) {
 
         throw new Error(
           "Saved item ID was not returned by the server."
@@ -1542,7 +2004,9 @@ async function toggleSaveVideo(
 
       const res =
         await fetch(
-          `${API_BASE_URL}/saved/${encodeURIComponent(state.savedId)}`,
+          `${API_BASE_URL}/saved/${encodeURIComponent(
+            state.savedId
+          )}`,
           {
             method: "DELETE",
 
@@ -1554,30 +2018,24 @@ async function toggleSaveVideo(
         );
 
 
-      if (res.status === 401) {
+      if (
+        res.status === 401
+      ) {
 
-        localStorage.removeItem(
-          "token"
-        );
-
-        localStorage.removeItem(
-          "user"
-        );
-
-        window.location.href =
-          "login.html";
+        logoutUser();
 
         return;
 
       }
 
 
-      if (!res.ok) {
+      const data =
+        await safeJsonResponse(
+          res
+        );
 
-        const data =
-          await safeJsonResponse(
-            res
-          );
+
+      if (!res.ok) {
 
         throw new Error(
           data?.message ||
@@ -1607,11 +2065,9 @@ async function toggleSaveVideo(
     }
 
 
-    /*
-     * =====================================
-     * SAVE
-     * =====================================
-     */
+    // =================================
+    // SAVE
+    // =================================
 
     const res =
       await fetch(
@@ -1634,22 +2090,16 @@ async function toggleSaveVideo(
               contentId:
                 Number(contentId)
             })
+
         }
       );
 
 
-    if (res.status === 401) {
+    if (
+      res.status === 401
+    ) {
 
-      localStorage.removeItem(
-        "token"
-      );
-
-      localStorage.removeItem(
-        "user"
-      );
-
-      window.location.href =
-        "login.html";
+      logoutUser();
 
       return;
 
@@ -1672,17 +2122,17 @@ async function toggleSaveVideo(
     }
 
 
-    /*
-     * Your SavedService returns:
-     *
-     * {
-     *   data: {
-     *     id: Saved.id,
-     *     contentId: ...
-     *   },
-     *   alreadySaved: false
-     * }
-     */
+    // =================================
+    // SavedService response:
+    //
+    // {
+    //   data: {
+    //     id,
+    //     contentId
+    //   },
+    //   alreadySaved
+    // }
+    // =================================
 
     const savedId =
       data?.data?.id ||
@@ -1704,12 +2154,14 @@ async function toggleSaveVideo(
       true
     );
 
+
   } catch (error) {
 
     console.error(
       "Save content failed:",
       error
     );
+
 
     alert(
       error?.message ||
@@ -1718,8 +2170,23 @@ async function toggleSaveVideo(
 
   }
 
+  finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
 }
 
+
+// =====================================
+// UPDATE SAVE BUTTON
+// =====================================
 
 function updateSaveButton(
   contentId,
@@ -1731,13 +2198,18 @@ function updateSaveButton(
       `save-action-${contentId}`
     );
 
+
   if (!button) {
+
     return;
+
   }
 
 
   const icon =
-    button.querySelector("i");
+    button.querySelector(
+      "i"
+    );
 
 
   if (isSaved) {
@@ -1746,6 +2218,13 @@ function updateSaveButton(
       "saved"
     );
 
+
+    button.setAttribute(
+      "aria-label",
+      "Remove from saved"
+    );
+
+
     if (icon) {
 
       icon.className =
@@ -1753,11 +2232,20 @@ function updateSaveButton(
 
     }
 
-  } else {
+  }
+
+  else {
 
     button.classList.remove(
       "saved"
     );
+
+
+    button.setAttribute(
+      "aria-label",
+      "Save content"
+    );
+
 
     if (icon) {
 
@@ -1771,16 +2259,31 @@ function updateSaveButton(
 }
 
 
+// =====================================
+// SAFE JSON RESPONSE
+// =====================================
+
 async function safeJsonResponse(
   response
 ) {
 
+  if (!response) {
+
+    return null;
+
+  }
+
+
   const text =
     await response.text();
 
+
   if (!text) {
+
     return null;
+
   }
+
 
   try {
 
@@ -1788,13 +2291,36 @@ async function safeJsonResponse(
       text
     );
 
-  } catch {
+  }
+
+  catch {
 
     return {
       message: text
     };
 
   }
+
+}
+
+
+// =====================================
+// LOGOUT
+// =====================================
+
+function logoutUser() {
+
+  localStorage.removeItem(
+    "token"
+  );
+
+  localStorage.removeItem(
+    "user"
+  );
+
+
+  window.location.href =
+    "login.html";
 
 }
 
@@ -1830,7 +2356,9 @@ async function shareContent(
 
 
   const url =
-    `${window.location.origin}/index.html?video=${id}`;
+    `${window.location.origin}/index.html?video=${encodeURIComponent(
+      id
+    )}`;
 
 
   if (
@@ -1853,7 +2381,9 @@ async function shareContent(
 
       return;
 
-    } catch {
+    }
+
+    catch {
 
       return;
 
@@ -1864,15 +2394,31 @@ async function shareContent(
 
   try {
 
-    await navigator.clipboard.writeText(
-      url
-    );
+    if (
+      navigator.clipboard
+    ) {
 
-    alert(
-      "Video link copied"
-    );
+      await navigator.clipboard.writeText(
+        url
+      );
 
-  } catch {
+      alert(
+        "Video link copied"
+      );
+
+    }
+
+    else {
+
+      alert(
+        url
+      );
+
+    }
+
+  }
+
+  catch {
 
     alert(
       url
@@ -1894,13 +2440,17 @@ function openProduct(
 
   if (event) {
 
+    event.preventDefault();
+
     event.stopPropagation();
 
   }
 
 
   window.location.href =
-    `product.html?id=${encodeURIComponent(id)}`;
+    `product.html?id=${encodeURIComponent(
+      id
+    )}`;
 
 }
 
@@ -1916,13 +2466,17 @@ function openEbook(
 
   if (event) {
 
+    event.preventDefault();
+
     event.stopPropagation();
 
   }
 
 
   window.location.href =
-    `ebook.html?id=${encodeURIComponent(id)}`;
+    `ebook.html?id=${encodeURIComponent(
+      id
+    )}`;
 
 }
 
@@ -1975,6 +2529,10 @@ function expandCaption(
 }
 
 
+// =====================================
+// COLLAPSE CAPTION
+// =====================================
+
 function collapseCaption(
   id,
   event
@@ -2026,7 +2584,9 @@ function collapseCaption(
 function openRequestedVideo() {
 
   if (!videoId) {
+
     return;
+
   }
 
 
@@ -2040,15 +2600,19 @@ function openRequestedVideo() {
 
 
       if (!target) {
+
         return;
+
       }
 
 
       target.scrollIntoView({
 
-        behavior: "smooth",
+        behavior:
+          "smooth",
 
-        block: "start"
+        block:
+          "start"
 
       });
 
@@ -2056,7 +2620,6 @@ function openRequestedVideo() {
       target.classList.add(
         "highlight-video"
       );
-
 
     },
     300
@@ -2071,65 +2634,136 @@ function openRequestedVideo() {
 
 function setupLoadMore() {
 
+  if (!feed) {
+
+    return;
+
+  }
+
+
+  if (loadTrigger) {
+
     feed.removeEventListener(
-
-        "scroll",
-
-        handleInfiniteScroll
-
+      "scroll",
+      handleInfiniteScroll
     );
 
-    feed.addEventListener(
+  }
 
-        "scroll",
 
-        handleInfiniteScroll
+  feed.addEventListener(
+    "scroll",
+    handleInfiniteScroll,
+    {
+      passive: true
+    }
+  );
 
-    );
+
+  loadTrigger =
+    true;
 
 }
 
+
+// =====================================
+// INFINITE SCROLL
+// =====================================
+
 async function handleInfiniteScroll() {
 
-    if (loadingMore) return;
+  if (!feed) {
 
-    if (!hasMore) return;
+    return;
 
-    const remaining =
+  }
 
-        feed.scrollHeight -
 
-        feed.scrollTop -
+  if (loadingMore) {
 
-        feed.clientHeight;
+    return;
 
-    if (remaining > 600) return;
+  }
 
-    loadingMore = true;
 
-    page++;
+  if (!hasMore) {
 
-    console.log("Loading page:", page);
+    return;
 
-    try {
+  }
 
-        await loadVideos(false);
+
+  const remaining =
+    feed.scrollHeight -
+    feed.scrollTop -
+    feed.clientHeight;
+
+
+  if (
+    remaining > 600
+  ) {
+
+    return;
+
+  }
+
+
+  loadingMore =
+    true;
+
+
+  const previousPage =
+    page;
+
+
+  page += 1;
+
+
+  console.log(
+    "Loading page:",
+    page
+  );
+
+
+  try {
+
+    const loaded =
+      await loadVideos(
+        false
+      );
+
+
+    if (!loaded) {
+
+      page =
+        previousPage;
+
+      hasMore =
+        false;
 
     }
 
-    catch(err){
+  }
 
-        console.error(err);
+  catch (err) {
 
-        page--;
+    console.error(
+      "Infinite scroll failed:",
+      err
+    );
 
-    }
 
-    finally{
+    page =
+      previousPage;
 
-        loadingMore = false;
+  }
 
-    }
+  finally {
+
+    loadingMore =
+      false;
+
+  }
 
 }
 
@@ -2138,7 +2772,18 @@ async function handleInfiniteScroll() {
 // NOTIFICATIONS
 // =====================================
 
-function openNotifications() {
+function openNotifications(
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
 
   const panel =
     document.getElementById(
@@ -2163,6 +2808,10 @@ function openNotifications() {
 }
 
 
+// =====================================
+// CLOSE NOTIFICATIONS
+// =====================================
+
 function closeNotifications() {
 
   const panel =
@@ -2183,10 +2832,21 @@ function closeNotifications() {
 
 
 // =====================================
-// INSTAGRAM-STYLE MENU PAGE
+// FEED MENU
 // =====================================
 
-function openFeedMenu() {
+function openFeedMenu(
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
 
   window.location.href =
     "menu.html";
@@ -2198,6 +2858,28 @@ function openFeedMenu() {
 // INITIAL LOAD
 // =====================================
 
-loadVideos().then(() => {
-    setupLoadMore();
-});
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    try {
+
+      await loadVideos(
+        true
+      );
+
+      setupLoadMore();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Initial feed load failed:",
+        error
+      );
+
+    }
+
+  }
+);
