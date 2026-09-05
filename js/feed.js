@@ -53,6 +53,16 @@ const videoId =
 
 
 // =====================================
+// API BASE
+// =====================================
+
+const FEED_API_BASE =
+  typeof API_BASE_URL !== "undefined"
+    ? API_BASE_URL
+    : API;
+
+
+// =====================================
 // LOAD VIDEOS
 // =====================================
 
@@ -107,7 +117,7 @@ async function loadVideos(reset = true) {
 
     const res =
       await fetch(
-        `${API_BASE_URL}/videos?page=${requestedPage}&limit=10&_=${Date.now()}`
+        `${FEED_API_BASE}/videos?page=${requestedPage}&limit=10&_=${Date.now()}`
       );
 
 
@@ -283,7 +293,7 @@ async function loadVideos(reset = true) {
 
 
     // ===================================
-    // RENDER
+    // RENDER ONLY NEW VIDEOS
     // ===================================
 
     renderVideos(
@@ -351,7 +361,9 @@ async function loadVideos(reset = true) {
 function getMediaUrl(video) {
 
   if (!video) {
+
     return "";
+
   }
 
 
@@ -406,7 +418,7 @@ function getMediaUrl(video) {
   ) {
 
     return (
-      API_BASE_URL +
+      FEED_API_BASE +
       media
     );
 
@@ -414,7 +426,7 @@ function getMediaUrl(video) {
 
 
   return (
-    API_BASE_URL +
+    FEED_API_BASE +
     "/" +
     media
   );
@@ -459,7 +471,7 @@ function getCreatorAvatar(video) {
   ) {
 
     return (
-      API_BASE_URL +
+      FEED_API_BASE +
       value
     );
 
@@ -467,7 +479,7 @@ function getCreatorAvatar(video) {
 
 
   return (
-    API_BASE_URL +
+    FEED_API_BASE +
     "/" +
     value
   );
@@ -531,7 +543,9 @@ function renderVideos(
     (v, i) => {
 
       if (!v) {
+
         return;
+
       }
 
 
@@ -635,7 +649,7 @@ function renderVideos(
 
           <!-- =================================
                MEDIA
-          ================================= -->
+          ================================== -->
 
           ${
             isVideo
@@ -679,7 +693,7 @@ function renderVideos(
 
           <!-- =================================
                DARK GRADIENT
-          ================================= -->
+          ================================== -->
 
           <div
             class="feed-video-gradient"
@@ -688,7 +702,7 @@ function renderVideos(
 
           <!-- =================================
                TOP CONTROLS
-          ================================= -->
+          ================================== -->
 
           <div class="video-card-top">
 
@@ -720,7 +734,7 @@ function renderVideos(
 
           <!-- =================================
                RIGHT ACTIONS
-          ================================= -->
+          ================================== -->
 
           <div class="video-overlay-right">
 
@@ -873,7 +887,7 @@ function renderVideos(
 
           <!-- =================================
                CREATOR / DESCRIPTION
-          ================================= -->
+          ================================== -->
 
           <div class="video-overlay-left">
 
@@ -995,7 +1009,7 @@ function renderVideos(
 
           <!-- =================================
                COMMENT BAR
-          ================================= -->
+          ================================== -->
 
           <button
             type="button"
@@ -1023,7 +1037,7 @@ function renderVideos(
 
           <!-- =================================
                SHARE BUTTON
-          ================================= -->
+          ================================== -->
 
           <button
             type="button"
@@ -1091,76 +1105,149 @@ function renderCaption(
   id
 ) {
 
-  const safeText =
-    escapeHtml(text);
+  const caption =
+    String(text || "").trim();
+
+
+  if (!caption) {
+
+    return "";
+
+  }
+
+
+  const limit =
+    110;
 
 
   if (
-    String(text).length <= 110
+    caption.length <= limit
   ) {
 
     return `
-
       <div
         class="description-text collapsed"
+        id="description-${id}"
       >
-
-        ${safeText}
-
+        ${escapeHtml(caption)}
       </div>
-
     `;
 
   }
 
 
-  return `
+  const shortText =
+    caption
+      .slice(0, limit)
+      .trimEnd();
 
+
+  return `
     <div
-      id="caption-short-${id}"
       class="description-text collapsed"
+      id="description-${id}"
+      onclick="toggleDescription('${id}', event)"
     >
 
-      ${escapeHtml(
-        String(text).slice(0, 110)
-      )}...
+      <span class="description-short">
+        ${escapeHtml(shortText)}…
+      </span>
 
-      <button
-        type="button"
+      <span
         class="read-more"
-        onclick="expandCaption(
-          ${id},
-          event
-        )"
+        id="read-more-${id}"
       >
         Read more
-      </button>
+      </span>
 
     </div>
-
-
-    <div
-      id="caption-full-${id}"
-      class="description-text expanded"
-      style="display:none"
-    >
-
-      ${safeText}
-
-      <button
-        type="button"
-        class="read-more"
-        onclick="collapseCaption(
-          ${id},
-          event
-        )"
-      >
-        Show less
-      </button>
-
-    </div>
-
   `;
+
+}
+
+
+// =====================================
+// TOGGLE DESCRIPTION
+// =====================================
+
+function toggleDescription(
+  id,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const element =
+    document.getElementById(
+      `description-${id}`
+    );
+
+
+  if (!element) {
+
+    return;
+
+  }
+
+
+  const readMore =
+    document.getElementById(
+      `read-more-${id}`
+    );
+
+
+  const expanded =
+    element.classList.contains(
+      "expanded"
+    );
+
+
+  if (expanded) {
+
+    element.classList.remove(
+      "expanded"
+    );
+
+    element.classList.add(
+      "collapsed"
+    );
+
+
+    if (readMore) {
+
+      readMore.textContent =
+        "Read more";
+
+    }
+
+  }
+
+  else {
+
+    element.classList.remove(
+      "collapsed"
+    );
+
+    element.classList.add(
+      "expanded"
+    );
+
+
+    if (readMore) {
+
+      readMore.textContent =
+        "Show less";
+
+    }
+
+  }
 
 }
 
@@ -1169,7 +1256,9 @@ function renderCaption(
 // ESCAPE HTML
 // =====================================
 
-function escapeHtml(value) {
+function escapeHtml(
+  value
+) {
 
   return String(
     value ?? ""
@@ -1202,10 +1291,14 @@ function escapeHtml(value) {
 // COUNT FORMAT
 // =====================================
 
-function formatCount(number) {
+function formatCount(
+  number
+) {
 
   const value =
-    Number(number || 0);
+    Number(
+      number || 0
+    );
 
 
   if (
@@ -1257,7 +1350,9 @@ function setupVideoObserver() {
 
 
   if (!feed) {
+
     return;
+
   }
 
 
@@ -1268,7 +1363,9 @@ function setupVideoObserver() {
 
 
   if (!videos.length) {
+
     return;
+
   }
 
 
@@ -1298,7 +1395,8 @@ function setupVideoObserver() {
               entry.intersectionRatio >= 0.7
             ) {
 
-              video.play()
+              video
+                .play()
                 .catch(
                   () => {}
                 );
@@ -1322,7 +1420,6 @@ function setupVideoObserver() {
           0.7,
           1
         ]
-
       }
 
     );
@@ -1347,11 +1444,13 @@ function setupVideoObserver() {
 
 function handleVideoTap(
   index,
-  videoId,
+  contentId,
   event
 ) {
 
   if (event) {
+
+    event.preventDefault();
 
     event.stopPropagation();
 
@@ -1369,7 +1468,9 @@ function handleVideoTap(
 
 
   if (!video) {
+
     return;
+
   }
 
 
@@ -1382,7 +1483,7 @@ function handleVideoTap(
   ) {
 
     pressUnderstand(
-      videoId
+      contentId
     );
 
   }
@@ -1397,7 +1498,8 @@ function handleVideoTap(
       video.paused
     ) {
 
-      video.play()
+      video
+        .play()
         .catch(
           () => {}
         );
@@ -1438,7 +1540,9 @@ function openCreatorProfile(
 
 
   if (!username) {
+
     return;
+
   }
 
 
@@ -1500,7 +1604,7 @@ async function followCreator(
 
     const res =
       await fetch(
-        `${API_BASE_URL}/purview/${creatorId}`,
+        `${FEED_API_BASE}/purview/${creatorId}`,
         {
           method: "POST",
 
@@ -1529,6 +1633,7 @@ async function followCreator(
         await safeJsonResponse(
           res
         );
+
 
       throw new Error(
         data?.message ||
@@ -1561,6 +1666,7 @@ async function followCreator(
       err
     );
 
+
     alert(
       err?.message ||
       "Unable to follow creator."
@@ -1576,7 +1682,7 @@ async function followCreator(
 // =====================================
 
 async function pressUnderstand(
-  videoId,
+  contentId,
   event
 ) {
 
@@ -1609,7 +1715,7 @@ async function pressUnderstand(
 
     const res =
       await fetch(
-        `${API_BASE_URL}/videos/${videoId}/understand`,
+        `${FEED_API_BASE}/videos/${contentId}/understand`,
         {
           method: "POST",
 
@@ -1650,7 +1756,7 @@ async function pressUnderstand(
 
     const countEl =
       document.getElementById(
-        `understand-${videoId}`
+        `understand-${contentId}`
       );
 
 
@@ -1681,7 +1787,7 @@ async function pressUnderstand(
 // =====================================
 
 function openCommentsPage(
-  videoId,
+  contentId,
   event
 ) {
 
@@ -1696,7 +1802,7 @@ function openCommentsPage(
 
   window.location.href =
     `comments.html?video=${encodeURIComponent(
-      videoId
+      contentId
     )}`;
 
 }
@@ -1735,7 +1841,7 @@ async function checkSavedContent(
 
     const res =
       await fetch(
-        `${API_BASE_URL}/saved/check/${encodeURIComponent(
+        `${FEED_API_BASE}/saved/check/${encodeURIComponent(
           contentId
         )}`,
         {
@@ -1858,7 +1964,9 @@ async function loadSavedStates(
 
 
   if (!token) {
+
     return;
+
   }
 
 
@@ -1941,10 +2049,6 @@ async function toggleSaveVideo(
     );
 
 
-  // ===================================
-  // TEMPORARILY DISABLE BUTTON
-  // ===================================
-
   const button =
     document.getElementById(
       `save-action-${contentId}`
@@ -2004,7 +2108,7 @@ async function toggleSaveVideo(
 
       const res =
         await fetch(
-          `${API_BASE_URL}/saved/${encodeURIComponent(
+          `${FEED_API_BASE}/saved/${encodeURIComponent(
             state.savedId
           )}`,
           {
@@ -2071,7 +2175,7 @@ async function toggleSaveVideo(
 
     const res =
       await fetch(
-        `${API_BASE_URL}/saved`,
+        `${FEED_API_BASE}/saved`,
         {
           method: "POST",
 
@@ -2121,18 +2225,6 @@ async function toggleSaveVideo(
 
     }
 
-
-    // =================================
-    // SavedService response:
-    //
-    // {
-    //   data: {
-    //     id,
-    //     contentId
-    //   },
-    //   alreadySaved
-    // }
-    // =================================
 
     const savedId =
       data?.data?.id ||
@@ -2340,6 +2432,16 @@ function openSavedPage() {
 // =====================================
 // SHARE
 // =====================================
+//
+// Shares the ACTUAL content information.
+//
+// No watermark.
+// No image manipulation.
+// No generated media.
+//
+// The platform receiving the link decides
+// whether to show a thumbnail preview.
+// =====================================
 
 async function shareContent(
   id,
@@ -2355,76 +2457,192 @@ async function shareContent(
   }
 
 
+  // ===================================
+  // FIND ACTUAL CONTENT
+  // ===================================
+
+  const content =
+    posts.find(
+      item =>
+        String(item.id) ===
+        String(id)
+    );
+
+
+  // ===================================
+  // CONTENT TITLE
+  // ===================================
+
+  const title =
+    String(
+      content?.title ||
+      "Discover differently with Vindarr"
+    ).trim();
+
+
+  // ===================================
+  // CONTENT DESCRIPTION
+  // ===================================
+
+  const description =
+    String(
+      content?.context ||
+      ""
+    ).trim();
+
+
+  // ===================================
+  // CONTENT TYPE
+  // ===================================
+
+  const contentType =
+    content?.type === "ebook"
+      ? "eBook"
+      : (
+          content?.type === "fashion" ||
+          content?.type === "essential"
+        )
+          ? "product"
+          : "video";
+
+
+  // ===================================
+  // SHARE URL
+  // ===================================
+  //
+  // This remains the normal Vindarr
+  // content URL.
+  //
+  // The receiving platform can inspect
+  // the page metadata and decide whether
+  // to display a preview.
+  // ===================================
+
   const url =
     `${window.location.origin}/index.html?video=${encodeURIComponent(
       id
     )}`;
 
 
+  // ===================================
+  // SHARE TEXT
+  // ===================================
+
+  let text =
+    `Check out this ${contentType} on Vindarr: ${title}`;
+
+
+  if (description) {
+
+    const snippet =
+      description.length > 180
+        ? `${description.slice(0, 180).trimEnd()}…`
+        : description;
+
+
+    text +=
+      `\n\n${snippet}`;
+
+  }
+
+
+  text +=
+    "\n\nDiscover differently with Vindarr.";
+
+
+  // ===================================
+  // WEB SHARE
+  // ===================================
+
   if (
-    navigator.share
+    typeof navigator.share === "function"
   ) {
 
     try {
 
       await navigator.share({
 
-        title:
-          "Vindarr",
+        title,
 
-        text:
-          "Check this out on Vindarr",
+        text,
 
         url
 
       });
 
+
       return;
 
     }
 
-    catch {
+    catch (error) {
 
-      return;
+      // User cancelled sharing.
+      if (
+        error?.name ===
+        "AbortError"
+      ) {
+
+        return;
+
+      }
+
+      console.warn(
+        "Native share failed:",
+        error
+      );
 
     }
 
   }
 
+
+  // ===================================
+  // CLIPBOARD FALLBACK
+  // ===================================
 
   try {
 
     if (
-      navigator.clipboard
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText ===
+        "function"
     ) {
 
       await navigator.clipboard.writeText(
-        url
+        `${title}\n\n${text}\n\n${url}`
       );
+
 
       alert(
-        "Video link copied"
+        "Vindarr content link copied."
       );
 
-    }
 
-    else {
-
-      alert(
-        url
-      );
+      return;
 
     }
 
   }
 
-  catch {
+  catch (error) {
 
-    alert(
-      url
+    console.warn(
+      "Clipboard failed:",
+      error
     );
 
   }
+
+
+  // ===================================
+  // LAST FALLBACK
+  // ===================================
+
+  prompt(
+    "Copy this Vindarr link:",
+    url
+  );
 
 }
 
@@ -2641,14 +2859,10 @@ function setupLoadMore() {
   }
 
 
-  if (loadTrigger) {
-
-    feed.removeEventListener(
-      "scroll",
-      handleInfiniteScroll
-    );
-
-  }
+  feed.removeEventListener(
+    "scroll",
+    handleInfiniteScroll
+  );
 
 
   feed.addEventListener(

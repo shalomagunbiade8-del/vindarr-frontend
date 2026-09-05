@@ -512,6 +512,10 @@ body{
    DESCRIPTION
 ========================================= */
 
+/* =========================================
+   DESCRIPTION
+========================================= */
+
 .video-caption{
 
   margin-top:10px;
@@ -526,6 +530,27 @@ body{
 
   text-shadow:
     0 2px 7px rgba(0,0,0,.9);
+
+}
+
+
+/* =========================================
+   DESCRIPTION TEXT
+========================================= */
+
+.description-text{
+
+  position:relative;
+
+  cursor:pointer;
+
+  user-select:none;
+
+  -webkit-user-select:none;
+
+  transition:
+    max-height .25s ease,
+    opacity .2s ease;
 
 }
 
@@ -555,14 +580,20 @@ body{
 
 .description-text.expanded{
 
-  max-height:125px;
+  display:block;
+
+  max-height:180px;
 
   overflow-y:auto;
 
-  padding-right:5px;
+  padding-right:7px;
 
 }
 
+
+/* =========================================
+   EXPANDED DESCRIPTION SCROLLBAR
+========================================= */
 
 .description-text.expanded::-webkit-scrollbar{
 
@@ -571,23 +602,43 @@ body{
 }
 
 
+.description-text.expanded::-webkit-scrollbar-track{
+
+  background:transparent;
+
+}
+
+
 .description-text.expanded::-webkit-scrollbar-thumb{
 
   background:
-    rgba(255,255,255,.5);
+    rgba(255,255,255,.45);
 
-  border-radius:5px;
+  border-radius:10px;
+
+}
+
+
+/* Firefox */
+
+.description-text.expanded{
+
+  scrollbar-width:thin;
+
+  scrollbar-color:
+    rgba(255,255,255,.45)
+    transparent;
 
 }
 
 
 /* =========================================
-   READ MORE
+   READ MORE / SHOW LESS
 ========================================= */
 
 .read-more{
 
-  display:inline;
+  display:inline-block;
 
   margin-left:5px;
 
@@ -617,6 +668,12 @@ body{
 
 }
 
+
+.read-more:active{
+
+  transform:scale(.97);
+
+}
 
 /* =========================================
    AUDIO
