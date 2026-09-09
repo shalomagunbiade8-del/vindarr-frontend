@@ -713,7 +713,8 @@ return;
 }
 
 window.location.href =
-`index.html?video=${encodeURIComponent(id)}`;
+
+`video.html?id=${encodeURIComponent(id)}`;
 
 }
 

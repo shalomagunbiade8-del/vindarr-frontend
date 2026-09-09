@@ -1,9 +1,10 @@
 /* =========================================================
-   VINDARR SAVED
-   SAVE • COLLECTIONS • STREAKS • SHARING
-========================================================= */
+   VINDARR — SAVED
+   ========================================================= */
+
 
 "use strict";
+
 
 
 /* =========================================================
@@ -20,6 +21,13 @@ let currentActionItem = null;
 
 let currentCollection = null;
 
+let currentCollectionItem = null;
+
+let collectionCoverMode = "auto";
+
+let creatingCollectionFromMove = false;
+
+
 
 /* =========================================================
    API
@@ -30,6 +38,7 @@ const SAVED_API =
 
 const COLLECTION_API =
   `${API_BASE_URL}/collections`;
+
 
 
 /* =========================================================
@@ -57,12 +66,40 @@ const savingStreakMessage =
 const collectionStreakMessage =
   document.getElementById("collectionStreakMessage");
 
+const collectionModal =
+  document.getElementById("collectionModal");
+
+const collectionNameInput =
+  document.getElementById("collectionName");
+
+const collectionDetailModal =
+  document.getElementById("collectionDetailModal");
+
+const collectionDetailContent =
+  document.getElementById("collectionDetailContent");
+
+const itemActionModal =
+  document.getElementById("itemActionModal");
+
+const itemActionTitle =
+  document.getElementById("itemActionTitle");
+
+const moveCollectionModal =
+  document.getElementById("moveCollectionModal");
+
+const moveCollectionList =
+  document.getElementById("moveCollectionList");
+
+const savedMenu =
+  document.getElementById("savedMenu");
+
+
 
 /* =========================================================
    AUTH
 ========================================================= */
 
-function getToken() {
+function requireAuth() {
 
   const token =
     localStorage.getItem("token");
@@ -72,17 +109,18 @@ function getToken() {
     window.location.href =
       "login.html";
 
-    return null;
+    return false;
 
   }
 
-  return token;
+  return true;
 
 }
 
 
+
 /* =========================================================
-   FETCH HELPER
+   API FETCH
 ========================================================= */
 
 async function apiFetch(
@@ -91,9 +129,12 @@ async function apiFetch(
 ) {
 
   const token =
-    getToken();
+    localStorage.getItem("token");
 
   if (!token) {
+
+    window.location.href =
+      "login.html";
 
     throw new Error(
       "Authentication required."
@@ -101,19 +142,31 @@ async function apiFetch(
 
   }
 
-  const headers = {
-    ...(options.body instanceof FormData
-      ? {}
-      : {
-          "Content-Type":
-            "application/json"
-        }),
 
-    Authorization:
-      `Bearer ${token}`,
+  const headers =
+    new Headers(
+      options.headers || {}
+    );
 
-    ...(options.headers || {})
-  };
+
+  headers.set(
+    "Authorization",
+    `Bearer ${token}`
+  );
+
+
+  if (
+    options.body &&
+    !(options.body instanceof FormData) &&
+    !headers.has("Content-Type")
+  ) {
+
+    headers.set(
+      "Content-Type",
+      "application/json"
+    );
+
+  }
 
 
   const response =
@@ -126,36 +179,9 @@ async function apiFetch(
     );
 
 
-  const text =
-    await response.text();
-
-
-  let data = null;
-
-
-  if (text) {
-
-    try {
-
-      data =
-        JSON.parse(text);
-
-    }
-    catch {
-
-      data = {
-        message: text
-      };
-
-    }
-
-  }
-
-
   if (response.status === 401) {
 
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
 
     window.location.href =
       "login.html";
@@ -167,11 +193,50 @@ async function apiFetch(
   }
 
 
+  let data = null;
+
+  const contentType =
+    response.headers.get(
+      "content-type"
+    ) || "";
+
+
+  try {
+
+    if (
+      contentType.includes(
+        "application/json"
+      )
+    ) {
+
+      data =
+        await response.json();
+
+    } else {
+
+      const text =
+        await response.text();
+
+      data =
+        text
+          ? { message: text }
+          : null;
+
+    }
+
+  } catch {
+
+    data = null;
+
+  }
+
+
   if (!response.ok) {
 
     throw new Error(
       data?.message ||
-      "Request failed."
+      data?.error ||
+      `Request failed (${response.status})`
     );
 
   }
@@ -182,15 +247,644 @@ async function apiFetch(
 }
 
 
+
 /* =========================================================
-   LOAD EVERYTHING
+   RESPONSE DATA HELPER
+========================================================= */
+
+function extractData(response) {
+
+  if (!response) {
+    return null;
+  }
+
+
+  if (
+    response.data !== undefined
+  ) {
+
+    return response.data;
+
+  }
+
+
+  return response;
+
+}
+
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+
+/* =========================================================
+   NORMALIZE MEDIA URL
+========================================================= */
+
+function normalizeMediaUrl(url) {
+
+  if (!url) {
+    return "";
+  }
+
+
+  if (
+    typeof url !== "string"
+  ) {
+
+    return "";
+
+  }
+
+
+  return url.trim();
+
+}
+
+
+
+/* =========================================================
+   CONTENT TYPE
+========================================================= */
+
+function normalizeContentType(
+  content
+) {
+
+  const raw =
+    String(
+      content?.type ||
+      content?.contentType ||
+      ""
+    )
+      .toLowerCase()
+      .trim();
+
+
+  if (
+    raw.includes("ebook") ||
+    raw.includes("book")
+  ) {
+
+    return "ebook";
+
+  }
+
+
+  if (
+    raw.includes("fashion") ||
+    raw.includes("product") ||
+    raw.includes("item")
+  ) {
+
+    return "fashion";
+
+  }
+
+
+  if (
+    raw.includes("essential")
+  ) {
+
+    return "essential";
+
+  }
+
+
+  return "video";
+
+}
+
+
+
+/* =========================================================
+   GET SAVED CONTENT
+========================================================= */
+
+function getSavedContent(saved) {
+
+  if (!saved) {
+    return null;
+  }
+
+
+  return (
+    saved.content ||
+    saved.video ||
+    saved.product ||
+    saved.ebook ||
+    null
+  );
+
+}
+
+
+
+/* =========================================================
+   GET PRIMARY MEDIA
+   Used for thumbnails.
+========================================================= */
+
+function getPrimaryMedia(
+  content
+) {
+
+  if (!content) {
+    return "";
+  }
+
+
+  const type =
+    normalizeContentType(content);
+
+
+  if (type === "ebook") {
+
+    return normalizeMediaUrl(
+      content.coverUrl ||
+      content.cover ||
+      content.thumbnailUrl ||
+      content.imageUrl ||
+      ""
+    );
+
+  }
+
+
+  return normalizeMediaUrl(
+    content.coverUrl ||
+    content.thumbnailUrl ||
+    content.imageUrl ||
+    content.videoUrl ||
+    content.fileUrl ||
+    ""
+  );
+
+}
+
+
+
+/* =========================================================
+   GET CONTENT ID
+========================================================= */
+
+function getContentId(
+  saved
+) {
+
+  return (
+    saved?.contentId ||
+    saved?.content?.id ||
+    saved?.videoId ||
+    saved?.id ||
+    null
+  );
+
+}
+
+
+
+/* =========================================================
+   GET SAVED ID
+========================================================= */
+
+function getSavedId(
+  saved
+) {
+
+  return (
+    saved?.id ||
+    saved?.savedItemId ||
+    null
+  );
+
+}
+
+
+
+/* =========================================================
+   DATE HELPERS
+========================================================= */
+
+function parseDateOnly(
+  value
+) {
+
+  if (!value) {
+    return null;
+  }
+
+
+  if (
+    value instanceof Date
+  ) {
+
+    return new Date(
+      value.getFullYear(),
+      value.getMonth(),
+      value.getDate()
+    );
+
+  }
+
+
+  const text =
+    String(value);
+
+
+  /*
+   * Handle YYYY-MM-DD directly.
+   * This prevents timezone shifts.
+   */
+
+  const match =
+    text.match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+
+  if (match) {
+
+    return new Date(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    );
+
+  }
+
+
+  const date =
+    new Date(value);
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return null;
+
+  }
+
+
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+
+}
+
+
+
+/* =========================================================
+   TODAY
+========================================================= */
+
+function getToday() {
+
+  const now =
+    new Date();
+
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+
+}
+
+
+
+/* =========================================================
+   CALENDAR DAY DIFFERENCE
+========================================================= */
+
+function calendarDayDifference(
+  olderDate,
+  newerDate
+) {
+
+  if (
+    !olderDate ||
+    !newerDate
+  ) {
+
+    return null;
+
+  }
+
+
+  const oneDay =
+    24 * 60 * 60 * 1000;
+
+
+  return Math.round(
+    (
+      newerDate.getTime() -
+      olderDate.getTime()
+    ) / oneDay
+  );
+
+}
+
+
+
+/* =========================================================
+   ACTIVE STREAK
+========================================================= */
+
+function getDisplayStreak(
+  streak,
+  dateKey
+) {
+
+  if (!streak) {
+    return 0;
+  }
+
+
+  const lastDate =
+    parseDateOnly(
+      streak[dateKey]
+    );
+
+
+  if (!lastDate) {
+    return 0;
+  }
+
+
+  const today =
+    getToday();
+
+
+  const difference =
+    calendarDayDifference(
+      lastDate,
+      today
+    );
+
+
+  /*
+   * Today or yesterday = active.
+   *
+   * Anything older means the streak
+   * should visually be reset.
+   *
+   * The backend itself should eventually
+   * perform this reset too.
+   */
+
+  if (
+    difference === 0 ||
+    difference === 1
+  ) {
+
+    return Math.max(
+      0,
+      Number(
+        streak.currentStreak
+      ) || 0
+    );
+
+  }
+
+
+  return 0;
+
+}
+
+
+
+/* =========================================================
+   STREAK MESSAGE
+========================================================= */
+
+function buildStreakMessage(
+  streak,
+  dateKey,
+  type
+) {
+
+  const lastDate =
+    parseDateOnly(
+      streak?.[dateKey]
+    );
+
+
+  const value =
+    getDisplayStreak(
+      streak,
+      dateKey
+    );
+
+
+  if (!value) {
+
+    if (type === "saving") {
+
+      return "Save something today to start.";
+
+    }
+
+
+    return "Organize something today.";
+
+  }
+
+
+  const difference =
+    calendarDayDifference(
+      lastDate,
+      getToday()
+    );
+
+
+  if (difference === 0) {
+
+    if (type === "saving") {
+
+      return "Great work. Your streak is active today.";
+
+    }
+
+
+    return "Keep organizing to build your streak.";
+
+  }
+
+
+  if (difference === 1) {
+
+    if (type === "saving") {
+
+      return "Save something today to keep it going.";
+
+    }
+
+
+    return "Add something today to keep it going.";
+
+  }
+
+
+  return "Start a new streak today.";
+
+}
+
+
+
+/* =========================================================
+   UPDATE STREAKS
+========================================================= */
+
+function updateStreaks(
+  streakData
+) {
+
+  const saving =
+    streakData?.saving ||
+    streakData?.savingStreak ||
+    streakData?.save ||
+    streakData ||
+    {};
+
+
+  const collection =
+    streakData?.collection ||
+    streakData?.collectionStreak ||
+    {};
+
+
+  const savingValue =
+    getDisplayStreak(
+      saving,
+      "lastSavedDate"
+    );
+
+
+  const collectionValue =
+    getDisplayStreak(
+      collection,
+      "lastCollectionDate"
+    );
+
+
+  if (savingStreak) {
+
+    savingStreak.textContent =
+      `${savingValue} ${
+        savingValue === 1
+          ? "day"
+          : "days"
+      }`;
+
+  }
+
+
+  if (collectionStreak) {
+
+    collectionStreak.textContent =
+      `${collectionValue} ${
+        collectionValue === 1
+          ? "day"
+          : "days"
+      }`;
+
+  }
+
+
+  if (savingStreakMessage) {
+
+    savingStreakMessage.textContent =
+      buildStreakMessage(
+        saving,
+        "lastSavedDate",
+        "saving"
+      );
+
+  }
+
+
+  if (collectionStreakMessage) {
+
+    collectionStreakMessage.textContent =
+      buildStreakMessage(
+        collection,
+        "lastCollectionDate",
+        "collection"
+      );
+
+  }
+
+}
+
+
+
+/* =========================================================
+   LOAD PAGE
 ========================================================= */
 
 async function loadSavedPage() {
 
+  if (!requireAuth()) {
+    return;
+  }
+
+
   try {
 
-    renderSavedLoading();
+    if (savedGrid) {
+
+      savedGrid.innerHTML = `
+        <div class="saved-loading">
+          <div class="loading-spinner"></div>
+          <span>Loading your saved content...</span>
+        </div>
+      `;
+
+    }
+
+
+    if (collectionsGrid) {
+
+      collectionsGrid.innerHTML = `
+        <div class="collections-loading">
+          <div class="loading-pulse"></div>
+          <div class="loading-pulse short"></div>
+        </div>
+      `;
+
+    }
+
 
     const [
       savedResponse,
@@ -198,40 +892,40 @@ async function loadSavedPage() {
       streakResponse
     ] =
       await Promise.all([
-
-        apiFetch(
-          SAVED_API
-        ),
-
-        apiFetch(
-          COLLECTION_API
-        ),
-
-        apiFetch(
-          `${SAVED_API}/streaks`
-        )
-
+        apiFetch(SAVED_API),
+        apiFetch(COLLECTION_API),
+        apiFetch(`${SAVED_API}/streaks`)
       ]);
 
 
     savedItems =
-      Array.isArray(savedResponse?.data)
-        ? savedResponse.data
-        : Array.isArray(savedResponse)
-          ? savedResponse
-          : [];
+      extractData(
+        savedResponse
+      ) || [];
 
 
     collections =
-      Array.isArray(collectionsResponse?.data)
-        ? collectionsResponse.data
-        : Array.isArray(collectionsResponse)
-          ? collectionsResponse
-          : [];
+      extractData(
+        collectionsResponse
+      ) || [];
+
+
+    if (!Array.isArray(savedItems)) {
+
+      savedItems = [];
+
+    }
+
+
+    if (!Array.isArray(collections)) {
+
+      collections = [];
+
+    }
 
 
     updateStreaks(
-      streakResponse
+      streakResponse || {}
     );
 
 
@@ -239,80 +933,73 @@ async function loadSavedPage() {
 
     renderSaved();
 
-    migrateLegacyLocalStorage();
 
-  }
-  catch (error) {
+    /*
+     * If a collection ID is present in the URL,
+     * open it after the initial page has rendered.
+     */
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const collectionId =
+      params.get("collection");
+
+
+    if (collectionId) {
+
+      setTimeout(
+        () => openCollection(collectionId),
+        100
+      );
+
+    }
+
+  } catch (error) {
 
     console.error(
-      "SAVED PAGE ERROR:",
+      "Failed to load saved page:",
       error
     );
 
-    renderError(
-      error.message
-    );
+
+    if (savedGrid) {
+
+      savedGrid.innerHTML = `
+        <div class="saved-empty-state">
+          <i class="bi bi-exclamation-circle"></i>
+          <h3>Could not load your saves</h3>
+          <p>${escapeHtml(error.message)}</p>
+          <button
+            class="modal-secondary-btn"
+            onclick="loadSavedPage()"
+          >
+            Try again
+          </button>
+        </div>
+      `;
+
+    }
+
+
+    if (collectionsGrid) {
+
+      collectionsGrid.innerHTML = `
+        <div class="saved-empty-state compact">
+          <i class="bi bi-exclamation-circle"></i>
+          <p>Could not load collections.</p>
+        </div>
+      `;
+
+    }
 
   }
 
 }
 
-
-/* =========================================================
-   STREAKS
-========================================================= */
-
-function updateStreaks(
-  data
-) {
-
-  const saving =
-    data?.saving || {};
-
-  const collection =
-    data?.collection || {};
-
-
-  const savingDays =
-    Number(
-      saving.currentStreak || 0
-    );
-
-
-  const collectionDays =
-    Number(
-      collection.currentStreak || 0
-    );
-
-
-  savingStreak.textContent =
-    `${savingDays} ${
-      savingDays === 1
-        ? "day"
-        : "days"
-    }`;
-
-
-  collectionStreak.textContent =
-    `${collectionDays} ${
-      collectionDays === 1
-        ? "day"
-        : "days"
-    }`;
-
-
-  savingStreakMessage.textContent =
-    savingDays > 0
-      ? "Keep saving to continue."
-      : "Save something today to start.";
-
-
-  collectionStreakMessage.textContent =
-    collectionDays > 0
-      ? "Keep organizing your saves."
-      : "Add something to a collection today.";
-
-}
 
 
 /* =========================================================
@@ -324,23 +1011,22 @@ function setFilter(
 ) {
 
   currentFilter =
-    filter;
+    filter || "all";
 
 
   document
     .querySelectorAll(
       ".saved-filter"
     )
-    .forEach(
-      button => {
+    .forEach(button => {
 
-        button.classList.toggle(
-          "active",
-          button.dataset.filter === filter
-        );
+      button.classList.toggle(
+        "active",
+        button.dataset.filter ===
+          currentFilter
+      );
 
-      }
-    );
+    });
 
 
   renderSaved();
@@ -348,31 +1034,41 @@ function setFilter(
 }
 
 
+
 /* =========================================================
-   FILTER ITEMS
+   FILTER MATCH
 ========================================================= */
 
-function getFilteredItems() {
+function itemMatchesFilter(
+  saved
+) {
 
   if (
-    currentFilter ===
-    "all"
+    currentFilter === "all"
   ) {
 
-    return savedItems;
+    return true;
 
   }
 
 
-  return savedItems.filter(
-    item =>
-      item.content?.type ===
-        currentFilter ||
-      item.type ===
-        currentFilter
+  const content =
+    getSavedContent(saved);
+
+
+  if (!content) {
+    return false;
+  }
+
+
+  return (
+    normalizeContentType(
+      content
+    ) === currentFilter
   );
 
 }
+
 
 
 /* =========================================================
@@ -381,21 +1077,60 @@ function getFilteredItems() {
 
 function renderSaved() {
 
-  const items =
-    getFilteredItems();
+  if (!savedGrid) {
+    return;
+  }
 
 
-  savedCount.textContent =
-    `${items.length} ${
-      items.length === 1
-        ? "save"
-        : "saves"
-    }`;
+  const filtered =
+    savedItems.filter(
+      itemMatchesFilter
+    );
 
 
-  if (!items.length) {
+  if (savedCount) {
 
-    renderSavedEmpty();
+    savedCount.textContent =
+      `${savedItems.length} ${
+        savedItems.length === 1
+          ? "save"
+          : "saves"
+      }`;
+
+  }
+
+
+  if (!filtered.length) {
+
+    const message =
+      currentFilter === "all"
+        ? "You haven't saved anything yet."
+        : `No saved ${
+            currentFilter === "ebook"
+              ? "books"
+              : currentFilter === "fashion"
+                ? "products"
+                : currentFilter === "essential"
+                  ? "essentials"
+                  : "videos"
+          } yet.`;
+
+
+    savedGrid.innerHTML = `
+      <div class="saved-empty-state">
+
+        <i class="bi bi-bookmark"></i>
+
+        <h3>
+          Nothing here yet
+        </h3>
+
+        <p>
+          ${escapeHtml(message)}
+        </p>
+
+      </div>
+    `;
 
     return;
 
@@ -403,7 +1138,7 @@ function renderSaved() {
 
 
   savedGrid.innerHTML =
-    items
+    filtered
       .map(
         renderSavedCard
       )
@@ -412,45 +1147,48 @@ function renderSaved() {
 }
 
 
+
 /* =========================================================
-   SAVED CARD
+   RENDER SAVED CARD
 ========================================================= */
 
 function renderSavedCard(
-  item
+  saved
 ) {
 
   const content =
-    item.content ||
-    item;
+    getSavedContent(saved);
 
 
-  const id =
-    Number(
-      content.id
-    );
+  if (!content) {
+    return "";
+  }
+
+
+  const savedId =
+    getSavedId(saved);
+
+
+  const contentId =
+    getContentId(saved);
 
 
   const type =
-    content.type ||
-    item.type ||
-    "video";
+    normalizeContentType(
+      content
+    );
 
 
   const title =
     content.title ||
+    content.name ||
     "Untitled";
 
 
-  const creator =
-    content.creatorUsername ||
-    "creator";
-
-
-  const avatar =
-    normalizeMediaUrl(
-      content.creatorAvatar
-    );
+  const description =
+    content.description ||
+    content.context ||
+    "";
 
 
   const media =
@@ -459,110 +1197,106 @@ function renderSavedCard(
     );
 
 
-  const typeLabel =
-    getTypeLabel(
-      type
-    );
+  const mediaHtml =
+    media
+      ? `
+        <img
+          src="${escapeHtml(media)}"
+          alt="${escapeHtml(title)}"
+          loading="lazy"
+          onerror="this.style.display='none'"
+        >
+      `
+      : `
+        <div class="saved-card-placeholder">
+          <i class="bi ${
+            type === "ebook"
+              ? "bi-book"
+              : type === "fashion"
+                ? "bi-bag"
+                : type === "essential"
+                  ? "bi-box-seam"
+                  : "bi-play-circle"
+          }"></i>
+        </div>
+      `;
 
 
-  const icon =
-    getTypeIcon(
-      type
-    );
-
-
-  const price =
-    content.price != null &&
-    Number(content.price) > 0
-      ? formatNaira(
-          content.price
-        )
-      : "";
-
-
-  const understands =
-    Number(
-      content.understandCount || 0
-    );
+  const badge =
+    type === "ebook"
+      ? "Book"
+      : type === "fashion"
+        ? "Product"
+        : type === "essential"
+          ? "Essential"
+          : "Video";
 
 
   return `
-
     <article
       class="saved-card"
-      onclick="openSavedContent(${id})"
+      data-saved-id="${escapeHtml(savedId)}"
+      data-content-id="${escapeHtml(contentId)}"
+      onclick="openSavedContent('${escapeHtml(contentId)}')"
     >
 
-      <div class="saved-thumbnail">
+      <div class="saved-card-media">
 
-        ${renderMedia(
-          content,
-          type,
-          media
-        )}
+        ${mediaHtml}
 
         <span class="saved-type-badge">
-
-          <i class="bi ${icon}"></i>
-
-          ${escapeHtml(typeLabel)}
-
+          ${escapeHtml(badge)}
         </span>
 
-
         <button
-          class="saved-action-btn"
-          onclick="event.stopPropagation(); openItemActions(${Number(item.id || 0)})"
+          class="saved-card-menu"
+          onclick="event.stopPropagation(); openItemActions('${escapeHtml(savedId)}')"
           aria-label="Saved item options"
         >
-
           <i class="bi bi-three-dots"></i>
-
         </button>
 
       </div>
 
 
-      <div class="saved-content">
+      <div class="saved-card-body">
 
         <h3>
           ${escapeHtml(title)}
         </h3>
 
 
-        <div class="saved-creator">
+        ${
+          description
+            ? `
+              <p>
+                ${escapeHtml(
+                  truncate(
+                    description,
+                    100
+                  )
+                )}
+              </p>
+            `
+            : ""
+        }
 
-          <img
-            src="${escapeHtml(avatar)}"
-            alt=""
-            onerror="this.style.display='none'"
-          >
+
+        <div class="saved-card-footer">
 
           <span>
-            @${escapeHtml(creator)}
+            <i class="bi bi-bookmark-fill"></i>
+            Saved
           </span>
-
-        </div>
-
-
-        <div class="saved-meta">
-
-          <span class="saved-understands">
-
-            ${
-              understands.toLocaleString()
-            }
-            Understands
-
-          </span>
-
 
           ${
-            price
+            content.price !== null &&
+            content.price !== undefined &&
+            content.price !== ""
               ? `
-                <span class="saved-price">
-                  ${escapeHtml(price)}
-                </span>
+                <strong>
+                  ${formatPrice(content.price)}
+                </strong>
               `
               : ""
           }
@@ -572,273 +1306,623 @@ function renderSavedCard(
       </div>
 
     </article>
-
   `;
 
 }
 
 
-/* =========================================================
-   MEDIA
-========================================================= */
-
-function renderMedia(
-  content,
-  type,
-  media
-) {
-
-  if (
-    type ===
-    "ebook"
-  ) {
-
-    const cover =
-      normalizeMediaUrl(
-        content.coverUrl
-      );
-
-
-    if (cover) {
-
-      return `
-        <img
-          class="saved-book-cover"
-          src="${escapeHtml(cover)}"
-          alt=""
-          loading="lazy"
-        >
-      `;
-
-    }
-
-
-    return `
-      <div class="book-placeholder">
-        <i class="bi bi-book"></i>
-      </div>
-    `;
-
-  }
-
-
-  if (
-    type ===
-      "fashion" ||
-    type ===
-      "essential"
-  ) {
-
-    if (
-      media
-    ) {
-
-      if (
-        isVideoUrl(
-          media
-        )
-      ) {
-
-        return `
-          <video
-            src="${escapeHtml(media)}"
-            muted
-            playsinline
-            preload="metadata"
-          ></video>
-        `;
-
-      }
-
-
-      return `
-        <img
-          src="${escapeHtml(media)}"
-          alt=""
-          loading="lazy"
-        >
-      `;
-
-    }
-
-  }
-
-
-  if (
-    media
-  ) {
-
-    if (
-      isVideoUrl(
-        media
-      )
-    ) {
-
-      return `
-        <video
-          src="${escapeHtml(media)}"
-          muted
-          playsinline
-          preload="metadata"
-        ></video>
-      `;
-
-    }
-
-
-    return `
-      <img
-        src="${escapeHtml(media)}"
-        alt=""
-        loading="lazy"
-      >
-    `;
-
-  }
-
-
-  return `
-    <div class="book-placeholder">
-      <i class="bi bi-file-earmark"></i>
-    </div>
-  `;
-
-}
-
 
 /* =========================================================
-   MEDIA URL
+   TRUNCATE
 ========================================================= */
 
-function getPrimaryMedia(
-  content
+function truncate(
+  value,
+  maxLength
 ) {
 
-  return normalizeMediaUrl(
-    content.coverUrl ||
-    content.videoUrl ||
-    content.fileUrl
+  const text =
+    String(value || "");
+
+
+  if (
+    text.length <= maxLength
+  ) {
+
+    return text;
+
+  }
+
+
+  return (
+    text.slice(
+      0,
+      maxLength - 1
+    ) + "…"
   );
 
 }
 
 
-function normalizeMediaUrl(
-  url
+
+/* =========================================================
+   PRICE
+========================================================= */
+
+function formatPrice(
+  value
 ) {
 
-  if (!url) {
-
-    return "";
-
-  }
+  const number =
+    Number(value);
 
 
   if (
-    url.startsWith("http://") ||
-    url.startsWith("https://")
+    Number.isNaN(number)
   ) {
 
-    return url;
+    return escapeHtml(
+      value
+    );
 
   }
 
 
-  return `${API_BASE_URL}${url}`;
-
-}
-
-
-function isVideoUrl(
-  url
-) {
-
   return (
-    /\.(mp4|webm|mov|m4v)(\?|$)/i.test(
-      url
-    ) ||
-    url.includes(
-      "/video/upload/"
+    "₦" +
+    number.toLocaleString(
+      "en-NG",
+      {
+        maximumFractionDigits: 2
+      }
     )
   );
 
 }
 
 
+
 /* =========================================================
-   TYPE HELPERS
+   CONTENT URL
 ========================================================= */
 
-function getTypeLabel(
-  type
+function getContentUrl(
+  content
 ) {
 
-  if (
-    type === "ebook"
-  ) {
+  const id =
+    content?.id;
 
-    return "Book";
+
+  if (!id) {
+
+    return window.location.href;
+
+  }
+
+
+  const type =
+    normalizeContentType(
+      content
+    );
+
+
+  const origin =
+    window.location.origin;
+
+
+  if (type === "ebook") {
+
+    return (
+      `${origin}/ebook.html?id=${encodeURIComponent(id)}`
+    );
 
   }
 
 
   if (
-    type === "fashion"
-  ) {
-
-    return "Product";
-
-  }
-
-
-  if (
+    type === "fashion" ||
     type === "essential"
   ) {
 
-    return "Essential";
+    return (
+      `${origin}/product.html?id=${encodeURIComponent(id)}`
+    );
 
   }
 
 
-  return "Video";
+  return (
+    `${origin}/video.html?id=${encodeURIComponent(id)}`
+  );
 
 }
 
 
-function getTypeIcon(
-  type
+
+/* =========================================================
+   OPEN SAVED CONTENT
+========================================================= */
+
+function openSavedContent(
+  contentId
 ) {
 
-  if (
-    type === "ebook"
-  ) {
+  const saved =
+    savedItems.find(
+      item =>
+        String(
+          getContentId(item)
+        ) === String(contentId)
+    );
 
-    return "bi-book-fill";
+
+  const content =
+    getSavedContent(saved);
+
+
+  if (!content) {
+
+    window.location.href =
+      `video.html?id=${encodeURIComponent(contentId)}`;
+
+    return;
+
+  }
+
+
+  const type =
+    normalizeContentType(
+      content
+    );
+
+
+  if (type === "ebook") {
+
+    window.location.href =
+      `ebook.html?id=${encodeURIComponent(contentId)}`;
+
+    return;
 
   }
 
 
   if (
-    type === "fashion"
-  ) {
-
-    return "bi-bag-fill";
-
-  }
-
-
-  if (
+    type === "fashion" ||
     type === "essential"
   ) {
 
-    return "bi-box-seam-fill";
+    window.location.href =
+      `product.html?id=${encodeURIComponent(contentId)}`;
+
+    return;
 
   }
 
 
-  return "bi-play-btn-fill";
+  window.location.href =
+    `video.html?id=${encodeURIComponent(contentId)}`;
 
 }
+
+
+
+/* =========================================================
+   ITEM ACTIONS
+========================================================= */
+
+function openItemActions(
+  savedId
+) {
+
+  const item =
+    savedItems.find(
+      saved =>
+        String(
+          getSavedId(saved)
+        ) === String(savedId)
+    );
+
+
+  if (!item) {
+
+    console.warn(
+      "Saved item not found:",
+      savedId
+    );
+
+    return;
+
+  }
+
+
+  currentActionItem =
+    item;
+
+
+  const content =
+    getSavedContent(item);
+
+
+  if (itemActionTitle) {
+
+    itemActionTitle.textContent =
+      content?.title ||
+      content?.name ||
+      "Saved item";
+
+  }
+
+
+  openModal(
+    itemActionModal
+  );
+
+}
+
+
+
+/* =========================================================
+   CLOSE ITEM ACTIONS
+========================================================= */
+
+function closeItemActions() {
+
+  closeModal(
+    itemActionModal
+  );
+
+  currentActionItem = null;
+
+}
+
+
+
+/* =========================================================
+   SHARE CURRENT ITEM
+========================================================= */
+
+async function shareCurrentItem() {
+
+  if (!currentActionItem) {
+    return;
+  }
+
+
+  const content =
+    getSavedContent(
+      currentActionItem
+    );
+
+
+  if (!content) {
+    return;
+  }
+
+
+  await shareContent(
+    content
+  );
+
+}
+
+
+
+/* =========================================================
+   SHARE CONTENT
+========================================================= */
+
+async function shareContent(
+  content
+) {
+
+  const url =
+    getContentUrl(
+      content
+    );
+
+
+  const title =
+    content.title ||
+    content.name ||
+    "Vindarr";
+
+
+  const text =
+    `Check this out on Vindarr: ${title}`;
+
+
+  try {
+
+    if (
+      navigator.share
+    ) {
+
+      await navigator.share(
+        {
+          title,
+          text,
+          url
+        }
+      );
+
+
+      return;
+
+    }
+
+  } catch (error) {
+
+    /*
+     * User cancelling the native share
+     * should not be treated as an error.
+     */
+
+    if (
+      error?.name ===
+      "AbortError"
+    ) {
+
+      return;
+
+    }
+
+  }
+
+
+  try {
+
+    await navigator.clipboard.writeText(
+      url
+    );
+
+
+    showToast(
+      "Link copied to clipboard."
+    );
+
+
+    closeItemActions();
+
+    return;
+
+  } catch {
+
+    /*
+     * Clipboard can be unavailable
+     * on non-secure contexts.
+     */
+
+  }
+
+
+  const whatsappUrl =
+    `https://wa.me/?text=${encodeURIComponent(
+      `${text}\n${url}`
+    )}`;
+
+
+  window.open(
+    whatsappUrl,
+    "_blank",
+    "noopener,noreferrer"
+  );
+
+}
+
+
+
+/* =========================================================
+   SHARE COLLECTION
+========================================================= */
+
+async function shareCollection(
+  collectionId
+) {
+
+  if (!collectionId) {
+    return;
+  }
+
+
+  const collection =
+    currentCollection &&
+    String(
+      currentCollection.id
+    ) === String(collectionId)
+      ? currentCollection
+      : collections.find(
+          item =>
+            String(item.id) ===
+            String(collectionId)
+        );
+
+
+  const name =
+    collection?.name ||
+    "My Vindarr collection";
+
+
+  /*
+   * This is the frontend share URL.
+   *
+   * The backend currently protects GET /collections/:id
+   * to the owner. Therefore another user will need a
+   * public collection endpoint before this link can be
+   * viewed by someone else.
+   */
+
+  const url =
+    `${window.location.origin}${window.location.pathname}?collection=${encodeURIComponent(collectionId)}`;
+
+
+  const text =
+    `Check out my Vindarr collection: ${name}`;
+
+
+  try {
+
+    if (
+      navigator.share
+    ) {
+
+      await navigator.share(
+        {
+          title: name,
+          text,
+          url
+        }
+      );
+
+
+      return;
+
+    }
+
+  } catch (error) {
+
+    if (
+      error?.name ===
+      "AbortError"
+    ) {
+
+      return;
+
+    }
+
+  }
+
+
+  try {
+
+    await navigator.clipboard.writeText(
+      url
+    );
+
+
+    showToast(
+      "Collection link copied."
+    );
+
+
+    return;
+
+  } catch {
+
+    const whatsappUrl =
+      `https://wa.me/?text=${encodeURIComponent(
+        `${text}\n${url}`
+      )}`;
+
+
+    window.open(
+      whatsappUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+  }
+
+}
+
+
+
+/* =========================================================
+   REMOVE CURRENT SAVED ITEM
+========================================================= */
+
+async function removeCurrentSavedItem() {
+
+  if (!currentActionItem) {
+    return;
+  }
+
+
+  const savedId =
+    getSavedId(
+      currentActionItem
+    );
+
+
+  if (!savedId) {
+    return;
+  }
+
+
+  const confirmed =
+    window.confirm(
+      "Remove this item from your saved content?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  try {
+
+    await apiFetch(
+      `${SAVED_API}/${encodeURIComponent(savedId)}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+
+    savedItems =
+      savedItems.filter(
+        item =>
+          String(
+            getSavedId(item)
+          ) !== String(savedId)
+      );
+
+
+    closeItemActions();
+
+    renderSaved();
+
+    await refreshCollections();
+
+    /*
+     * If the currently open collection contains
+     * this saved item, refresh its detail too.
+     */
+
+    if (
+      currentCollection?.id
+    ) {
+
+      await openCollection(
+        currentCollection.id,
+        false
+      );
+
+    }
+
+
+    showToast(
+      "Removed from saved."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Remove saved error:",
+      error
+    );
+
+
+    showToast(
+      error.message ||
+      "Could not remove item."
+    );
+
+  }
+
+}
+
 
 
 /* =========================================================
@@ -847,35 +1931,36 @@ function getTypeIcon(
 
 function renderCollections() {
 
+  if (!collectionsGrid) {
+    return;
+  }
+
+
   if (!collections.length) {
 
     collectionsGrid.innerHTML = `
+      <div class="collections-empty">
 
-      <div class="saved-empty">
-
-        <div class="saved-empty-icon">
-
-          <i class="bi bi-collection"></i>
-
-        </div>
+        <i class="bi bi-collection"></i>
 
         <h3>
-          Create your first collection
+          No collections yet
         </h3>
 
         <p>
-          Group saved videos, books and products
-          into collections you name yourself.
+          Group your saved content into
+          collections you can return to.
         </p>
 
         <button
+          class="modal-secondary-btn"
           onclick="openCreateCollection()"
         >
-          Create collection
+          <i class="bi bi-plus-lg"></i>
+          Create your first collection
         </button>
 
       </div>
-
     `;
 
     return;
@@ -893,533 +1978,641 @@ function renderCollections() {
 }
 
 
+
+/* =========================================================
+   COLLECTION CARD
+========================================================= */
+
 function renderCollectionCard(
   collection
 ) {
 
+  const id =
+    collection.id;
+
+
+  const name =
+    collection.name ||
+    "Untitled collection";
+
+
   const items =
-    collection.items ||
-    collection.collectionItems ||
-    [];
+    getCollectionItems(
+      collection
+    );
 
 
-  const previews =
-    items
-      .slice(0,4)
-      .map(
-        item => {
-
-          const content =
-            item.savedItem?.content ||
-            item.content ||
-            item.savedItem ||
-            null;
+  const preview =
+    getCollectionPreviewItems(
+      items
+    );
 
 
-          return normalizeMediaUrl(
-            content?.coverUrl ||
-            content?.videoUrl ||
-            content?.fileUrl
-          );
-
-        }
-      )
-      .filter(Boolean);
-
-
-  const collage =
-    previews.length
-      ? previews
+  const previewHtml =
+    preview.length
+      ? preview
           .map(
-            url => `
-              <img
-                src="${escapeHtml(url)}"
-                alt=""
-                loading="lazy"
-              >
-            `
+            item => {
+
+              const content =
+                getCollectionItemContent(
+                  item
+                );
+
+
+              const media =
+                getPrimaryMedia(
+                  content
+                );
+
+
+              if (!media) {
+
+                return `
+                  <div class="collection-preview-placeholder">
+                    <i class="bi bi-bookmark"></i>
+                  </div>
+                `;
+
+              }
+
+
+              return `
+                <img
+                  src="${escapeHtml(media)}"
+                  alt=""
+                  loading="lazy"
+                  onerror="this.style.display='none'"
+                >
+              `;
+
+            }
           )
           .join("")
       : `
-          <div
-            style="
-              width:100%;
-              height:100%;
-              background:
-              linear-gradient(
-                135deg,
-                #180000,
-                #d10000
-              );
-            "
-          ></div>
+          <div class="collection-preview-placeholder">
+            <i class="bi bi-collection"></i>
+          </div>
         `;
 
 
   return `
-
     <article
       class="collection-card"
-      onclick="openCollection(${Number(collection.id)})"
+      onclick="openCollection('${escapeHtml(id)}')"
     >
 
-      <div class="collection-collage">
+      <div class="collection-card-preview">
 
-        ${collage}
+        ${previewHtml}
 
       </div>
 
-      <div class="collection-overlay"></div>
+
+      <div class="collection-card-body">
+
+        <div>
+
+          <h3>
+            ${escapeHtml(name)}
+          </h3>
+
+          <span>
+            ${items.length}
+            ${items.length === 1 ? "item" : "items"}
+          </span>
+
+        </div>
 
 
-      <button
-        class="collection-menu"
-        onclick="
-          event.stopPropagation();
-          openCollectionMenu(${Number(collection.id)});
-        "
-      >
-        <i class="bi bi-three-dots"></i>
-      </button>
-
-
-      <div class="collection-info">
-
-        <h3>
-          ${escapeHtml(
-            collection.name ||
-            "Collection"
-          )}
-        </h3>
-
-        <span>
-
-          ${
-            Number(
-              collection.itemCount ??
-              items.length ??
-              0
-            )
-          }
-          ${
-            Number(
-              collection.itemCount ??
-              items.length ??
-              0
-            ) === 1
-              ? "save"
-              : "saves"
-          }
-
-        </span>
+        <button
+          class="collection-card-arrow"
+          onclick="event.stopPropagation(); openCollection('${escapeHtml(id)}')"
+          aria-label="Open collection"
+        >
+          <i class="bi bi-arrow-up-right"></i>
+        </button>
 
       </div>
 
     </article>
-
   `;
 
 }
 
 
+
 /* =========================================================
-   CREATE COLLECTION
+   COLLECTION ITEMS
 ========================================================= */
 
-function openCreateCollection() {
+function getCollectionItems(
+  collection
+) {
 
-  const modal =
-    document.getElementById(
-      "collectionModal"
-    );
+  if (
+    Array.isArray(
+      collection?.items
+    )
+  ) {
 
+    return collection.items;
 
-  modal.classList.add(
-    "open"
-  );
-
-  modal.setAttribute(
-    "aria-hidden",
-    "false"
-  );
+  }
 
 
-  setTimeout(
-    () =>
-      document
-        .getElementById(
-          "collectionName"
-        )
-        ?.focus(),
-    100
+  if (
+    Array.isArray(
+      collection?.collectionItems
+    )
+  ) {
+
+    return collection.collectionItems;
+
+  }
+
+
+  return [];
+
+}
+
+
+
+/* =========================================================
+   COLLECTION ITEM CONTENT
+========================================================= */
+
+function getCollectionItemContent(
+  item
+) {
+
+  return (
+    item?.savedItem?.content ||
+    item?.savedItem?.video ||
+    item?.savedItem?.product ||
+    item?.savedItem?.ebook ||
+    item?.content ||
+    item?.video ||
+    item?.product ||
+    item?.ebook ||
+    null
   );
 
 }
 
 
-function closeCreateCollection() {
 
-  const modal =
-    document.getElementById(
-      "collectionModal"
-    );
+/* =========================================================
+   COLLECTION ITEM SAVED ID
+========================================================= */
 
+function getCollectionItemSavedId(
+  item
+) {
 
-  modal.classList.remove(
-    "open"
+  return (
+    item?.savedItem?.id ||
+    item?.savedItemId ||
+    null
   );
-
-  modal.setAttribute(
-    "aria-hidden",
-    "true"
-  );
-
-
-  document
-    .getElementById(
-      "collectionName"
-    ).value = "";
 
 }
 
 
-async function createCollection() {
 
-  const input =
-    document.getElementById(
-      "collectionName"
-    );
+/* =========================================================
+   COLLECTION PREVIEW
+========================================================= */
+
+function getCollectionPreviewItems(
+  items
+) {
+
+  return items
+    .filter(
+      item =>
+        getCollectionItemContent(item)
+    )
+    .slice(0, 4);
+
+}
 
 
-  const name =
-    input.value.trim();
 
+/* =========================================================
+   OPEN COLLECTION
+========================================================= */
 
-  if (!name) {
+async function openCollection(
+  id,
+  showLoading = true
+) {
 
-    input.focus();
-
+  if (!id) {
     return;
-
   }
 
 
   try {
 
-    const result =
-      await apiFetch(
-        COLLECTION_API,
-        {
-          method: "POST",
+    if (
+      showLoading &&
+      collectionDetailContent
+    ) {
 
-          body:
-            JSON.stringify({
-              name
-            })
-        }
+      collectionDetailContent.innerHTML = `
+        <div class="saved-loading">
+          <div class="loading-spinner"></div>
+          <span>Loading collection...</span>
+        </div>
+      `;
+
+      openModal(
+        collectionDetailModal
+      );
+
+    }
+
+
+    const response =
+      await apiFetch(
+        `${COLLECTION_API}/${encodeURIComponent(id)}`
       );
 
 
     const collection =
-      result?.data ||
-      result;
+      extractData(
+        response
+      );
 
 
-    if (collection) {
+    if (!collection) {
 
-      collections.unshift(
+      throw new Error(
+        "Collection not found."
+      );
+
+    }
+
+
+    currentCollection =
+      collection;
+
+
+    /*
+     * Keep the local collection list synchronized.
+     */
+
+    const index =
+      collections.findIndex(
+        item =>
+          String(item.id) ===
+          String(collection.id)
+      );
+
+
+    if (index >= 0) {
+
+      collections[index] =
+        collection;
+
+    } else {
+
+      collections.push(
         collection
       );
 
     }
 
 
-    closeCreateCollection();
-
-    renderCollections();
-
-    showToast(
-      "Collection created."
+    renderCollectionDetail(
+      collection
     );
 
-  }
-  catch (error) {
 
-    showToast(
-      error.message,
-      true
+    openModal(
+      collectionDetailModal
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Open collection error:",
+      error
+    );
+
+
+    if (collectionDetailContent) {
+
+      collectionDetailContent.innerHTML = `
+        <div class="saved-empty-state">
+
+          <i class="bi bi-exclamation-circle"></i>
+
+          <h3>
+            Could not open collection
+          </h3>
+
+          <p>
+            ${escapeHtml(error.message)}
+          </p>
+
+        </div>
+      `;
+
+    }
+
+
+    openModal(
+      collectionDetailModal
     );
 
   }
 
 }
+
 
 
 /* =========================================================
-   COLLECTION DETAIL
+   RENDER COLLECTION DETAIL
 ========================================================= */
-
-async function openCollection(
-  collectionId
-) {
-
-  try {
-
-    const result =
-      await apiFetch(
-        `${COLLECTION_API}/${collectionId}`
-      );
-
-
-    currentCollection =
-      result?.data ||
-      result;
-
-
-    renderCollectionDetail(
-      currentCollection
-    );
-
-
-    const modal =
-      document.getElementById(
-        "collectionDetailModal"
-      );
-
-
-    modal.classList.add(
-      "open"
-    );
-
-    modal.setAttribute(
-      "aria-hidden",
-      "false"
-    );
-
-  }
-  catch (error) {
-
-    showToast(
-      error.message,
-      true
-    );
-
-  }
-
-}
-
 
 function renderCollectionDetail(
   collection
 ) {
 
-  const container =
-    document.getElementById(
-      "collectionDetailContent"
-    );
+  if (!collectionDetailContent) {
+    return;
+  }
+
+
+  const id =
+    collection.id;
+
+
+  const name =
+    collection.name ||
+    "Untitled collection";
 
 
   const items =
-    collection.items ||
-    collection.collectionItems ||
-    [];
+    getCollectionItems(
+      collection
+    );
 
 
-  container.innerHTML = `
+  collectionDetailContent.innerHTML = `
 
-    <span class="modal-kicker">
-      COLLECTION
-    </span>
+    <div class="collection-detail-header">
 
-    <h2>
-      ${escapeHtml(
-        collection.name
-      )}
-    </h2>
+      <span class="modal-kicker">
+        COLLECTION
+      </span>
 
-    <p>
-      Drag saved content to rearrange it.
-    </p>
 
-    <div
-      id="collectionItems"
-      class="collection-detail-items"
-    >
+      <div class="collection-detail-title-row">
 
-      ${
-        items.length
-          ? items
+        <div>
+
+          <h2>
+            ${escapeHtml(name)}
+          </h2>
+
+          <p>
+            ${items.length}
+            ${items.length === 1 ? "item" : "items"}
+          </p>
+
+        </div>
+
+
+        <button
+          class="collection-share-btn"
+          onclick="shareCollection('${escapeHtml(id)}')"
+        >
+          <i class="bi bi-share"></i>
+          Share
+        </button>
+
+      </div>
+
+    </div>
+
+
+    ${
+      items.length
+        ? `
+          <div
+            class="collection-detail-items"
+            data-collection-id="${escapeHtml(id)}"
+          >
+
+            ${items
               .map(
                 renderCollectionItem
               )
-              .join("")
-          : `
-            <div class="saved-empty">
-              <div class="saved-empty-icon">
-                <i class="bi bi-collection"></i>
-              </div>
+              .join("")}
 
-              <h3>
-                This collection is empty.
-              </h3>
+          </div>
 
-              <p>
-                Add saved content to start building it.
-              </p>
-            </div>
-          `
-      }
+          <small class="collection-drag-hint">
+            <i class="bi bi-arrows-move"></i>
+            Drag items to rearrange them.
+          </small>
+        `
+        : `
+          <div class="saved-empty-state compact">
+
+            <i class="bi bi-collection"></i>
+
+            <h3>
+              This collection is empty
+            </h3>
+
+            <p>
+              Add saved content from the
+              item actions menu.
+            </p>
+
+          </div>
+        `
+    }
+
+
+    <div class="collection-detail-actions">
+
+      <button
+        class="modal-secondary-btn"
+        onclick="openCollectionMenu('${escapeHtml(id)}')"
+      >
+        <i class="bi bi-three-dots"></i>
+        Collection options
+      </button>
 
     </div>
 
   `;
 
 
-  enableCollectionDrag();
+  enableCollectionDragging(
+    collectionDetailContent
+  );
+
 }
 
+
+
+/* =========================================================
+   RENDER COLLECTION ITEM
+========================================================= */
 
 function renderCollectionItem(
   item,
   index
 ) {
 
-  const saved =
-    item.savedItem ||
-    item;
+  const collectionItemId =
+    item?.id;
 
 
-  const content =
-    saved.content ||
-    saved;
-
-
-  const media =
-    normalizeMediaUrl(
-      content.coverUrl ||
-      content.videoUrl ||
-      content.fileUrl
+  const savedId =
+    getCollectionItemSavedId(
+      item
     );
 
 
-  return `
+  const content =
+    getCollectionItemContent(
+      item
+    );
 
+
+  if (!content) {
+    return "";
+  }
+
+
+  const contentId =
+    content.id;
+
+
+  const title =
+    content.title ||
+    content.name ||
+    "Untitled";
+
+
+  const media =
+    getPrimaryMedia(
+      content
+    );
+
+
+  const type =
+    normalizeContentType(
+      content
+    );
+
+
+  const mediaHtml =
+    media
+      ? `
+        <img
+          src="${escapeHtml(media)}"
+          alt="${escapeHtml(title)}"
+          loading="lazy"
+        >
+      `
+      : `
+        <div class="collection-item-placeholder">
+          <i class="bi ${
+            type === "ebook"
+              ? "bi-book"
+              : type === "fashion"
+                ? "bi-bag"
+                : "bi-play-circle"
+          }"></i>
+        </div>
+      `;
+
+
+  return `
     <article
-      class="collection-detail-item"
+      class="collection-item"
       draggable="true"
-      data-item-id="${Number(
-        item.id ||
-        saved.id
-      )}"
+      data-collection-item-id="${escapeHtml(collectionItemId)}"
+      data-saved-id="${escapeHtml(savedId)}"
+      data-index="${index}"
     >
 
-      <div class="drag-handle">
-
+      <div class="collection-item-drag">
         <i class="bi bi-grip-vertical"></i>
-
       </div>
 
 
-      <div class="collection-item-media">
-
-        ${
-          media
-            ? `
-              <img
-                src="${escapeHtml(media)}"
-                alt=""
-              >
-            `
-            : `
-              <i class="bi bi-file-earmark"></i>
-            `
-        }
-
+      <div
+        class="collection-item-media"
+        onclick="openSavedContent('${escapeHtml(contentId)}')"
+      >
+        ${mediaHtml}
       </div>
 
 
-      <div class="collection-item-copy">
+      <div
+        class="collection-item-info"
+        onclick="openSavedContent('${escapeHtml(contentId)}')"
+      >
 
         <strong>
-          ${escapeHtml(
-            content.title ||
-            "Untitled"
-          )}
+          ${escapeHtml(title)}
         </strong>
 
         <small>
-          ${escapeHtml(
-            getTypeLabel(
-              content.type ||
-              saved.type
-            )
-          )}
+          ${
+            type === "ebook"
+              ? "Book"
+              : type === "fashion"
+                ? "Product"
+                : type === "essential"
+                  ? "Essential"
+                  : "Video"
+          }
         </small>
 
       </div>
 
 
       <button
-        class="collection-remove-btn"
-        onclick="
-          removeFromCollection(
-            ${Number(
-              item.id ||
-              saved.id
-            )}
-          )
-        "
+        class="collection-item-menu"
+        onclick="event.stopPropagation(); openCollectionItemActions('${escapeHtml(collectionItemId)}', '${escapeHtml(savedId)}')"
+        aria-label="Collection item options"
       >
-        <i class="bi bi-x"></i>
+        <i class="bi bi-three-dots"></i>
       </button>
 
     </article>
-
   `;
 
 }
 
 
-function closeCollectionDetail() {
-
-  const modal =
-    document.getElementById(
-      "collectionDetailModal"
-    );
-
-
-  modal.classList.remove(
-    "open"
-  );
-
-  modal.setAttribute(
-    "aria-hidden",
-    "true"
-  );
-
-
-  currentCollection =
-    null;
-
-}
-
 
 /* =========================================================
-   DRAG REORDER
+   DRAGGING
 ========================================================= */
 
-function enableCollectionDrag() {
+function enableCollectionDragging(
+  root
+) {
 
   const container =
-    document.getElementById(
-      "collectionItems"
+    root.querySelector(
+      ".collection-detail-items"
     );
 
 
   if (!container) {
-
     return;
-
   }
 
 
@@ -1428,223 +2621,114 @@ function enableCollectionDrag() {
 
   container
     .querySelectorAll(
-      ".collection-detail-item"
+      ".collection-item"
     )
-    .forEach(
-      item => {
+    .forEach(item => {
 
-        item.addEventListener(
-          "dragstart",
-          () => {
+      item.addEventListener(
+        "dragstart",
+        event => {
 
-            dragged =
-              item;
+          dragged =
+            item;
 
-            item.classList.add(
-              "dragging"
-            );
-
-          }
-        );
+          item.classList.add(
+            "dragging"
+          );
 
 
-        item.addEventListener(
-          "dragend",
-          async () => {
+          event.dataTransfer.effectAllowed =
+            "move";
 
-            item.classList.remove(
-              "dragging"
-            );
-
-            await saveCollectionOrder();
-
-          }
-        );
-
-
-        item.addEventListener(
-          "dragover",
-          event => {
-
-            event.preventDefault();
-
-
-            if (
-              !dragged ||
-              dragged === item
-            ) {
-
-              return;
-
-            }
-
-
-            const rect =
-              item.getBoundingClientRect();
-
-
-            const after =
-              event.clientY -
-              rect.top >
-              rect.height / 2;
-
-
-            if (after) {
-
-              item.after(
-                dragged
-              );
-
-            }
-            else {
-
-              item.before(
-                dragged
-              );
-
-            }
-
-          }
-        );
-
-      }
-    );
-
-}
-
-
-async function saveCollectionOrder() {
-
-  if (!currentCollection) {
-
-    return;
-
-  }
-
-
-  const container =
-    document.getElementById(
-      "collectionItems"
-    );
-
-
-  if (!container) {
-
-    return;
-
-  }
-
-
-  const ids =
-    [
-      ...container.querySelectorAll(
-        ".collection-detail-item"
-      )
-    ]
-      .map(
-        item =>
-          Number(
-            item.dataset.itemId
-          )
+        }
       );
 
 
-  try {
+      item.addEventListener(
+        "dragend",
+        async () => {
 
-    await apiFetch(
-      `${COLLECTION_API}/${currentCollection.id}/reorder`,
-      {
-        method: "PATCH",
+          item.classList.remove(
+            "dragging"
+          );
 
-        body:
-          JSON.stringify({
-            itemIds: ids
-          })
-      }
-    );
 
-    showToast(
-      "Collection reordered."
-    );
+          if (!dragged) {
+            return;
+          }
 
-  }
-  catch (error) {
 
-    showToast(
-      error.message,
-      true
-    );
+          dragged = null;
 
-  }
+
+          await persistCollectionOrder();
+
+        }
+      );
+
+
+      item.addEventListener(
+        "dragover",
+        event => {
+
+          event.preventDefault();
+
+
+          if (
+            !dragged ||
+            dragged === item
+          ) {
+
+            return;
+
+          }
+
+
+          const rect =
+            item.getBoundingClientRect();
+
+
+          const midpoint =
+            rect.top +
+            rect.height / 2;
+
+
+          if (
+            event.clientY <
+            midpoint
+          ) {
+
+            container.insertBefore(
+              dragged,
+              item
+            );
+
+          } else {
+
+            container.insertBefore(
+              dragged,
+              item.nextSibling
+            );
+
+          }
+
+        }
+      );
+
+    });
 
 }
+
 
 
 /* =========================================================
-   ITEM ACTIONS
+   PERSIST COLLECTION ORDER
 ========================================================= */
 
-function openItemActions(
-  savedId
-) {
-
-  currentActionItem =
-    savedItems.find(
-      item =>
-        Number(item.id) ===
-        Number(savedId)
-    );
-
-
-  if (!currentActionItem) {
-
-    return;
-
-  }
-
-
-  const content =
-    currentActionItem.content ||
-    currentActionItem;
-
-
-  document.getElementById(
-    "itemActionTitle"
-  ).textContent =
-    content.title ||
-    "Saved item";
-
-
-  const modal =
-    document.getElementById(
-      "itemActionModal"
-    );
-
-
-  modal.classList.add(
-    "open"
-  );
-
-}
-
-
-function closeItemActions() {
-
-  document
-    .getElementById(
-      "itemActionModal"
-    )
-    .classList.remove(
-      "open"
-    );
-
-}
-
-
-async function removeCurrentSavedItem() {
+async function persistCollectionOrder() {
 
   if (
-    !currentActionItem
+    !currentCollection?.id
   ) {
 
     return;
@@ -1652,45 +2736,84 @@ async function removeCurrentSavedItem() {
   }
 
 
-  const id =
-    Number(
-      currentActionItem.id
+  const container =
+    collectionDetailContent?.querySelector(
+      ".collection-detail-items"
     );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  /*
+   * IMPORTANT:
+   * This uses COLLECTION ITEM IDs,
+   * not saved IDs.
+   */
+
+  const itemIds =
+    Array.from(
+      container.querySelectorAll(
+        ".collection-item"
+      )
+    )
+      .map(
+        element =>
+          Number(
+            element.dataset
+              .collectionItemId
+          )
+      )
+      .filter(
+        Number.isFinite
+      );
+
+
+  if (!itemIds.length) {
+    return;
+  }
 
 
   try {
 
     await apiFetch(
-      `${SAVED_API}/${id}`,
+      `${COLLECTION_API}/${encodeURIComponent(currentCollection.id)}/reorder`,
       {
-        method:
-          "DELETE"
+        method: "PATCH",
+        body: JSON.stringify({
+          itemIds
+        })
       }
     );
 
 
-    savedItems =
-      savedItems.filter(
-        item =>
-          Number(item.id) !==
-          id
-      );
-
-
-    closeItemActions();
-
-    renderSaved();
-
     showToast(
-      "Removed from saved."
+      "Collection order saved."
     );
 
-  }
-  catch (error) {
+
+  } catch (error) {
+
+    console.error(
+      "Reorder error:",
+      error
+    );
+
 
     showToast(
-      error.message,
-      true
+      "Could not save the new order."
+    );
+
+
+    /*
+     * Re-fetch the collection so the UI
+     * returns to the server's actual order.
+     */
+
+    await openCollection(
+      currentCollection.id
     );
 
   }
@@ -1698,13 +2821,261 @@ async function removeCurrentSavedItem() {
 }
 
 
+
 /* =========================================================
-   MOVE TO COLLECTION
+   COLLECTION ITEM ACTIONS
+========================================================= */
+
+function openCollectionItemActions(
+  collectionItemId,
+  savedId
+) {
+
+  currentCollectionItem = {
+    collectionItemId,
+    savedId
+  };
+
+
+  /*
+   * Reuse the existing item action modal.
+   * The remove button will remove the save.
+   * Move will move the saved item.
+   */
+
+  const saved =
+    savedItems.find(
+      item =>
+        String(
+          getSavedId(item)
+        ) === String(savedId)
+    );
+
+
+  currentActionItem =
+    saved || null;
+
+
+  if (itemActionTitle) {
+
+    const content =
+      getSavedContent(saved);
+
+
+    itemActionTitle.textContent =
+      content?.title ||
+      content?.name ||
+      "Saved item";
+
+  }
+
+
+  openModal(
+    itemActionModal
+  );
+
+}
+
+
+
+/* =========================================================
+   REMOVE FROM CURRENT COLLECTION
+========================================================= */
+
+async function removeFromCollection(
+  collectionItemId
+) {
+
+  if (!collectionItemId) {
+    return;
+  }
+
+
+  try {
+
+    await apiFetch(
+      `${COLLECTION_API}/items/${encodeURIComponent(collectionItemId)}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+
+    showToast(
+      "Removed from collection."
+    );
+
+
+    if (
+      currentCollection?.id
+    ) {
+
+      await openCollection(
+        currentCollection.id
+      );
+
+    }
+
+
+    await refreshCollections();
+
+  } catch (error) {
+
+    console.error(
+      "Remove collection item error:",
+      error
+    );
+
+
+    showToast(
+      error.message ||
+      "Could not remove item."
+    );
+
+  }
+
+}
+
+
+
+/* =========================================================
+   COLLECTION MENU
+========================================================= */
+
+function openCollectionMenu(
+  collectionId
+) {
+
+  const collection =
+    collections.find(
+      item =>
+        String(item.id) ===
+        String(collectionId)
+    );
+
+
+  if (!collection) {
+    return;
+  }
+
+
+  const choice =
+    window.prompt(
+      "Type DELETE to delete this collection, or Cancel to close.",
+      ""
+    );
+
+
+  if (
+    String(choice)
+      .trim()
+      .toUpperCase() ===
+    "DELETE"
+  ) {
+
+    deleteCollection(
+      collectionId
+    );
+
+  }
+
+}
+
+
+
+/* =========================================================
+   DELETE COLLECTION
+========================================================= */
+
+async function deleteCollection(
+  collectionId
+) {
+
+  if (!collectionId) {
+    return;
+  }
+
+
+  const confirmed =
+    window.confirm(
+      "Delete this collection? Your saved content will not be deleted."
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  try {
+
+    await apiFetch(
+      `${COLLECTION_API}/${encodeURIComponent(collectionId)}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+
+    collections =
+      collections.filter(
+        item =>
+          String(item.id) !==
+          String(collectionId)
+      );
+
+
+    if (
+      currentCollection?.id &&
+      String(
+        currentCollection.id
+      ) === String(collectionId)
+    ) {
+
+      currentCollection = null;
+
+      closeCollectionDetail();
+
+    }
+
+
+    renderCollections();
+
+
+    showToast(
+      "Collection deleted."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Delete collection error:",
+      error
+    );
+
+
+    showToast(
+      error.message ||
+      "Could not delete collection."
+    );
+
+  }
+
+}
+
+
+
+/* =========================================================
+   MOVE COLLECTION
 ========================================================= */
 
 function openMoveCollection() {
 
   if (!currentActionItem) {
+
+    showToast(
+      "No saved item selected."
+    );
 
     return;
 
@@ -1714,156 +3085,277 @@ function openMoveCollection() {
   closeItemActions();
 
 
-  const list =
-    document.getElementById(
-      "moveCollectionList"
-    );
+  renderMoveCollectionList();
 
 
-  if (!collections.length) {
-
-    list.innerHTML = `
-
-      <div class="saved-empty">
-
-        <h3>
-          No collections yet.
-        </h3>
-
-        <p>
-          Create a collection first.
-        </p>
-
-      </div>
-
-    `;
-
-  }
-  else {
-
-    list.innerHTML =
-      collections
-        .map(
-          collection => `
-
-            <button
-              class="move-collection-item"
-              onclick="
-                moveCurrentItemToCollection(
-                  ${Number(collection.id)}
-                )
-              "
-            >
-
-              <i class="bi bi-collection-fill"></i>
-
-              <span>
-
-                <strong>
-                  ${escapeHtml(
-                    collection.name
-                  )}
-                </strong>
-
-                <small>
-                  ${
-                    Number(
-                      collection.itemCount ||
-                      0
-                    )
-                  }
-                  saves
-                </small>
-
-              </span>
-
-            </button>
-
-          `
-        )
-        .join("");
-
-  }
-
-
-  const modal =
-    document.getElementById(
-      "moveCollectionModal"
-    );
-
-
-  modal.classList.add(
-    "open"
+  openModal(
+    moveCollectionModal
   );
 
 }
 
 
+
+/* =========================================================
+   CLOSE MOVE COLLECTION
+========================================================= */
+
 function closeMoveCollection() {
 
-  document
-    .getElementById(
-      "moveCollectionModal"
-    )
-    .classList.remove(
-      "open"
-    );
+  closeModal(
+    moveCollectionModal
+  );
 
 }
 
 
-async function moveCurrentItemToCollection(
-  collectionId
-) {
 
-  if (!currentActionItem) {
+/* =========================================================
+   RENDER MOVE COLLECTION LIST
+========================================================= */
+
+function renderMoveCollectionList() {
+
+  if (!moveCollectionList) {
+    return;
+  }
+
+
+  if (!collections.length) {
+
+    moveCollectionList.innerHTML = `
+      <div class="saved-empty-state compact">
+
+        <i class="bi bi-collection"></i>
+
+        <p>
+          You don't have any collections yet.
+        </p>
+
+      </div>
+    `;
 
     return;
 
   }
 
 
+  moveCollectionList.innerHTML =
+    collections
+      .map(
+        collection => {
+
+          const id =
+            collection.id;
+
+
+          const name =
+            collection.name ||
+            "Untitled collection";
+
+
+          const itemCount =
+            getCollectionItems(
+              collection
+            ).length;
+
+
+          return `
+            <button
+              class="move-collection-option"
+              onclick="moveCurrentItem('${escapeHtml(id)}')"
+            >
+
+              <span class="move-collection-icon">
+                <i class="bi bi-collection"></i>
+              </span>
+
+              <span>
+
+                <strong>
+                  ${escapeHtml(name)}
+                </strong>
+
+                <small>
+                  ${itemCount}
+                  ${itemCount === 1 ? "item" : "items"}
+                </small>
+
+              </span>
+
+              <i class="bi bi-chevron-right"></i>
+
+            </button>
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+
+/* =========================================================
+   MOVE CURRENT ITEM
+========================================================= */
+
+async function moveCurrentItem(
+  collectionId
+) {
+
+  if (!currentActionItem) {
+    return;
+  }
+
+
+  const savedId =
+    getSavedId(
+      currentActionItem
+    );
+
+
+  if (!savedId) {
+    return;
+  }
+
+
   try {
 
-    await apiFetch(
-      `${COLLECTION_API}/${collectionId}/items`,
-      {
-        method: "POST",
-
-        body:
-          JSON.stringify({
-            savedItemId:
-              Number(
-                currentActionItem.id
-              )
+    const response =
+      await apiFetch(
+        `${COLLECTION_API}/${encodeURIComponent(collectionId)}/items`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            savedItemId: Number(savedId)
           })
-      }
-    );
+        }
+      );
+
+
+    /*
+     * Backend duplicate protection may return
+     * a message instead of creating a duplicate.
+     */
+
+    const message =
+      response?.message ||
+      "";
+
+
+    if (
+      String(message)
+        .toLowerCase()
+        .includes("already")
+    ) {
+
+      showToast(
+        "This item is already in that collection."
+      );
+
+    } else {
+
+      showToast(
+        "Added to collection."
+      );
+
+    }
 
 
     closeMoveCollection();
 
-    showToast(
-      "Added to collection."
-    );
-
 
     await refreshCollections();
 
-  }
-  catch (error) {
+
+    if (
+      currentCollection?.id
+    ) {
+
+      await openCollection(
+        currentCollection.id
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Move item error:",
+      error
+    );
+
 
     showToast(
-      error.message,
-      true
+      error.message ||
+      "Could not add item to collection."
     );
+
+  } finally {
+
+    currentActionItem = null;
 
   }
 
 }
 
 
+
+/* =========================================================
+   CREATE COLLECTION
+========================================================= */
+
+function openCreateCollection() {
+
+  creatingCollectionFromMove =
+    false;
+
+
+  if (collectionNameInput) {
+
+    collectionNameInput.value =
+      "";
+
+  }
+
+
+  collectionCoverMode =
+    "auto";
+
+
+  selectCoverOption(
+    "auto"
+  );
+
+
+  openModal(
+    collectionModal
+  );
+
+
+  setTimeout(
+    () => {
+
+      collectionNameInput?.focus();
+
+    },
+    100
+  );
+
+}
+
+
+
+/* =========================================================
+   CREATE COLLECTION FROM MOVE
+========================================================= */
+
 function openCreateCollectionFromMove() {
+
+  creatingCollectionFromMove =
+    true;
+
 
   closeMoveCollection();
 
@@ -1872,217 +3364,206 @@ function openCreateCollectionFromMove() {
 }
 
 
+
 /* =========================================================
-   REMOVE FROM COLLECTION
+   CLOSE CREATE COLLECTION
 ========================================================= */
 
-async function removeFromCollection(
-  collectionItemId
+function closeCreateCollection() {
+
+  closeModal(
+    collectionModal
+  );
+
+
+  creatingCollectionFromMove =
+    false;
+
+}
+
+
+
+/* =========================================================
+   COVER OPTION
+========================================================= */
+
+function selectCoverOption(
+  mode
 ) {
 
-  if (!currentCollection) {
+  collectionCoverMode =
+    mode || "auto";
+
+
+  document
+    .querySelectorAll(
+      ".cover-option"
+    )
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.cover ===
+          collectionCoverMode
+      );
+
+    });
+
+}
+
+
+
+/* =========================================================
+   CREATE COLLECTION
+========================================================= */
+
+async function createCollection() {
+
+  const name =
+    collectionNameInput?.value
+      ?.trim();
+
+
+  if (!name) {
+
+    showToast(
+      "Give your collection a name."
+    );
+
+
+    collectionNameInput?.focus();
 
     return;
 
   }
 
 
-  try {
+  if (
+    name.length > 80
+  ) {
 
-    await apiFetch(
-      `${COLLECTION_API}/items/${collectionItemId}`,
-      {
-        method: "DELETE"
-      }
+    showToast(
+      "Collection name is too long."
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    document.querySelector(
+      ".modal-primary-btn"
     );
 
 
-    currentCollection.items =
-      (
-        currentCollection.items ||
-        []
-      ).filter(
-        item =>
-          Number(item.id) !==
-          Number(collectionItemId)
+  const originalText =
+    button?.textContent;
+
+
+  try {
+
+    if (button) {
+
+      button.disabled =
+        true;
+
+      button.textContent =
+        "Creating...";
+
+    }
+
+
+    const response =
+      await apiFetch(
+        COLLECTION_API,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name
+          })
+        }
       );
 
 
-    renderCollectionDetail(
-      currentCollection
-    );
-
-    refreshCollections();
-
-    showToast(
-      "Removed from collection."
-    );
-
-  }
-  catch (error) {
-
-    showToast(
-      error.message,
-      true
-    );
-
-  }
-
-}
+    const created =
+      extractData(
+        response
+      );
 
 
-/* =========================================================
-   SHARE
-========================================================= */
+    if (created) {
 
-async function shareCurrentItem() {
-
-  if (!currentActionItem) {
-
-    return;
-
-  }
-
-
-  const content =
-    currentActionItem.content ||
-    currentActionItem;
-
-
-  await shareContent(
-    content
-  );
-
-}
-
-
-async function shareContent(
-  content
-) {
-
-  const url =
-    `${window.location.origin}/video.html?id=${content.id}`;
-
-
-  const title =
-    content.title ||
-    "Something I saved on Vindarr";
-
-
-  const text =
-    `Check this out on Vindarr: ${title}`;
-
-
-  try {
-
-    if (
-      navigator.share
-    ) {
-
-      await navigator.share({
-        title,
-        text,
-        url
-      });
-
-      return;
+      collections.push(
+        created
+      );
 
     }
 
 
-    await navigator.clipboard.writeText(
-      url
-    );
+    closeCreateCollection();
+
+
+    renderCollections();
 
 
     showToast(
-      "Link copied. You can share it anywhere."
+      "Collection created."
     );
 
-  }
-  catch (error) {
+
+    /*
+     * If this creation came from the Move modal,
+     * immediately move the current saved item into it.
+     */
 
     if (
-      error?.name ===
-      "AbortError"
+      creatingCollectionFromMove &&
+      created?.id &&
+      currentActionItem
     ) {
 
-      return;
+      await moveCurrentItem(
+        created.id
+      );
 
     }
 
 
-    showSocialShareFallback(
-      url,
-      title
+  } catch (error) {
+
+    console.error(
+      "Create collection error:",
+      error
     );
+
+
+    showToast(
+      error.message ||
+      "Could not create collection."
+    );
+
+  } finally {
+
+    creatingCollectionFromMove =
+      false;
+
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        originalText ||
+        "Create collection";
+
+    }
 
   }
 
 }
 
-
-function showSocialShareFallback(
-  url,
-  title
-) {
-
-  const encodedUrl =
-    encodeURIComponent(
-      url
-    );
-
-
-  const encodedText =
-    encodeURIComponent(
-      title
-    );
-
-
-  const choice =
-    window.confirm(
-      "Share on WhatsApp?\n\nCancel to copy the link."
-    );
-
-
-  if (choice) {
-
-    window.open(
-      `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-
-    return;
-
-  }
-
-
-  navigator.clipboard
-    ?.writeText(
-      url
-    );
-
-
-  showToast(
-    "Link copied."
-  );
-
-}
-
-
-/* =========================================================
-   OPEN CONTENT
-========================================================= */
-
-function openSavedContent(
-  id
-) {
-
-  window.location.href =
-    `video.html?id=${Number(id)}`;
-
-}
 
 
 /* =========================================================
@@ -2100,316 +3581,218 @@ async function refreshCollections() {
 
 
     collections =
-      Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
-          ? response
-          : [];
+      extractData(
+        response
+      ) || [];
+
+
+    if (!Array.isArray(collections)) {
+
+      collections = [];
+
+    }
 
 
     renderCollections();
 
-  }
-  catch (error) {
 
-    console.error(
-      error
-    );
+    /*
+     * Refresh currently open collection
+     * as well, so removing/moving/reordering
+     * never leaves stale collection UI.
+     */
 
-  }
-
-}
-
-
-/* =========================================================
-   LEGACY LOCAL STORAGE MIGRATION
-========================================================= */
-
-async function migrateLegacyLocalStorage() {
-
-  const raw =
-    localStorage.getItem(
-      "savedVideos"
-    );
-
-
-  if (!raw) {
-
-    return;
-
-  }
-
-
-  let ids = [];
-
-
-  try {
-
-    ids =
-      JSON.parse(
-        raw
-      );
-
-  }
-  catch {
-
-    return;
-
-  }
-
-
-  if (
-    !Array.isArray(ids) ||
-    !ids.length
-  ) {
-
-    return;
-
-  }
-
-
-  let migrated =
-    false;
-
-
-  for (
-    const videoId of ids
-  ) {
-
-    try {
-
-      await apiFetch(
-        SAVED_API,
-        {
-          method: "POST",
-
-          body:
-            JSON.stringify({
-              contentId:
-                Number(videoId)
-            })
-        }
-      );
-
-      migrated =
-        true;
-
-    }
-    catch (
-      error
+    if (
+      currentCollection?.id
     ) {
 
-      console.warn(
-        "Legacy save migration:",
-        error.message
-      );
+      const fresh =
+        collections.find(
+          item =>
+            String(item.id) ===
+            String(currentCollection.id)
+        );
+
+
+      if (fresh) {
+
+        /*
+         * The list endpoint may not contain
+         * complete items, so use the detail
+         * endpoint for the open collection.
+         */
+
+        try {
+
+          const detailResponse =
+            await apiFetch(
+              `${COLLECTION_API}/${encodeURIComponent(currentCollection.id)}`
+            );
+
+
+          const detail =
+            extractData(
+              detailResponse
+            );
+
+
+          if (detail) {
+
+            currentCollection =
+              detail;
+
+            renderCollectionDetail(
+              detail
+            );
+
+          }
+
+        } catch (detailError) {
+
+          console.warn(
+            "Could not refresh collection detail:",
+            detailError
+          );
+
+        }
+
+      }
 
     }
 
-  }
+  } catch (error) {
 
-
-  if (migrated) {
-
-    localStorage.removeItem(
-      "savedVideos"
+    console.error(
+      "Refresh collections error:",
+      error
     );
 
-    const response =
-      await apiFetch(
-        SAVED_API
-      );
-
-
-    savedItems =
-      Array.isArray(response?.data)
-        ? response.data
-        : [];
-
-
-    renderSaved();
-
   }
 
 }
 
 
+
 /* =========================================================
-   EMPTY / ERROR
+   SCROLL
 ========================================================= */
 
-function renderSavedEmpty() {
+function scrollToCollections() {
 
-  savedGrid.innerHTML = `
+  const section =
+    document.querySelector(
+      ".collections-section"
+    );
 
-    <div class="saved-empty">
 
-      <div class="saved-empty-icon">
+  if (!section) {
+    return;
+  }
 
-        <i class="bi bi-bookmark-heart"></i>
 
-      </div>
-
-      <h3>
-        Nothing saved here yet.
-      </h3>
-
-      <p>
-        Save videos, books and products
-        while exploring Vindarr. They'll
-        stay here until you're ready.
-      </p>
-
-      <button
-        onclick="location.href='index.html'"
-      >
-        Explore Vindarr
-      </button>
-
-    </div>
-
-  `;
+  section.scrollIntoView(
+    {
+      behavior: "smooth",
+      block: "start"
+    }
+  );
 
 }
 
-
-function renderSavedLoading() {
-
-  savedGrid.innerHTML = `
-
-    <div class="saved-loading">
-
-      <div class="loading-spinner"></div>
-
-      <span>
-        Loading your saved content...
-      </span>
-
-    </div>
-
-  `;
-
-}
-
-
-function renderError(
-  message
-) {
-
-  savedGrid.innerHTML = `
-
-    <div class="saved-empty">
-
-      <div class="saved-empty-icon">
-
-        <i class="bi bi-exclamation-circle"></i>
-
-      </div>
-
-      <h3>
-        We couldn't load your saves.
-      </h3>
-
-      <p>
-        ${escapeHtml(
-          message ||
-          "Please try again."
-        )}
-      </p>
-
-      <button
-        onclick="loadSavedPage()"
-      >
-        Try again
-      </button>
-
-    </div>
-
-  `;
-
-}
 
 
 /* =========================================================
-   MENU
+   SAVED PAGE MENU
 ========================================================= */
 
 function openSavedMenu() {
 
-  document
-    .getElementById(
-      "savedMenu"
-    )
-    .classList.add(
-      "open"
-    );
+  savedMenu?.classList.add(
+    "open"
+  );
 
 }
 
-
-function closeSavedMenu() {
-
-  document
-    .getElementById(
-      "savedMenu"
-    )
-    .classList.remove(
-      "open"
-    );
-
-}
-
-
-function scrollToCollections() {
-
-  document
-    .querySelector(
-      ".collections-section"
-    )
-    ?.scrollIntoView({
-      behavior:
-        "smooth"
-    });
-
-}
 
 
 /* =========================================================
-   COLLECTION MENU
+   CLOSE SAVED MENU
 ========================================================= */
 
-function openCollectionMenu(
-  collectionId
+function closeSavedMenu() {
+
+  savedMenu?.classList.remove(
+    "open"
+  );
+
+}
+
+
+
+/* =========================================================
+   MODAL HELPERS
+========================================================= */
+
+function openModal(
+  modal
 ) {
 
-  const collection =
-    collections.find(
-      item =>
-        Number(item.id) ===
-        Number(collectionId)
-    );
-
-
-  if (!collection) {
-
+  if (!modal) {
     return;
-
   }
 
 
-  const action =
-    window.prompt(
-      `${collection.name}\n\nType DELETE to delete this collection, or CANCEL.`
-    );
+  modal.classList.add(
+    "open"
+  );
+
+
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+}
+
+
+
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+function closeModal(
+  modal
+) {
+
+  if (!modal) {
+    return;
+  }
+
+
+  modal.classList.remove(
+    "open"
+  );
+
+
+  modal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
 
 
   if (
-    action?.toUpperCase() ===
-    "DELETE"
+    !document.querySelector(
+      ".saved-modal.open"
+    )
   ) {
 
-    deleteCollection(
-      collectionId
+    document.body.classList.remove(
+      "modal-open"
     );
 
   }
@@ -2417,46 +3800,46 @@ function openCollectionMenu(
 }
 
 
-async function deleteCollection(
-  collectionId
-) {
 
-  try {
+/* =========================================================
+   CLOSE COLLECTION DETAIL
+========================================================= */
 
-    await apiFetch(
-      `${COLLECTION_API}/${collectionId}`,
-      {
-        method:
-          "DELETE"
-      }
+function closeCollectionDetail() {
+
+  closeModal(
+    collectionDetailModal
+  );
+
+
+  currentCollection =
+    null;
+
+
+  /*
+   * Remove collection query parameter
+   * after closing a shared/opened collection.
+   */
+
+  const url =
+    new URL(
+      window.location.href
     );
 
 
-    collections =
-      collections.filter(
-        collection =>
-          Number(collection.id) !==
-          Number(collectionId)
-      );
+  url.searchParams.delete(
+    "collection"
+  );
 
 
-    renderCollections();
-
-    showToast(
-      "Collection deleted."
-    );
-
-  }
-  catch (error) {
-
-    showToast(
-      error.message,
-      true
-    );
-
-  }
+  window.history.replaceState(
+    {},
+    "",
+    url
+  );
 
 }
+
 
 
 /* =========================================================
@@ -2464,120 +3847,207 @@ async function deleteCollection(
 ========================================================= */
 
 function showToast(
-  message,
-  error = false
+  message
 ) {
 
-  let toast =
-    document.getElementById(
-      "savedToast"
+  const existing =
+    document.querySelector(
+      ".saved-toast"
     );
 
 
-  if (!toast) {
+  existing?.remove();
 
-    toast =
-      document.createElement(
-        "div"
-      );
 
-    toast.id =
-      "savedToast";
-
-    toast.style.cssText = `
-      position:fixed;
-      left:50%;
-      bottom:25px;
-      transform:translateX(-50%);
-      z-index:3000;
-      padding:12px 18px;
-      border-radius:30px;
-      background:${error ? "#a90000" : "#111"};
-      color:#fff;
-      font-size:12px;
-      font-weight:800;
-      box-shadow:0 12px 35px rgba(0,0,0,.2);
-      max-width:calc(100% - 30px);
-      text-align:center;
-    `;
-
-    document.body.appendChild(
-      toast
+  const toast =
+    document.createElement(
+      "div"
     );
 
-  }
+
+  toast.className =
+    "saved-toast";
 
 
   toast.textContent =
     message;
 
 
-  clearTimeout(
-    toast._timer
+  document.body.appendChild(
+    toast
   );
 
 
-  toast._timer =
-    setTimeout(
-      () => {
+  requestAnimationFrame(
+    () => {
 
-        toast.remove();
+      toast.classList.add(
+        "show"
+      );
 
-      },
-      3000
-    );
+    }
+  );
+
+
+  setTimeout(
+    () => {
+
+      toast.classList.remove(
+        "show"
+      );
+
+
+      setTimeout(
+        () => toast.remove(),
+        250
+      );
+
+    },
+    2800
+  );
 
 }
 
 
+
 /* =========================================================
-   FORMATTERS
+   KEYBOARD
 ========================================================= */
 
-function formatNaira(
-  value
-) {
+document.addEventListener(
+  "keydown",
+  event => {
 
-  return `₦${Number(value).toLocaleString(
-    "en-NG"
-  )}`;
+    if (
+      event.key === "Escape"
+    ) {
 
-}
+      closeSavedMenu();
 
+      closeCreateCollection();
 
-function escapeHtml(
-  value
-) {
+      closeCollectionDetail();
 
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+      closeItemActions();
 
-}
+      closeMoveCollection();
+
+    }
+
+  }
+);
+
 
 
 /* =========================================================
-   INIT
+   OUTSIDE PAGE MENU
+========================================================= */
+
+document.addEventListener(
+  "click",
+  event => {
+
+    if (
+      !savedMenu ||
+      !savedMenu.classList.contains(
+        "open"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      !savedMenu.contains(
+        event.target
+      ) &&
+      !event.target.closest(
+        ".saved-icon-btn"
+      )
+    ) {
+
+      closeSavedMenu();
+
+    }
+
+  }
+);
+
+
+
+/* =========================================================
+   COLLECTION NAME ENTER KEY
+========================================================= */
+
+collectionNameInput?.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      createCollection();
+
+    }
+
+  }
+);
+
+
+
+/* =========================================================
+   LEGACY SAVED MIGRATION
+========================================================= */
+
+function migrateLegacySaved() {
+
+  /*
+   * Kept as a compatibility hook.
+   *
+   * Older Vindarr versions may have stored
+   * local saved IDs. We intentionally don't
+   * automatically POST them because doing so
+   * could create duplicate saves.
+   */
+
+  try {
+
+    const legacy =
+      localStorage.getItem(
+        "savedVideos"
+      );
+
+
+    if (!legacy) {
+      return;
+    }
+
+
+    /*
+     * Don't delete legacy data automatically.
+     * This makes the migration safe.
+     */
+
+  } catch (error) {
+
+    console.warn(
+      "Legacy saved migration skipped:",
+      error
+    );
+
+  }
+
+}
+
+
+
+/* =========================================================
+   INITIALIZE
 ========================================================= */
 
 document.addEventListener(
@@ -2590,12 +4060,21 @@ document.addEventListener(
 );
 
 
+
 /* =========================================================
-   GLOBAL
+   GLOBAL EXPORTS
+   Required because saved.html uses inline
+   onclick handlers.
 ========================================================= */
 
 window.setFilter =
   setFilter;
+
+window.openSavedMenu =
+  openSavedMenu;
+
+window.closeSavedMenu =
+  closeSavedMenu;
 
 window.openCreateCollection =
   openCreateCollection;
@@ -2606,11 +4085,17 @@ window.closeCreateCollection =
 window.createCollection =
   createCollection;
 
+window.selectCoverOption =
+  selectCoverOption;
+
 window.openCollection =
   openCollection;
 
 window.closeCollectionDetail =
   closeCollectionDetail;
+
+window.shareCollection =
+  shareCollection;
 
 window.openItemActions =
   openItemActions;
@@ -2618,38 +4103,44 @@ window.openItemActions =
 window.closeItemActions =
   closeItemActions;
 
+window.shareCurrentItem =
+  shareCurrentItem;
+
+window.removeCurrentSavedItem =
+  removeCurrentSavedItem;
+
 window.openMoveCollection =
   openMoveCollection;
 
 window.closeMoveCollection =
   closeMoveCollection;
 
-window.moveCurrentItemToCollection =
-  moveCurrentItemToCollection;
+window.moveCurrentItem =
+  moveCurrentItem;
 
 window.openCreateCollectionFromMove =
   openCreateCollectionFromMove;
 
-window.removeCurrentSavedItem =
-  removeCurrentSavedItem;
-
-window.shareCurrentItem =
-  shareCurrentItem;
-
 window.removeFromCollection =
   removeFromCollection;
 
-window.openSavedContent =
-  openSavedContent;
+window.openCollectionItemActions =
+  openCollectionItemActions;
 
-window.openSavedMenu =
-  openSavedMenu;
+window.openCollectionMenu =
+  openCollectionMenu;
 
-window.closeSavedMenu =
-  closeSavedMenu;
+window.deleteCollection =
+  deleteCollection;
 
 window.scrollToCollections =
   scrollToCollections;
 
-window.openCollectionMenu =
-  openCollectionMenu;
+window.openSavedContent =
+  openSavedContent;
+
+window.shareContent =
+  shareContent;
+
+window.refreshCollections =
+  refreshCollections;

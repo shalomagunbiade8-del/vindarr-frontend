@@ -29,6 +29,7 @@
 
 </head>
 
+
 <body class="saved-page">
 
   <!-- =========================================
@@ -45,10 +46,15 @@
       <i class="bi bi-arrow-left"></i>
     </button>
 
+
     <div class="saved-header-title">
+
       <span>Vindarr</span>
+
       <h1>Saved</h1>
+
     </div>
+
 
     <button
       class="saved-icon-btn"
@@ -61,11 +67,13 @@
   </header>
 
 
+
   <!-- =========================================
        PAGE
   ========================================== -->
 
   <main class="saved-main">
+
 
     <!-- =======================================
          HERO
@@ -92,6 +100,7 @@
 
       </div>
 
+
       <div class="saved-hero-icon">
 
         <i class="bi bi-bookmark-heart-fill"></i>
@@ -99,6 +108,7 @@
       </div>
 
     </section>
+
 
 
     <!-- =======================================
@@ -112,6 +122,7 @@
         <div class="streak-icon">
           <i class="bi bi-fire"></i>
         </div>
+
 
         <div class="streak-copy">
 
@@ -132,11 +143,13 @@
       </div>
 
 
+
       <div class="streak-card collection-streak-card">
 
         <div class="streak-icon">
           <i class="bi bi-collection-fill"></i>
         </div>
+
 
         <div class="streak-copy">
 
@@ -159,6 +172,7 @@
     </section>
 
 
+
     <!-- =======================================
          FILTERS
     ======================================== -->
@@ -176,6 +190,7 @@
           All
         </button>
 
+
         <button
           class="saved-filter"
           data-filter="video"
@@ -184,6 +199,7 @@
           <i class="bi bi-play-btn-fill"></i>
           Videos
         </button>
+
 
         <button
           class="saved-filter"
@@ -194,6 +210,7 @@
           Books
         </button>
 
+
         <button
           class="saved-filter"
           data-filter="fashion"
@@ -202,6 +219,7 @@
           <i class="bi bi-bag-fill"></i>
           Products
         </button>
+
 
         <button
           class="saved-filter"
@@ -217,6 +235,7 @@
     </section>
 
 
+
     <!-- =======================================
          COLLECTIONS
     ======================================== -->
@@ -226,6 +245,7 @@
       <div class="section-heading">
 
         <div>
+
           <span class="section-kicker">
             ORGANIZE
           </span>
@@ -233,7 +253,9 @@
           <h2>
             Collections
           </h2>
+
         </div>
+
 
         <button
           class="create-collection-btn"
@@ -254,6 +276,7 @@
         <div class="collections-loading">
 
           <div class="loading-pulse"></div>
+
           <div class="loading-pulse short"></div>
 
         </div>
@@ -261,6 +284,7 @@
       </div>
 
     </section>
+
 
 
     <!-- =======================================
@@ -282,6 +306,7 @@
           </h2>
 
         </div>
+
 
         <span
           id="savedCount"
@@ -315,6 +340,7 @@
   </main>
 
 
+
   <!-- =========================================
        CREATE COLLECTION MODAL
   ========================================== -->
@@ -330,38 +356,47 @@
       onclick="closeCreateCollection()"
     ></div>
 
+
     <div class="saved-modal-sheet">
 
       <button
         class="modal-close"
         onclick="closeCreateCollection()"
+        aria-label="Close"
       >
         <i class="bi bi-x-lg"></i>
       </button>
+
 
       <span class="modal-kicker">
         NEW COLLECTION
       </span>
 
+
       <h2>
         Give your saves a home.
       </h2>
+
 
       <p>
         Create a collection and organize
         your saved videos, books and products.
       </p>
 
-      <label>
+
+      <label for="collectionName">
         Collection name
       </label>
+
 
       <input
         id="collectionName"
         type="text"
         maxlength="80"
         placeholder="e.g. Things I want to learn"
+        autocomplete="off"
       >
+
 
       <div class="collection-cover-options">
 
@@ -371,14 +406,25 @@
           data-cover="auto"
           onclick="selectCoverOption('auto')"
         >
+
           <i class="bi bi-stars"></i>
+
           <span>
-            <strong>Automatic</strong>
-            <small>Use your saved content</small>
+
+            <strong>
+              Automatic
+            </strong>
+
+            <small>
+              Use your saved content
+            </small>
+
           </span>
+
         </button>
 
       </div>
+
 
       <button
         class="modal-primary-btn"
@@ -390,6 +436,7 @@
     </div>
 
   </div>
+
 
 
   <!-- =========================================
@@ -407,14 +454,17 @@
       onclick="closeCollectionDetail()"
     ></div>
 
+
     <div class="saved-modal-sheet collection-detail-sheet">
 
       <button
         class="modal-close"
         onclick="closeCollectionDetail()"
+        aria-label="Close"
       >
         <i class="bi bi-x-lg"></i>
       </button>
+
 
       <div
         id="collectionDetailContent"
@@ -423,6 +473,7 @@
     </div>
 
   </div>
+
 
 
   <!-- =========================================
@@ -440,60 +491,95 @@
       onclick="closeItemActions()"
     ></div>
 
+
     <div class="saved-action-sheet">
 
       <button
         class="modal-close"
         onclick="closeItemActions()"
+        aria-label="Close"
       >
         <i class="bi bi-x-lg"></i>
       </button>
+
 
       <span class="modal-kicker">
         SAVED CONTENT
       </span>
 
+
       <h2 id="itemActionTitle">
         Saved item
       </h2>
+
 
       <button
         class="action-sheet-btn"
         onclick="openMoveCollection()"
       >
+
         <i class="bi bi-collection"></i>
 
         <span>
-          <strong>Move to collection</strong>
-          <small>Organize this save</small>
+
+          <strong>
+            Move to collection
+          </strong>
+
+          <small>
+            Organize this save
+          </small>
+
         </span>
 
         <i class="bi bi-chevron-right"></i>
+
       </button>
+
+
 
       <button
         class="action-sheet-btn"
         onclick="shareCurrentItem()"
       >
+
         <i class="bi bi-share"></i>
 
         <span>
-          <strong>Share</strong>
-          <small>Share this with others</small>
+
+          <strong>
+            Share
+          </strong>
+
+          <small>
+            Share this with others
+          </small>
+
         </span>
 
         <i class="bi bi-chevron-right"></i>
+
       </button>
+
+
 
       <button
         class="action-sheet-btn danger"
         onclick="removeCurrentSavedItem()"
       >
+
         <i class="bi bi-bookmark-x"></i>
 
         <span>
-          <strong>Remove from saved</strong>
-          <small>This does not delete the content</small>
+
+          <strong>
+            Remove from saved
+          </strong>
+
+          <small>
+            This does not delete the content
+          </small>
+
         </span>
 
       </button>
@@ -501,6 +587,7 @@
     </div>
 
   </div>
+
 
 
   <!-- =========================================
@@ -518,27 +605,33 @@
       onclick="closeMoveCollection()"
     ></div>
 
+
     <div class="saved-modal-sheet">
 
       <button
         class="modal-close"
         onclick="closeMoveCollection()"
+        aria-label="Close"
       >
         <i class="bi bi-x-lg"></i>
       </button>
+
 
       <span class="modal-kicker">
         ORGANIZE
       </span>
 
+
       <h2>
         Move to collection
       </h2>
+
 
       <div
         id="moveCollectionList"
         class="move-collection-list"
       ></div>
+
 
       <button
         class="modal-secondary-btn"
@@ -553,6 +646,7 @@
   </div>
 
 
+
   <!-- =========================================
        PAGE MENU
   ========================================== -->
@@ -562,21 +656,31 @@
     class="saved-menu"
   >
 
-    <button onclick="closeSavedMenu()">
+    <button
+      onclick="closeSavedMenu()"
+      aria-label="Close menu"
+    >
       <i class="bi bi-x-lg"></i>
     </button>
 
-    <button onclick="scrollToCollections(); closeSavedMenu()">
+
+    <button
+      onclick="scrollToCollections(); closeSavedMenu()"
+    >
       <i class="bi bi-collection"></i>
       View collections
     </button>
 
-    <button onclick="openCreateCollection(); closeSavedMenu()">
+
+    <button
+      onclick="openCreateCollection(); closeSavedMenu()"
+    >
       <i class="bi bi-plus-circle"></i>
       Create collection
     </button>
 
   </div>
+
 
 
   <script src="js/config.js"></script>
