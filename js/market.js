@@ -476,18 +476,20 @@ RIGHT ACTIONS
     <div class="action-item">
 
         <button
-            class="action-btn"
-            onclick="chatSeller('${item.creatorUsername}')">
+    class="action-btn"
+    onclick="emailSeller(
+        '${item.creatorEmail || ""}',
+        '${item.title || ""}',
+        ${item.id}
+    )">
 
-            ✉️
+    ✉️
 
-        </button>
+</button>
 
-        <span>
-
-            Chat
-
-        </span>
+<span>
+    Email to Order
+</span>
 
     </div>
 
@@ -760,11 +762,42 @@ async function shareProduct(id){
 // CHAT SELLER
 // =====================================
 
-function chatSeller(username){
+function emailSeller(email, productTitle, productId){
 
-    window.location.href =
+    if(!email){
 
-    `messages.html?user=${encodeURIComponent(username)}`;
+        alert(
+            "This seller has not provided an email address."
+        );
+
+        return;
+
+    }
+
+    const subject =
+        `Inquiry about ${productTitle || "your product"} on Vindarr`;
+
+    const body =
+`Hello,
+
+I found your "${productTitle || "product"}" on Vindarr and I would like to make an inquiry.
+
+Product:
+${productTitle || "N/A"}
+
+Vindarr Product:
+${window.location.origin}/product.html?id=${productId}
+
+Please let me know more details.
+
+Thank you.`;
+
+    const mailto =
+        `mailto:${email}` +
+        `?subject=${encodeURIComponent(subject)}` +
+        `&body=${encodeURIComponent(body)}`;
+
+    window.location.href = mailto;
 
 }
 
