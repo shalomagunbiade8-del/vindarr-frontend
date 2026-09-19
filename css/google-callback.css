@@ -1,0 +1,185 @@
+/* =========================================================
+   VINDARR GOOGLE CALLBACK
+========================================================= */
+
+.google-callback-page{
+
+  min-height:100vh;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:30px;
+
+}
+
+
+.google-callback-card{
+
+  width:100%;
+
+  max-width:440px;
+
+  padding:45px 30px;
+
+  text-align:center;
+
+  box-sizing:border-box;
+
+  background:
+    linear-gradient(
+      145deg,
+      #181818,
+      #0d0d0d
+    );
+
+  border:
+    1px solid
+    rgba(255,255,255,.09);
+
+  border-radius:30px;
+
+  box-shadow:
+    0 30px 100px
+    rgba(0,0,0,.5);
+
+}
+
+
+.google-callback-icon{
+
+  width:58px;
+
+  height:58px;
+
+  margin:
+    0 auto 22px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  border-radius:18px;
+
+  background:#ffffff;
+
+  color:#4285f4;
+
+  font-size:25px;
+
+  font-weight:800;
+
+  font-family:Arial,sans-serif;
+
+}
+
+
+.google-callback-spinner{
+
+  width:42px;
+
+  height:42px;
+
+  margin:
+    0 auto 22px;
+
+  border:
+    3px solid
+    rgba(255,255,255,.12);
+
+  border-top-color:
+    var(--auth-red);
+
+  border-radius:50%;
+
+  animation:
+    googleCallbackSpin
+    .8s linear infinite;
+
+}
+
+
+.google-callback-card h1{
+
+  margin:
+    0 0 10px;
+
+  color:
+    var(--auth-white);
+
+  font-size:26px;
+
+  line-height:1.25;
+
+  letter-spacing:-1px;
+
+}
+
+
+.google-callback-card p{
+
+  margin:0;
+
+  color:
+    var(--auth-muted);
+
+  font-size:14px;
+
+  line-height:1.7;
+
+}
+
+
+.google-callback-error{
+
+  display:none;
+
+  margin-top:20px;
+
+  color:#ff6b6b;
+
+  font-size:13px;
+
+  line-height:1.6;
+
+}
+
+
+@keyframes googleCallbackSpin{
+
+  to{
+
+    transform:
+      rotate(360deg);
+
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:600px){
+
+  .google-callback-page{
+
+    padding:20px;
+
+  }
+
+  .google-callback-card{
+
+    padding:35px 22px;
+
+    border-radius:24px;
+
+  }
+
+}

@@ -313,3 +313,41 @@ function togglePassword(
   }
 
 }
+
+// =========================================================
+// GOOGLE AUTHENTICATION
+// =========================================================
+
+function continueWithGoogle(){
+
+  /*
+   * Send the browser to the NestJS backend.
+   *
+   * Backend:
+   * GET /auth/google
+   *
+   * Passport then redirects the user to Google.
+   */
+
+  if(
+    typeof API_BASE_URL ===
+    "undefined"
+  ){
+
+    console.error(
+      "API_BASE_URL is not defined."
+    );
+
+    alert(
+      "Authentication configuration error."
+    );
+
+    return;
+
+  }
+
+
+  window.location.href =
+    `${API_BASE_URL}/auth/google`;
+
+}

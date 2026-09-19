@@ -1,3 +1,4 @@
+<!-- register.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,6 +115,40 @@
       </div>
 
 
+      <!-- =====================================
+           GOOGLE SIGN UP
+      ====================================== -->
+
+      <button
+        class="google-auth-btn"
+        type="button"
+        onclick="continueWithGoogle()"
+      >
+
+        <span class="google-logo">
+          G
+        </span>
+
+        <span>
+          Continue with Google
+        </span>
+
+      </button>
+
+
+      <div class="auth-divider">
+
+        <span>
+          OR CREATE WITH EMAIL
+        </span>
+
+      </div>
+
+
+      <!-- =====================================
+           EMAIL REGISTRATION
+      ====================================== -->
+
       <div class="register-form">
 
 
@@ -202,6 +237,22 @@
           <i class="bi bi-arrow-right"></i>
 
         </button>
+
+
+        <div
+          id="authError"
+          class="auth-message error-message"
+          role="alert"
+          aria-live="polite"
+        ></div>
+
+
+        <div
+          id="authSuccess"
+          class="auth-message success-message"
+          role="status"
+          aria-live="polite"
+        ></div>
 
 
       </div>

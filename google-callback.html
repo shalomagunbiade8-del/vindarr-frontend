@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Signing in • Vindarr</title>
+
+  <link
+    rel="stylesheet"
+    href="css/global.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/auth.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/google-callback.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+  >
+
+</head>
+
+<body>
+
+  <main class="google-callback-page">
+
+    <section class="google-callback-card">
+
+      <div
+        id="callbackIcon"
+        class="google-callback-icon"
+      >
+        G
+      </div>
+
+      <div
+        id="callbackSpinner"
+        class="google-callback-spinner"
+        aria-hidden="true"
+      ></div>
+
+      <h1 id="callbackTitle">
+        Signing you in...
+      </h1>
+
+      <p id="callbackMessage">
+        Please wait while we finish your
+        Vindarr sign-in.
+      </p>
+
+      <div
+        id="callbackError"
+        class="google-callback-error"
+        role="alert"
+        aria-live="assertive"
+      ></div>
+
+    </section>
+
+  </main>
+
+
+  <script src="js/config.js"></script>
+
+  <script src="js/google-callback.js"></script>
+
+</body>
+</html>

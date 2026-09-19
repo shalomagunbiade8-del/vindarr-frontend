@@ -1,3 +1,4 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -330,6 +331,40 @@
       </div>
 
 
+      <!-- =====================================
+           GOOGLE LOGIN
+      ====================================== -->
+
+      <button
+        class="google-auth-btn"
+        type="button"
+        onclick="continueWithGoogle()"
+      >
+
+        <span class="google-logo">
+          G
+        </span>
+
+        <span>
+          Continue with Google
+        </span>
+
+      </button>
+
+
+      <div class="auth-divider">
+
+        <span>
+          OR CONTINUE WITH EMAIL
+        </span>
+
+      </div>
+
+
+      <!-- =====================================
+           EMAIL LOGIN
+      ====================================== -->
+
       <div class="login-form">
 
         <label for="loginEmail">
@@ -392,6 +427,14 @@
           <i class="bi bi-arrow-right"></i>
 
         </button>
+
+
+        <div
+          id="authError"
+          class="auth-message error-message"
+          role="alert"
+          aria-live="polite"
+        ></div>
 
       </div>
 
@@ -487,14 +530,57 @@
 
 <script src="js/auth.js"></script>
 
+
 <script>
 
-if(localStorage.getItem("token")){
+if (localStorage.getItem("token")) {
 
-  window.location.href =
-    "index.html";
+  window.location.href = "index.html";
 
 }
+
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const googleError =
+      params.get("googleError");
+
+    if (!googleError) {
+      return;
+    }
+
+
+    const errorBox =
+      document.getElementById(
+        "authError"
+      );
+
+    if (errorBox) {
+
+      errorBox.textContent =
+        googleError;
+
+      errorBox.style.display =
+        "block";
+
+    }
+
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+  }
+);
 
 </script>
 
