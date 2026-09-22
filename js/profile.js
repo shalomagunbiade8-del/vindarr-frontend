@@ -50,10 +50,18 @@ function getMediaUrl(value) {
     value.startsWith("http://") ||
     value.startsWith("https://")
   ) {
+
     return value;
+
   }
 
-  return API_BASE_URL + value;
+  if (value.startsWith("/")) {
+
+    return API_BASE_URL + value;
+
+  }
+
+  return API_BASE_URL + "/" + value;
 
 }
 
@@ -409,7 +417,6 @@ async function shareProfile() {
 
     } catch (err) {
 
-      // User cancelled sharing.
       if (
         err?.name ===
         "AbortError"
@@ -444,7 +451,6 @@ async function shareProfile() {
     );
 
 
-    // Final fallback for older browsers.
     window.prompt(
       "Copy this profile link:",
       shareUrl
@@ -597,22 +603,46 @@ async function loadUserPosts(userId) {
       ).length;
 
 
-    document.getElementById(
-      "postCount"
-    ).innerText =
-      videoCount;
+    const postCountEl =
+      document.getElementById(
+        "postCount"
+      );
 
 
-    document.getElementById(
-      "ebookCount"
-    ).innerText =
-      ebookCount;
+    const ebookCountEl =
+      document.getElementById(
+        "ebookCount"
+      );
 
 
-    document.getElementById(
-      "productCount"
-    ).innerText =
-      productCount;
+    const productCountEl =
+      document.getElementById(
+        "productCount"
+      );
+
+
+    if (postCountEl) {
+
+      postCountEl.innerText =
+        videoCount;
+
+    }
+
+
+    if (ebookCountEl) {
+
+      ebookCountEl.innerText =
+        ebookCount;
+
+    }
+
+
+    if (productCountEl) {
+
+      productCountEl.innerText =
+        productCount;
+
+    }
 
 
     renderPosts();
@@ -811,7 +841,8 @@ function renderPosts() {
         post.type === "video" ||
         mediaUrl.includes(".mp4") ||
         mediaUrl.includes(".mov") ||
-        mediaUrl.includes(".webm");
+        mediaUrl.includes(".webm") ||
+        mediaUrl.includes(".m3u8");
 
 
       const title =
@@ -839,13 +870,34 @@ function renderPosts() {
 
               ? `
 
-                <video
-                  src="${escapeHtml(mediaUrl)}"
-                  loop
-                  playsinline
-                  preload="metadata"
-                  onclick="event.stopPropagation()"
-                ></video>
+                <div class="profile-video-wrapper">
+
+                  <video
+                    class="profile-card-video"
+                    src="${escapeHtml(mediaUrl)}"
+                    loop
+                    playsinline
+                    preload="metadata"
+                    muted
+                  ></video>
+
+
+                  <!-- FULLSCREEN BUTTON -->
+
+                  <button
+                    type="button"
+                    class="profile-video-fullscreen"
+                    aria-label="Watch video fullscreen"
+                    title="Watch fullscreen"
+                    onclick="
+                      event.stopPropagation();
+                      openProfileVideoFullscreen(this);
+                    "
+                  >
+                    <i class="bi bi-fullscreen"></i>
+                  </button>
+
+                </div>
 
               `
 
@@ -882,6 +934,7 @@ function renderPosts() {
                       ₦${price.toLocaleString()}
                     </span>
 
+
                     <button
                       class="buy-btn"
                       onclick="
@@ -897,6 +950,7 @@ function renderPosts() {
                 `
 
                 : ""
+
             }
 
           </div>
@@ -959,6 +1013,90 @@ function buyItem(id) {
 
   window.location.href =
     `product.html?id=${encodeURIComponent(id)}`;
+
+}
+
+
+// =====================================
+// FULLSCREEN VIDEO
+// =====================================
+
+async function openProfileVideoFullscreen(button) {
+
+  const wrapper =
+    button?.closest(
+      ".profile-video-wrapper"
+    );
+
+
+  if (!wrapper) {
+    return;
+  }
+
+
+  const video =
+    wrapper.querySelector(
+      "video"
+    );
+
+
+  if (!video) {
+    return;
+  }
+
+
+  try {
+
+    // =================================
+    // NATIVE FULLSCREEN
+    // =================================
+
+    if (
+      video.requestFullscreen
+    ) {
+
+      await video.requestFullscreen();
+
+      return;
+
+    }
+
+
+    // =================================
+    // SAFARI
+    // =================================
+
+    if (
+      video.webkitEnterFullscreen
+    ) {
+
+      video.webkitEnterFullscreen();
+
+      return;
+
+    }
+
+
+    // =================================
+    // FALLBACK
+    // =================================
+
+    if (
+      wrapper.requestFullscreen
+    ) {
+
+      await wrapper.requestFullscreen();
+
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Fullscreen video failed:",
+      err
+    );
+
+  }
 
 }
 
