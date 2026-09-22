@@ -878,7 +878,6 @@ function renderPosts() {
                     loop
                     playsinline
                     preload="metadata"
-                    muted
                   ></video>
 
 
