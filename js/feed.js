@@ -117,7 +117,7 @@ async function loadVideos(reset = true) {
 
     const res =
       await fetch(
-        `${FEED_API_BASE}/videos?page=${requestedPage}&limit=10&_=${Date.now()}`
+        `${FEED_API_BASE}/videos/feed?page=${requestedPage}&limit=10&_=${Date.now()}`
       );
 
 
@@ -995,7 +995,7 @@ function renderVideos(
                   ></i>
 
                   <span>
-                    Original Audio · Vindarr
+                    Original Audio 
                   </span>
 
                 </div>
