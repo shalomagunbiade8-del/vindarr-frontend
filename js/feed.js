@@ -1,2657 +1,3052 @@
-// ============================================================
-// VINDARR FEED.JS
-// Complete feed controller
-// ============================================================
+// =====================================
+// VINDARR FEED SYSTEM
+// js/feed.js
+// =====================================
 
-(() => {
-  "use strict";
 
-  // ============================================================
-  // API
-  // ============================================================
+// =====================================
+// STATE
+// =====================================
 
-  const FEED_API_BASE =
-    typeof API_BASE_URL !== "undefined"
-      ? API_BASE_URL
-      : typeof API !== "undefined"
-        ? API
-        : "https://vindarr-backend.onrender.com";
+let posts = [];
 
-  const FEED_LIMIT = 10;
+let page = 1;
 
-  // ============================================================
-  // STATE
-  // ============================================================
+let loadingMore = false;
 
-  let posts = [];
+let hasMore = true;
 
-  let page = 1;
+let nextVideos = [];
 
-  let loadingMore = false;
+let prefetching = false;
 
-  let hasMore = true;
+let loadTrigger = null;
 
-  let initialized = false;
+let videoObserver = null;
 
-  let requestedVideoOpened = false;
+let lastTap = 0;
 
-  let lastTap = 0;
 
-  let videoObserver = null;
+// Saved state
+const savedState = new Map();
 
-  let scrollHandler = null;
 
-  let savedState = new Map();
+// =====================================
+// FEED
+// =====================================
 
-  let followedState = new Map();
+const feed =
+  document.getElementById("feed");
 
-  let audioState = new Map();
 
-  // ============================================================
-  // DOM
-  // ============================================================
+// =====================================
+// URL PARAMETERS
+// =====================================
 
-  const feed = document.getElementById("feed");
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const videoId =
+  params.get("video");
+
+
+// =====================================
+// API BASE
+// =====================================
+
+const FEED_API_BASE =
+  typeof API_BASE_URL !== "undefined"
+    ? API_BASE_URL
+    : typeof API !== "undefined"
+      ? API
+      : "https://vindarr-backend.onrender.com";
+
+
+// =====================================
+// LOAD VIDEOS
+// =====================================
+
+async function loadVideos(reset = true) {
 
   if (!feed) {
-    console.error("Vindarr feed: #feed element was not found.");
-    return;
-  }
 
-  // ============================================================
-  // HELPERS
-  // ============================================================
-
-  function getToken() {
-    return localStorage.getItem("token");
-  }
-
-  function getCurrentUserId() {
-    const id =
-      localStorage.getItem("userId") ||
-      localStorage.getItem("user_id") ||
-      localStorage.getItem("currentUserId");
-
-    return id ? Number(id) : null;
-  }
-
-  function escapeHtml(value) {
-    if (value === null || value === undefined) {
-      return "";
-    }
-
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function safeUrl(value) {
-    if (!value) {
-      return "";
-    }
-
-    const url = String(value).trim();
-
-    if (!url) {
-      return "";
-    }
-
-    return url;
-  }
-
-  function getPostId(post) {
-    return (
-      post?.id ??
-      post?._id ??
-      post?.videoId ??
-      post?.postId ??
-      null
+    console.error(
+      "Feed element #feed was not found."
     );
-  }
 
-  function getCreator(post) {
-    return post?.creator || post?.user || post?.author || {};
-  }
-
-  function getCreatorId(post) {
-    const creator = getCreator(post);
-
-    return (
-      post?.creatorId ??
-      creator?.id ??
-      creator?._id ??
-      creator?.userId ??
-      null
-    );
-  }
-
-  function getCreatorName(post) {
-    const creator = getCreator(post);
-
-    return (
-      creator?.username ||
-      creator?.name ||
-      creator?.displayName ||
-      post?.username ||
-      "Vindarr User"
-    );
-  }
-
-  function getCreatorAvatar(post) {
-    const creator = getCreator(post);
-
-    return (
-      safeUrl(
-        creator?.avatar ||
-        creator?.avatarUrl ||
-        creator?.profileImage ||
-        post?.avatar
-      ) ||
-      "https://i.pravatar.cc/100"
-    );
-  }
-
-  function getPostType(post) {
-    return String(
-      post?.type ||
-      post?.contentType ||
-      "video"
-    ).toLowerCase();
-  }
-
-  function getPostTitle(post) {
-    return (
-      post?.title ||
-      post?.name ||
-      "Untitled"
-    );
-  }
-
-  function getPostDescription(post) {
-    return (
-      post?.context ||
-      post?.description ||
-      post?.caption ||
-      ""
-    );
-  }
-
-  function getCategory(post) {
-    return (
-      post?.category ||
-      post?.genre ||
-      "General"
-    );
-  }
-
-  function getPrice(post) {
-    const price =
-      post?.price ??
-      post?.amount ??
-      0;
-
-    const number = Number(price);
-
-    if (!Number.isFinite(number) || number <= 0) {
-      return 0;
-    }
-
-    return number;
-  }
-
-  function formatPrice(price) {
-    const number = Number(price);
-
-    if (!Number.isFinite(number) || number <= 0) {
-      return "";
-    }
-
-    return `₦${number.toLocaleString("en-NG")}`;
-  }
-
-  function getVideoUrl(post) {
-    return safeUrl(
-      post?.videoUrl ||
-      post?.video ||
-      post?.url
-    );
-  }
-
-  function getFileUrl(post) {
-    return safeUrl(
-      post?.fileUrl ||
-      post?.file ||
-      post?.ebookUrl ||
-      post?.pdfUrl
-    );
-  }
-
-  function getCoverUrl(post) {
-    return safeUrl(
-      post?.coverUrl ||
-      post?.cover ||
-      post?.coverImage ||
-      post?.thumbnail
-    );
-  }
-
-  function getUnderstandCount(post) {
-    return Number(
-      post?.understandCount ??
-      post?.understands ??
-      post?.understand ??
-      0
-    ) || 0;
-  }
-
-  function getCommentCount(post) {
-    if (Array.isArray(post?.comments)) {
-      return post.comments.length;
-    }
-
-    return Number(
-      post?.commentCount ??
-      post?.commentsCount ??
-      0
-    ) || 0;
-  }
-
-  function getCreatedAt(post) {
-    return (
-      post?.createdAt ||
-      post?.created_at ||
-      null
-    );
-  }
-
-  function formatDate(dateValue) {
-    if (!dateValue) {
-      return "";
-    }
-
-    const date = new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-      return "";
-    }
-
-    const now = Date.now();
-    const diff = now - date.getTime();
-
-    if (diff < 60 * 1000) {
-      return "just now";
-    }
-
-    if (diff < 60 * 60 * 1000) {
-      return `${Math.floor(diff / (60 * 1000))}m`;
-    }
-
-    if (diff < 24 * 60 * 60 * 1000) {
-      return `${Math.floor(diff / (60 * 60 * 1000))}h`;
-    }
-
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-      return `${Math.floor(diff / (24 * 60 * 60 * 1000))}d`;
-    }
-
-    return date.toLocaleDateString("en-NG", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  }
-
-  function normalizePosts(result) {
-    if (Array.isArray(result)) {
-      return result;
-    }
-
-    if (Array.isArray(result?.data)) {
-      return result.data;
-    }
-
-    if (Array.isArray(result?.videos)) {
-      return result.videos;
-    }
-
-    if (Array.isArray(result?.results)) {
-      return result.results;
-    }
-
-    if (Array.isArray(result?.items)) {
-      return result.items;
-    }
-
-    return [];
-  }
-
-  function deduplicatePosts(items) {
-    const seen = new Set();
-    const result = [];
-
-    for (const post of items) {
-      const id = getPostId(post);
-
-      if (id === null || id === undefined) {
-        continue;
-      }
-
-      const key = String(id);
-
-      if (seen.has(key)) {
-        continue;
-      }
-
-      seen.add(key);
-      result.push(post);
-    }
-
-    return result;
-  }
-
-  function isLoggedIn() {
-    return Boolean(getToken());
-  }
-
-  function requireLogin() {
-    if (isLoggedIn()) {
-      return true;
-    }
-
-    window.location.href = "login.html";
     return false;
+
   }
 
-  async function apiRequest(
-    endpoint,
-    options = {}
-  ) {
-    const headers = {
-      ...(options.headers || {}),
-    };
 
-    const token = getToken();
+  try {
 
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    // ===================================
+    // RESET
+    // ===================================
+
+    if (reset) {
+
+      page = 1;
+
+      hasMore = true;
+
+      loadingMore = false;
+
+      posts = [];
+
+      savedState.clear();
+
+      feed.innerHTML = "";
+
     }
 
-    if (
-      options.body &&
-      !(options.body instanceof FormData) &&
-      !headers["Content-Type"]
-    ) {
-      headers["Content-Type"] = "application/json";
-    }
 
-    const response = await fetch(
-      `${FEED_API_BASE}${endpoint}`,
+    const requestedPage =
+      page;
+
+
+    console.log(
+      "Loading videos:",
       {
-        ...options,
-        headers,
+        page: requestedPage,
+        limit: 10,
+        endpoint:
+          `${FEED_API_BASE}/videos/feed`
       }
     );
 
-    let data = null;
 
-    try {
-      data = await response.json();
-    } catch {
-      data = null;
-    }
-
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      localStorage.removeItem("token");
-    }
-
-    if (!response.ok) {
-      const message =
-        data?.message ||
-        data?.error ||
-        `Request failed with status ${response.status}`;
-
-      throw new Error(message);
-    }
-
-    return data;
-  }
-
-  // ============================================================
-  // SAVE STATE
-  // ============================================================
-
-  async function loadSavedStateForPost(postId) {
-    const token = getToken();
-
-    if (!token || !postId) {
-      return;
-    }
-
-    try {
-      const result = await apiRequest(
-        `/saved/check/${postId}`
-      );
-
-      const saved =
-        Boolean(result?.saved) ||
-        Boolean(result?.isSaved) ||
-        Boolean(result?.data?.saved);
-
-      savedState.set(
-        String(postId),
+    const res =
+      await fetch(
+        `${FEED_API_BASE}/videos/feed?page=${requestedPage}&limit=10&_=${Date.now()}`,
         {
-          saved,
-          savedId:
-            result?.savedId ||
-            result?.id ||
-            result?.data?.savedId ||
-            result?.data?.id ||
-            null,
+          method: "GET",
+          cache: "no-store"
         }
       );
 
-      updateSaveButton(postId);
-    } catch (error) {
-      console.warn(
-        `Could not check saved state for ${postId}:`,
-        error
-      );
-    }
-  }
 
-  async function loadSavedStates(items) {
-    if (!getToken()) {
-      return;
+    if (!res.ok) {
+
+      throw new Error(
+        `Video request failed: ${res.status}`
+      );
+
     }
 
-    const promises = [];
 
-    for (const post of items) {
-      const id = getPostId(post);
+    const result =
+      await res.json();
 
-      if (!id) {
-        continue;
-      }
 
-      promises.push(
-        loadSavedStateForPost(id)
-      );
+    console.log(
+      `Page ${requestedPage} response:`,
+      result
+    );
+
+
+    // ===================================
+    // NORMALIZE RESPONSE
+    // ===================================
+
+    let videos = [];
+
+
+    if (Array.isArray(result)) {
+
+      videos = result;
+
     }
 
-    await Promise.allSettled(promises);
-  }
-
-  function updateSaveButton(postId) {
-    const state =
-      savedState.get(String(postId));
-
-    const buttons =
-      document.querySelectorAll(
-        `[data-save-post="${postId}"]`
-      );
-
-    buttons.forEach((button) => {
-      const saved = Boolean(state?.saved);
-
-      button.classList.toggle(
-        "active",
-        saved
-      );
-
-      button.setAttribute(
-        "aria-pressed",
-        String(saved)
-      );
-
-      const text =
-        button.querySelector(
-          ".save-text"
-        );
-
-      if (text) {
-        text.textContent =
-          saved ? "Saved" : "Save";
-      }
-    });
-  }
-
-  // ============================================================
-  // FOLLOW STATE
-  // ============================================================
-
-  async function loadFollowState(post) {
-    const creatorId = getCreatorId(post);
-
-    if (!creatorId || !getToken()) {
-      return;
-    }
-
-    try {
-      const result = await apiRequest(
-        `/purview/${creatorId}`
-      );
-
-      const following =
-        Boolean(result?.following) ||
-        Boolean(result?.isFollowing) ||
-        Boolean(result?.data?.following);
-
-      followedState.set(
-        String(creatorId),
-        following
-      );
-
-      updateFollowButtons(creatorId);
-    } catch (error) {
-      console.warn(
-        `Could not load follow state for ${creatorId}:`,
-        error
-      );
-    }
-  }
-
-  function updateFollowButtons(creatorId) {
-    const following =
-      followedState.get(
-        String(creatorId)
-      );
-
-    document
-      .querySelectorAll(
-        `[data-follow-creator="${creatorId}"]`
-      )
-      .forEach((button) => {
-        button.classList.toggle(
-          "active",
-          Boolean(following)
-        );
-
-        button.textContent =
-          following
-            ? "Following"
-            : "Follow";
-      });
-  }
-
-  // ============================================================
-  // VIDEO AUTOPLAY
-  // ============================================================
-
-  function setupVideoObserver() {
-    if (videoObserver) {
-      videoObserver.disconnect();
-    }
-
-    videoObserver =
-      new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const video =
-              entry.target;
-
-            if (
-              entry.isIntersecting &&
-              entry.intersectionRatio >= 0.65
-            ) {
-              document
-                .querySelectorAll(
-                  "#feed video"
-                )
-                .forEach((other) => {
-                  if (other !== video) {
-                    try {
-                      other.pause();
-                    } catch {}
-                  }
-                });
-
-              const promise =
-                video.play();
-
-              if (
-                promise &&
-                typeof promise.catch ===
-                  "function"
-              ) {
-                promise.catch(() => {});
-              }
-            } else {
-              try {
-                video.pause();
-              } catch {}
-            }
-          });
-        },
-        {
-          threshold: [0.25, 0.65, 0.9],
-        }
-      );
-
-    document
-      .querySelectorAll(
-        "#feed video[data-autoplay='true']"
-      )
-      .forEach((video) => {
-        videoObserver.observe(video);
-      });
-  }
-
-  // ============================================================
-  // MEDIA
-  // ============================================================
-
-  function buildMedia(post) {
-    const type =
-      getPostType(post);
-
-    const videoUrl =
-      getVideoUrl(post);
-
-    const fileUrl =
-      getFileUrl(post);
-
-    const coverUrl =
-      getCoverUrl(post);
-
-    if (
-      type === "ebook" ||
-      type === "book"
+    else if (
+      result &&
+      Array.isArray(result.data)
     ) {
-      const cover =
-        coverUrl ||
-        "https://via.placeholder.com/600x800?text=Vindarr+Book";
 
-      return `
-        <div
-          class="feed-media ebook-media"
-          data-media-id="${escapeHtml(getPostId(post))}"
-        >
-          <img
-            src="${escapeHtml(cover)}"
-            alt="${escapeHtml(getPostTitle(post))}"
-            loading="lazy"
-            onerror="this.onerror=null;this.src='https://via.placeholder.com/600x800?text=Vindarr+Book';"
-          >
+      videos =
+        result.data;
 
-          <div class="media-overlay">
-            <span class="media-type-label">
-              Ebook
-            </span>
-          </div>
-        </div>
-      `;
     }
 
-    if (
-      type === "fashion" ||
-      type === "essential" ||
-      type === "product"
+    else if (
+      result &&
+      Array.isArray(result.videos)
     ) {
-      const image =
-        fileUrl ||
-        coverUrl ||
-        "https://via.placeholder.com/900x700?text=Vindarr+Product";
 
-      return `
-        <div
-          class="feed-media product-media"
-          data-media-id="${escapeHtml(getPostId(post))}"
-        >
-          <img
-            src="${escapeHtml(image)}"
-            alt="${escapeHtml(getPostTitle(post))}"
-            loading="lazy"
-            onerror="this.onerror=null;this.src='https://via.placeholder.com/900x700?text=Vindarr+Product';"
-          >
+      videos =
+        result.videos;
 
-          <div class="media-overlay">
-            <span class="media-type-label">
-              Product
-            </span>
-          </div>
-        </div>
-      `;
     }
 
-    if (videoUrl) {
-      return `
-        <div
-          class="feed-media video-media"
-          data-media-id="${escapeHtml(getPostId(post))}"
-        >
-          <video
-            src="${escapeHtml(videoUrl)}"
-            playsinline
-            muted
-            loop
-            preload="metadata"
-            data-autoplay="true"
-            controlslist="nodownload"
-          ></video>
+    else if (
+      result &&
+      Array.isArray(result.results)
+    ) {
 
-          <button
-            type="button"
-            class="video-play-overlay"
-            data-action="play-video"
-            data-post-id="${escapeHtml(getPostId(post))}"
-            aria-label="Play video"
-          >
-            ▶
-          </button>
-        </div>
-      `;
+      videos =
+        result.results;
+
     }
 
-    const image =
-      fileUrl ||
-      coverUrl ||
-      "https://via.placeholder.com/900x700?text=Vindarr";
 
-    return `
-      <div
-        class="feed-media image-media"
-        data-media-id="${escapeHtml(getPostId(post))}"
-      >
-        <img
-          src="${escapeHtml(image)}"
-          alt="${escapeHtml(getPostTitle(post))}"
-          loading="lazy"
-          onerror="this.onerror=null;this.src='https://via.placeholder.com/900x700?text=Vindarr';"
-        >
-      </div>
-    `;
-  }
+    console.log(
+      `Page ${requestedPage} videos received:`,
+      videos.length
+    );
 
-  // ============================================================
-  // CARD BUILDER
-  // ============================================================
 
-  function buildVideoCard(post) {
-    const id = getPostId(post);
+    // ===================================
+    // NO MORE VIDEOS
+    // ===================================
 
-    if (!id) {
-      return "";
-    }
+    if (!videos.length) {
 
-    const creatorId =
-      getCreatorId(post);
+      hasMore = false;
 
-    const creatorName =
-      getCreatorName(post);
-
-    const creatorAvatar =
-      getCreatorAvatar(post);
-
-    const type =
-      getPostType(post);
-
-    const title =
-      getPostTitle(post);
-
-    const description =
-      getPostDescription(post);
-
-    const category =
-      getCategory(post);
-
-    const price =
-      getPrice(post);
-
-    const priceText =
-      formatPrice(price);
-
-    const understandCount =
-      getUnderstandCount(post);
-
-    const commentCount =
-      getCommentCount(post);
-
-    const createdAt =
-      formatDate(
-        getCreatedAt(post)
+      console.log(
+        "No more videos."
       );
 
-    const media =
-      buildMedia(post);
+      return false;
 
-    const saved =
-      Boolean(
-        savedState.get(String(id))
-          ?.saved
-      );
+    }
 
-    const following =
-      Boolean(
-        followedState.get(
-          String(creatorId)
+
+    // ===================================
+    // REMOVE DUPLICATES
+    // ===================================
+
+    const existingIds =
+      new Set(
+        posts.map(
+          post =>
+            String(post.id)
         )
       );
 
-    const isOwnPost =
-      getCurrentUserId() &&
-      creatorId &&
-      Number(getCurrentUserId()) ===
-        Number(creatorId);
 
-    const isEbook =
-      type === "ebook" ||
-      type === "book";
-
-    const isProduct =
-      type === "fashion" ||
-      type === "essential" ||
-      type === "product";
-
-    const buyButton =
-      isEbook
-        ? `
-          <button
-            type="button"
-            class="feed-commerce-btn ebook-buy-btn"
-            data-action="buy-ebook"
-            data-post-id="${escapeHtml(id)}"
-          >
-            ${priceText
-              ? `Buy ${escapeHtml(priceText)}`
-              : "View Ebook"}
-          </button>
-        `
-        : isProduct
-          ? `
-            <button
-              type="button"
-              class="feed-commerce-btn product-buy-btn"
-              data-action="buy-product"
-              data-post-id="${escapeHtml(id)}"
-            >
-              ${priceText
-                ? `Buy ${escapeHtml(priceText)}`
-                : "Shop Product"}
-            </button>
-          `
-          : "";
-
-    return `
-      <article
-        class="card feed-card"
-        data-post-id="${escapeHtml(id)}"
-        data-post-type="${escapeHtml(type)}"
-      >
-
-        <!-- =====================================================
-             CREATOR
-        ====================================================== -->
-
-        <div class="feed-creator-row">
-
-          <button
-            type="button"
-            class="creator-profile-btn"
-            data-action="open-creator"
-            data-creator-id="${escapeHtml(creatorId || "")}"
-          >
-            <img
-              class="creator-avatar"
-              src="${escapeHtml(creatorAvatar)}"
-              alt="${escapeHtml(creatorName)}"
-              loading="lazy"
-              onerror="this.onerror=null;this.src='https://i.pravatar.cc/100';"
-            >
-
-            <div class="creator-meta">
-
-              <strong>
-                ${escapeHtml(creatorName)}
-              </strong>
-
-              <span>
-                ${escapeHtml(createdAt)}
-              </span>
-
-            </div>
-          </button>
-
-          ${
-            creatorId &&
-            !isOwnPost
-              ? `
-                <button
-                  type="button"
-                  class="follow-btn ${
-                    following ? "active" : ""
-                  }"
-                  data-action="follow"
-                  data-follow-creator="${escapeHtml(creatorId)}"
-                >
-                  ${
-                    following
-                      ? "Following"
-                      : "Follow"
-                  }
-                </button>
-              `
-              : ""
-          }
-
-          ${
-            isOwnPost
-              ? `
-                <button
-                  type="button"
-                  class="post-menu-btn"
-                  data-action="post-menu"
-                  data-post-id="${escapeHtml(id)}"
-                  aria-label="Post menu"
-                >
-                  ⋮
-                </button>
-              `
-              : ""
-          }
-
-        </div>
-
-
-        <!-- =====================================================
-             TITLE
-        ====================================================== -->
-
-        <div class="feed-title-area">
-
-          <h3 class="feed-title">
-            ${escapeHtml(title)}
-          </h3>
-
-          ${
-            category
-              ? `
-                <span class="feed-category">
-                  ${escapeHtml(category)}
-                </span>
-              `
-              : ""
-          }
-
-        </div>
-
-
-        <!-- =====================================================
-             MEDIA
-        ====================================================== -->
-
-        ${media}
-
-
-        <!-- =====================================================
-             DESCRIPTION / CAPTION
-        ====================================================== -->
-
-        ${
-          description
-            ? `
-              <div class="feed-caption">
-
-                <span class="caption-text">
-                  ${escapeHtml(description)}
-                </span>
-
-                <button
-                  type="button"
-                  class="caption-more-btn"
-                  data-action="toggle-caption"
-                >
-                  More
-                </button>
-
-              </div>
-            `
-            : ""
-        }
-
-
-        <!-- =====================================================
-             PRODUCT / EBOOK INFO
-        ====================================================== -->
-
-        ${
-          isEbook || isProduct
-            ? `
-              <div class="commerce-info">
-
-                ${
-                  priceText
-                    ? `
-                      <strong class="commerce-price">
-                        ${escapeHtml(priceText)}
-                      </strong>
-                    `
-                    : ""
-                }
-
-                ${
-                  isEbook
-                    ? `
-                      <span class="commerce-type">
-                        Ebook
-                      </span>
-                    `
-                    : `
-                      <span class="commerce-type">
-                        Product
-                      </span>
-                    `
-                }
-
-              </div>
-            `
-            : ""
-        }
-
-
-        <!-- =====================================================
-             ACTIONS
-        ====================================================== -->
-
-        <div class="feed-actions">
-
-          <button
-            type="button"
-            class="feed-action understand-btn"
-            data-action="understand"
-            data-post-id="${escapeHtml(id)}"
-          >
-            <span class="action-icon">
-              ✓
-            </span>
-
-            <span class="understand-count">
-              ${understandCount}
-            </span>
-
-            <span>
-              Understand
-            </span>
-          </button>
-
-
-          <button
-            type="button"
-            class="feed-action comments-btn"
-            data-action="comments"
-            data-post-id="${escapeHtml(id)}"
-          >
-            <span class="action-icon">
-              💬
-            </span>
-
-            <span>
-              ${commentCount}
-            </span>
-
-            <span>
-              Comments
-            </span>
-          </button>
-
-
-          <button
-            type="button"
-            class="feed-action save-btn ${
-              saved ? "active" : ""
-            }"
-            data-action="save"
-            data-save-post="${escapeHtml(id)}"
-            aria-pressed="${saved}"
-          >
-            <span class="action-icon">
-              ${saved ? "★" : "☆"}
-            </span>
-
-            <span class="save-text">
-              ${saved ? "Saved" : "Save"}
-            </span>
-          </button>
-
-
-          <button
-            type="button"
-            class="feed-action"
-            data-action="share"
-            data-post-id="${escapeHtml(id)}"
-          >
-            <span class="action-icon">
-              ↗
-            </span>
-
-            <span>
-              Share
-            </span>
-          </button>
-
-        </div>
-
-
-        <!-- =====================================================
-             COMMERCE ACTION
-        ====================================================== -->
-
-        ${
-          buyButton
-            ? `
-              <div class="commerce-action-row">
-                ${buyButton}
-              </div>
-            `
-            : ""
-        }
-
-
-        <!-- =====================================================
-             COMMENT INPUT
-        ====================================================== -->
-
-        <form
-          class="feed-comment-form"
-          data-comment-form="${escapeHtml(id)}"
-        >
-
-          <input
-            type="text"
-            name="comment"
-            placeholder="Write a comment..."
-            autocomplete="off"
-            maxlength="1000"
-          >
-
-          <button
-            type="submit"
-            aria-label="Send comment"
-          >
-            Send
-          </button>
-
-        </form>
-
-      </article>
-    `;
-  }
-
-  // ============================================================
-  // RENDER
-  // ============================================================
-
-  function renderVideos(
-    items,
-    reset = false
-  ) {
-    if (reset) {
-      feed.innerHTML = "";
-    }
-
-    if (!items.length) {
-      if (reset) {
-        feed.innerHTML = `
-          <div class="feed-empty">
-            <div class="feed-empty-icon">
-              ◌
-            </div>
-
-            <h3>
-              Nothing here yet
-            </h3>
-
-            <p>
-              New posts will appear here.
-            </p>
-          </div>
-        `;
-      }
-
-      return;
-    }
-
-    const fragment =
-      document.createDocumentFragment();
-
-    for (const post of items) {
-      const wrapper =
-        document.createElement("div");
-
-      wrapper.innerHTML =
-        buildVideoCard(post);
-
-      const card =
-        wrapper.firstElementChild;
-
-      if (card) {
-        fragment.appendChild(card);
-      }
-    }
-
-    feed.appendChild(fragment);
-
-    setupVideoObserver();
-
-    loadSavedStates(items);
-
-    items.forEach((post) => {
-      loadFollowState(post);
-    });
-  }
-
-  // ============================================================
-  // LOAD FEED
-  // ============================================================
-
-  async function loadVideos(
-    reset = true
-  ) {
-    if (loadingMore) {
-      return false;
-    }
-
-    if (!reset && !hasMore) {
-      return false;
-    }
-
-    loadingMore = true;
-
-    const requestedPage =
-      reset ? 1 : page;
-
-    if (reset) {
-      page = 1;
-      hasMore = true;
-      requestedVideoOpened = false;
-      posts = [];
-      savedState.clear();
-      followedState.clear();
-
-      feed.innerHTML = `
-        <div class="feed-loading">
-          Loading...
-        </div>
-      `;
-    }
-
-    try {
-      const result =
-        await apiRequest(
-          `/videos/feed?page=${requestedPage}&limit=${FEED_LIMIT}&_=${Date.now()}`,
-          {
-            method: "GET",
-            cache: "no-store",
-          }
-        );
-
-      const incoming =
-        normalizePosts(result);
-
-      const existingIds =
-        new Set(
-          posts.map((post) =>
-            String(getPostId(post))
+    const newVideos =
+      videos.filter(
+        video =>
+          video &&
+          video.id != null &&
+          !existingIds.has(
+            String(video.id)
           )
-        );
+      );
 
-      const uniqueIncoming =
-        incoming.filter((post) => {
-          const id =
-            getPostId(post);
 
-          if (
-            id === null ||
-            id === undefined
-          ) {
-            return false;
-          }
+    if (!newVideos.length) {
 
-          return !existingIds.has(
-            String(id)
-          );
-        });
-
-      posts = deduplicatePosts([
-        ...posts,
-        ...uniqueIncoming,
-      ]);
+      // Do NOT automatically kill the feed
+      // merely because this page contained
+      // duplicates.
 
       hasMore =
-        typeof result?.hasMore ===
-        "boolean"
+        result &&
+        typeof result.hasMore === "boolean"
           ? result.hasMore
-          : incoming.length >= FEED_LIMIT;
+          : false;
 
-      if (reset) {
-        feed.innerHTML = "";
-      }
-
-      if (uniqueIncoming.length) {
-        renderVideos(
-          uniqueIncoming,
-          false
-        );
-      } else if (reset) {
-        renderVideos([], true);
-      }
-
-      if (reset) {
-        page = 1;
-      }
-
-      return true;
-    } catch (error) {
-      console.error(
-        "Vindarr feed loading error:",
-        error
+      console.log(
+        "No new videos returned."
       );
 
-      if (reset) {
-        feed.innerHTML = `
-          <div class="feed-error">
+      return hasMore;
 
-            <div class="feed-error-icon">
-              ⚠
-            </div>
-
-            <h3>
-              Unable to load videos
-            </h3>
-
-            <p>
-              ${escapeHtml(error.message || "Something went wrong.")}
-            </p>
-
-            <button
-              type="button"
-              data-action="retry-feed"
-            >
-              Try again
-            </button>
-
-          </div>
-        `;
-      }
-
-      return false;
-    } finally {
-      loadingMore = false;
-    }
-  }
-
-  // ============================================================
-  // LOAD MORE
-  // ============================================================
-
-  async function loadMoreVideos() {
-    if (
-      loadingMore ||
-      !hasMore
-    ) {
-      return;
     }
 
-    const nextPage =
-      page + 1;
 
-    const previousPage =
-      page;
-
-    page = nextPage;
-
-    const success =
-      await loadVideos(false);
-
-    if (!success) {
-      page = previousPage;
-    }
-  }
-
-  // ============================================================
-  // INFINITE SCROLL
-  // ============================================================
-
-  function setupInfiniteScroll() {
-    if (scrollHandler) {
-      window.removeEventListener(
-        "scroll",
-        scrollHandler
-      );
-    }
-
-    scrollHandler = () => {
-      if (
-        loadingMore ||
-        !hasMore
-      ) {
-        return;
-      }
-
-      const scrollPosition =
-        window.innerHeight +
-        window.scrollY;
-
-      const documentHeight =
-        document.documentElement
-          .scrollHeight;
-
-      const distanceFromBottom =
-        documentHeight -
-        scrollPosition;
-
-      if (
-        distanceFromBottom <= 900
-      ) {
-        loadMoreVideos();
-      }
-    };
-
-    window.addEventListener(
-      "scroll",
-      scrollHandler,
-      {
-        passive: true,
-      }
-    );
-  }
-
-  // ============================================================
-  // UNDERSTAND
-  // ============================================================
-
-  async function pressUnderstand(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (!requireLogin()) {
-      return;
-    }
-
-    const button =
-      document.querySelector(
-        `[data-action="understand"][data-post-id="${videoId}"]`
-      );
-
-    try {
-      if (button) {
-        button.disabled = true;
-      }
-
-      const result =
-        await apiRequest(
-          `/videos/${videoId}/understand`,
-          {
-            method: "POST",
-          }
-        );
-
-      const post =
-        posts.find(
-          (item) =>
-            String(getPostId(item)) ===
-            String(videoId)
-        );
-
-      if (post) {
-        post.understandCount =
-          Number(
-            result?.understandCount ??
-            result?.count ??
-            result?.data?.understandCount ??
-            getUnderstandCount(post) + 1
-          );
-      }
-
-      const count =
-        Number(
-          result?.understandCount ??
-          result?.count ??
-          result?.data?.understandCount ??
-          getUnderstandCount(post || {})
-        ) || 0;
-
-      const countElement =
-        document.querySelector(
-          `[data-post-id="${videoId}"] .understand-count`
-        );
-
-      if (countElement) {
-        countElement.textContent =
-          String(count);
-      }
-
-      if (button) {
-        button.classList.add(
-          "active"
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Understand failed:",
-        error
-      );
-
-      alert(
-        error.message ||
-        "Unable to register Understand."
-      );
-    } finally {
-      if (button) {
-        button.disabled = false;
-      }
-    }
-  }
-
-  // ============================================================
-  // SAVE
-  // ============================================================
-
-  async function toggleSave(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (!requireLogin()) {
-      return;
-    }
-
-    const key =
-      String(videoId);
-
-    const current =
-      savedState.get(key) || {
-        saved: false,
-        savedId: null,
-      };
-
-    try {
-      if (current.saved) {
-        if (!current.savedId) {
-          await loadSavedStateForPost(
-            videoId
-          );
-        }
-
-        const latest =
-          savedState.get(key);
-
-        if (!latest?.savedId) {
-          throw new Error(
-            "Saved item could not be found."
-          );
-        }
-
-        await apiRequest(
-          `/saved/${latest.savedId}`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        savedState.set(
-          key,
-          {
-            saved: false,
-            savedId: null,
-          }
-        );
-      } else {
-        const result =
-          await apiRequest(
-            "/saved",
-            {
-              method: "POST",
-              body: JSON.stringify({
-                videoId: Number(videoId),
-              }),
-            }
-          );
-
-        savedState.set(
-          key,
-          {
-            saved: true,
-            savedId:
-              result?.id ??
-              result?.savedId ??
-              result?.data?.id ??
-              result?.data?.savedId ??
-              null,
-          }
-        );
-      }
-
-      updateSaveButton(
-        videoId
-      );
-    } catch (error) {
-      console.error(
-        "Save action failed:",
-        error
-      );
-
-      alert(
-        error.message ||
-        "Unable to update saved post."
-      );
-    }
-  }
-
-  // ============================================================
-  // SHARE
-  // ============================================================
-
-  async function sharePost(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    const url =
-      `${window.location.origin}/index.html?video=${encodeURIComponent(videoId)}`;
-
-    try {
-      if (
-        navigator.share
-      ) {
-        await navigator.share({
-          title: "Vindarr",
-          text: "Check this out on Vindarr.",
-          url,
-        });
-
-        return;
-      }
-
-      if (
-        navigator.clipboard &&
-        navigator.clipboard.writeText
-      ) {
-        await navigator.clipboard.writeText(
-          url
-        );
-
-        alert(
-          "Post link copied."
-        );
-
-        return;
-      }
-
-      window.prompt(
-        "Copy this link:",
-        url
-      );
-    } catch (error) {
-      if (
-        error?.name !==
-        "AbortError"
-      ) {
-        console.error(
-          "Share failed:",
-          error
-        );
-      }
-    }
-  }
-
-  // ============================================================
-  // FOLLOW
-  // ============================================================
-
-  async function toggleFollow(
-    creatorId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (!requireLogin()) {
-      return;
-    }
-
-    const key =
-      String(creatorId);
-
-    const currentlyFollowing =
-      Boolean(
-        followedState.get(key)
-      );
-
-    try {
-      const method =
-        currentlyFollowing
-          ? "DELETE"
-          : "POST";
-
-      await apiRequest(
-        `/purview/${creatorId}`,
-        {
-          method,
-        }
-      );
-
-      followedState.set(
-        key,
-        !currentlyFollowing
-      );
-
-      updateFollowButtons(
-        creatorId
-      );
-    } catch (error) {
-      console.error(
-        "Follow action failed:",
-        error
-      );
-
-      alert(
-        error.message ||
-        "Unable to update follow status."
-      );
-    }
-  }
-
-  // ============================================================
-  // COMMENTS
-  // ============================================================
-
-  async function openComments(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+    // ===================================
+    // HAS MORE
+    // ===================================
 
     if (
-      typeof window.openCommentsPage ===
-      "function"
+      result &&
+      typeof result.hasMore === "boolean"
     ) {
-      window.openCommentsPage(
-        videoId
-      );
 
-      return;
+      hasMore =
+        result.hasMore;
+
     }
+
+    else {
+
+      hasMore =
+        videos.length === 10;
+
+    }
+
+
+    // ===================================
+    // POSITION BEFORE APPENDING
+    // ===================================
+
+    const startIndex =
+      posts.length;
+
+
+    // ===================================
+    // ADD TO STATE
+    // ===================================
+
+    posts.push(
+      ...newVideos
+    );
+
+
+    // ===================================
+    // LOAD SAVED STATES
+    // ===================================
+
+    await loadSavedStates(
+      newVideos
+    );
+
+
+    // ===================================
+    // RENDER ONLY NEW VIDEOS
+    // ===================================
+
+    renderVideos(
+      newVideos,
+      reset,
+      startIndex
+    );
+
+
+    return true;
+
+
+  } catch (err) {
+
+    console.error(
+      "Load videos failed:",
+      err
+    );
+
 
     if (
-      typeof window.openComments ===
-      "function"
+      feed &&
+      posts.length === 0
     ) {
-      window.openComments(
-        videoId
-      );
-
-      return;
-    }
-
-    // Fallback.
-    try {
-      const result =
-        await apiRequest(
-          `/comments/${videoId}`,
-          {
-            method: "GET",
-          }
-        );
-
-      const comments =
-        Array.isArray(result)
-          ? result
-          : Array.isArray(result?.data)
-            ? result.data
-            : [];
-
-      const text =
-        comments.length
-          ? comments
-              .map(
-                (comment) =>
-                  `${comment?.author?.username || comment?.username || "User"}: ${comment?.text || ""}`
-              )
-              .join("\n\n")
-          : "No comments yet.";
-
-      alert(text);
-    } catch (error) {
-      console.error(
-        "Comments failed:",
-        error
-      );
-
-      alert(
-        "Unable to load comments."
-      );
-    }
-  }
-
-  async function submitComment(
-    videoId,
-    form
-  ) {
-    if (!requireLogin()) {
-      return;
-    }
-
-    const input =
-      form.querySelector(
-        'input[name="comment"]'
-      );
-
-    if (!input) {
-      return;
-    }
-
-    const text =
-      input.value.trim();
-
-    if (!text) {
-      return;
-    }
-
-    try {
-      input.disabled = true;
-
-      await apiRequest(
-        "/comments",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            videoId: Number(videoId),
-            text,
-          }),
-        }
-      );
-
-      input.value = "";
-
-      const post =
-        posts.find(
-          (item) =>
-            String(getPostId(item)) ===
-            String(videoId)
-        );
-
-      if (post) {
-        post.commentCount =
-          getCommentCount(post) + 1;
-      }
-
-      const countElement =
-        document.querySelector(
-          `[data-post-id="${videoId}"] .comments-btn span:nth-child(2)`
-        );
-
-      if (countElement) {
-        countElement.textContent =
-          String(
-            getCommentCount(post || {})
-          );
-      }
-
-      if (
-        typeof window.openCommentsPage ===
-        "function"
-      ) {
-        window.openCommentsPage(
-          videoId
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Comment submission failed:",
-        error
-      );
-
-      alert(
-        error.message ||
-        "Unable to post comment."
-      );
-    } finally {
-      input.disabled = false;
-      input.focus();
-    }
-  }
-
-  // ============================================================
-  // CREATOR PROFILE
-  // ============================================================
-
-  function openCreator(
-    creatorId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (!creatorId) {
-      return;
-    }
-
-    window.location.href =
-      `profile.html?id=${encodeURIComponent(creatorId)}`;
-  }
-
-  // ============================================================
-  // EBOOK
-  // ============================================================
-
-  function openEbook(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    window.location.href =
-      `ebook.html?id=${encodeURIComponent(videoId)}`;
-  }
-
-  // ============================================================
-  // PRODUCT
-  // ============================================================
-
-  function openProduct(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    window.location.href =
-      `product.html?id=${encodeURIComponent(videoId)}`;
-  }
-
-  // ============================================================
-  // VIDEO PLAY
-  // ============================================================
-
-  function toggleVideo(
-    video,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (!video) {
-      return;
-    }
-
-    if (video.paused) {
-      const promise =
-        video.play();
-
-      if (
-        promise &&
-        typeof promise.catch ===
-          "function"
-      ) {
-        promise.catch(() => {});
-      }
-    } else {
-      video.pause();
-    }
-  }
-
-  // ============================================================
-  // DOUBLE TAP / CLICK VIDEO
-  // ============================================================
-
-  function handleVideoTap(
-    video,
-    event
-  ) {
-    if (!video) {
-      return;
-    }
-
-    const now =
-      Date.now();
-
-    const difference =
-      now - lastTap;
-
-    if (
-      difference > 0 &&
-      difference < 350
-    ) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const card =
-        video.closest(
-          "[data-post-id]"
-        );
-
-      const postId =
-        card?.dataset?.postId;
-
-      if (postId) {
-        pressUnderstand(
-          postId,
-          event
-        );
-
-        showHeartAnimation(
-          card
-        );
-      }
-
-      lastTap = 0;
-
-      return;
-    }
-
-    lastTap = now;
-  }
-
-  function showHeartAnimation(
-    card
-  ) {
-    if (!card) {
-      return;
-    }
-
-    const heart =
-      document.createElement(
-        "div"
-      );
-
-    heart.className =
-      "feed-heart-animation";
-
-    heart.textContent =
-      "♥";
-
-    card.appendChild(
-      heart
-    );
-
-    setTimeout(() => {
-      heart.remove();
-    }, 900);
-  }
-
-  // ============================================================
-  // CAPTION
-  // ============================================================
-
-  function toggleCaption(
-    button,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    const caption =
-      button.closest(
-        ".feed-caption"
-      );
-
-    if (!caption) {
-      return;
-    }
-
-    caption.classList.toggle(
-      "expanded"
-    );
-
-    button.textContent =
-      caption.classList.contains(
-        "expanded"
-      )
-        ? "Less"
-        : "More";
-  }
-
-  // ============================================================
-  // DELETE POST
-  // ============================================================
-
-  async function deletePost(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (!requireLogin()) {
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        "Delete this post?"
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      await apiRequest(
-        `/videos/${videoId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      posts =
-        posts.filter(
-          (post) =>
-            String(getPostId(post)) !==
-            String(videoId)
-        );
-
-      const card =
-        document.querySelector(
-          `[data-post-id="${videoId}"]`
-        );
-
-      card?.remove();
-    } catch (error) {
-      console.error(
-        "Delete failed:",
-        error
-      );
-
-      alert(
-        error.message ||
-        "Unable to delete post."
-      );
-    }
-  }
-
-  // ============================================================
-  // POST MENU
-  // ============================================================
-
-  function openPostMenu(
-    videoId,
-    event
-  ) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    const action =
-      window.confirm(
-        "Delete this post?\n\nPress OK to delete or Cancel to close."
-      );
-
-    if (action) {
-      deletePost(
-        videoId
-      );
-    }
-  }
-
-  // ============================================================
-  // URL VIDEO
-  // ============================================================
-
-  function getRequestedVideoId() {
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    return (
-      params.get("video") ||
-      params.get("videoId") ||
-      params.get("post")
-    );
-  }
-
-  function openRequestedVideo() {
-    if (
-      requestedVideoOpened
-    ) {
-      return;
-    }
-
-    const requestedId =
-      getRequestedVideoId();
-
-    if (!requestedId) {
-      return;
-    }
-
-    const card =
-      document.querySelector(
-        `[data-post-id="${CSS.escape(String(requestedId))}"]`
-      );
-
-    if (!card) {
-      return;
-    }
-
-    requestedVideoOpened = true;
-
-    card.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-
-    card.classList.add(
-      "requested-feed-post"
-    );
-
-    setTimeout(() => {
-      card.classList.remove(
-        "requested-feed-post"
-      );
-    }, 1800);
-  }
-
-  // ============================================================
-  // EVENT DELEGATION
-  // ============================================================
-
-  function setupFeedEvents() {
-    feed.addEventListener(
-      "click",
-      async (event) => {
-        const target =
-          event.target;
-
-        const actionElement =
-          target.closest(
-            "[data-action]"
-          );
-
-        if (!actionElement) {
-          return;
-        }
-
-        const action =
-          actionElement.dataset.action;
-
-        const postId =
-          actionElement.dataset.postId;
-
-        switch (action) {
-          case "understand":
-            await pressUnderstand(
-              postId,
-              event
-            );
-            break;
-
-          case "comments":
-            await openComments(
-              postId,
-              event
-            );
-            break;
-
-          case "save":
-            await toggleSave(
-              postId,
-              event
-            );
-            break;
-
-          case "share":
-            await sharePost(
-              postId,
-              event
-            );
-            break;
-
-          case "follow":
-            await toggleFollow(
-              actionElement.dataset.followCreator,
-              event
-            );
-            break;
-
-          case "open-creator":
-            openCreator(
-              actionElement.dataset.creatorId,
-              event
-            );
-            break;
-
-          case "buy-ebook":
-            openEbook(
-              postId,
-              event
-            );
-            break;
-
-          case "buy-product":
-            openProduct(
-              postId,
-              event
-            );
-            break;
-
-          case "play-video": {
-            const card =
-              actionElement.closest(
-                "[data-post-id]"
-              );
-
-            const video =
-              card?.querySelector(
-                "video"
-              );
-
-            toggleVideo(
-              video,
-              event
-            );
-
-            break;
-          }
-
-          case "toggle-caption":
-            toggleCaption(
-              actionElement,
-              event
-            );
-            break;
-
-          case "post-menu":
-            openPostMenu(
-              postId,
-              event
-            );
-            break;
-
-          case "retry-feed":
-            await loadVideos(
-              true
-            );
-            break;
-
-          default:
-            break;
-        }
-      }
-    );
-
-    feed.addEventListener(
-      "dblclick",
-      (event) => {
-        const video =
-          event.target.closest(
-            "video"
-          );
-
-        if (!video) {
-          return;
-        }
-
-        handleVideoTap(
-          video,
-          event
-        );
-      }
-    );
-
-    feed.addEventListener(
-      "click",
-      (event) => {
-        const video =
-          event.target.closest(
-            "video"
-          );
-
-        if (!video) {
-          return;
-        }
-
-        handleVideoTap(
-          video,
-          event
-        );
-      }
-    );
-
-    feed.addEventListener(
-      "submit",
-      async (event) => {
-        const form =
-          event.target.closest(
-            ".feed-comment-form"
-          );
-
-        if (!form) {
-          return;
-        }
-
-        event.preventDefault();
-
-        const videoId =
-          form.dataset.commentForm;
-
-        await submitComment(
-          videoId,
-          form
-        );
-      }
-    );
-  }
-
-  // ============================================================
-  // OPTIONAL SEARCH
-  // ============================================================
-
-  function setupSearch() {
-    const searchInput =
-      document.getElementById(
-        "searchInput"
-      );
-
-    if (!searchInput) {
-      return;
-    }
-
-    let timeout = null;
-
-    searchInput.addEventListener(
-      "input",
-      () => {
-        clearTimeout(
-          timeout
-        );
-
-        timeout =
-          setTimeout(
-            () => {
-              const query =
-                searchInput.value.trim();
-
-              if (!query) {
-                loadVideos(true);
-                return;
-              }
-
-              searchVideos(
-                query
-              );
-            },
-            400
-          );
-      }
-    );
-  }
-
-  async function searchVideos(
-    query
-  ) {
-    if (!query) {
-      await loadVideos(true);
-      return;
-    }
-
-    try {
-      loadingMore = true;
 
       feed.innerHTML = `
-        <div class="feed-loading">
-          Searching...
-        </div>
-      `;
 
-      const result =
-        await apiRequest(
-          `/videos/search?q=${encodeURIComponent(query)}`
-        );
+        <div class="empty-feed">
 
-      const results =
-        normalizePosts(result);
-
-      posts =
-        deduplicatePosts(
-          results
-        );
-
-      hasMore = false;
-      page = 1;
-
-      renderVideos(
-        posts,
-        true
-      );
-    } catch (error) {
-      console.error(
-        "Search failed:",
-        error
-      );
-
-      feed.innerHTML = `
-        <div class="feed-error">
+          <i class="bi bi-exclamation-circle"></i>
 
           <h3>
-            Search failed
+            Unable to load videos
           </h3>
 
           <p>
-            ${escapeHtml(error.message || "Unable to search.")}
+            ${escapeHtml(
+              err?.message ||
+              "Please try again later."
+            )}
           </p>
 
+          <button
+            type="button"
+            onclick="loadVideos(true)"
+          >
+            Try Again
+          </button>
+
         </div>
+
       `;
-    } finally {
-      loadingMore = false;
+
     }
+
+
+    throw err;
+
   }
 
-  // ============================================================
-  // GLOBAL REFRESH
-  // ============================================================
+}
 
-  window.refreshVindarrFeed =
-    function () {
-      return loadVideos(
-        true
-      );
-    };
 
-  window.loadMoreVindarrVideos =
-    function () {
-      return loadMoreVideos();
-    };
+// =====================================
+// MEDIA URL
+// =====================================
 
-  window.pressUnderstand =
-    pressUnderstand;
+function getMediaUrl(video) {
 
-  window.toggleSave =
-    toggleSave;
+  if (!video) {
 
-  window.sharePost =
-    sharePost;
+    return "";
 
-  window.toggleFollow =
-    toggleFollow;
+  }
 
-  window.openComments =
-    openComments;
 
-  // ============================================================
-  // INITIALIZE
-  // ============================================================
+  let media = "";
 
-  async function initFeed() {
-    if (initialized) {
-      return;
+
+  if (
+    video.type === "ebook"
+  ) {
+
+    media =
+      video.coverUrl ||
+      "";
+
+  }
+
+  else {
+
+    media =
+      video.videoUrl ||
+      video.fileUrl ||
+      video.coverUrl ||
+      "";
+
+  }
+
+
+  if (!media) {
+
+    return "";
+
+  }
+
+
+  media =
+    String(media).trim();
+
+
+  if (
+    media.startsWith("http://") ||
+    media.startsWith("https://") ||
+    media.startsWith("data:")
+  ) {
+
+    return media;
+
+  }
+
+
+  if (
+    media.startsWith("/")
+  ) {
+
+    return (
+      FEED_API_BASE +
+      media
+    );
+
+  }
+
+
+  return (
+    FEED_API_BASE +
+    "/" +
+    media
+  );
+
+}
+
+
+// =====================================
+// CREATOR AVATAR
+// =====================================
+
+function getCreatorAvatar(video) {
+
+  const avatar =
+    video?.creatorAvatar;
+
+
+  if (!avatar) {
+
+    return "https://i.pravatar.cc/100";
+
+  }
+
+
+  const value =
+    String(avatar).trim();
+
+
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("data:")
+  ) {
+
+    return value;
+
+  }
+
+
+  if (
+    value.startsWith("/")
+  ) {
+
+    return (
+      FEED_API_BASE +
+      value
+    );
+
+  }
+
+
+  return (
+    FEED_API_BASE +
+    "/" +
+    value
+  );
+
+}
+
+
+// =====================================
+// RENDER VIDEOS
+// =====================================
+
+function renderVideos(
+  videosToRender = posts,
+  replace = false,
+  startIndex = 0
+) {
+
+  if (!feed) {
+
+    return;
+
+  }
+
+
+  // ===================================
+  // EMPTY
+  // ===================================
+
+  if (
+    !videosToRender.length &&
+    posts.length === 0
+  ) {
+
+    feed.innerHTML = `
+
+      <div class="empty-feed">
+
+        <i class="bi bi-camera-video"></i>
+
+        <h3>
+          No content yet
+        </h3>
+
+        <p>
+          Be the first person to publish something.
+        </p>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  let html = "";
+
+
+  videosToRender.forEach(
+    (v, i) => {
+
+      if (!v) {
+
+        return;
+
+      }
+
+
+      // =================================
+      // ABSOLUTE INDEX
+      // =================================
+
+      const videoIndex =
+        startIndex + i;
+
+
+      // =================================
+      // MEDIA
+      // =================================
+
+      const mediaUrl =
+        getMediaUrl(v);
+
+
+      const lowerMediaUrl =
+        mediaUrl.toLowerCase();
+
+
+      const isVideo =
+        v.type === "video" ||
+        lowerMediaUrl.includes(".mp4") ||
+        lowerMediaUrl.includes(".mov") ||
+        lowerMediaUrl.includes(".webm") ||
+        lowerMediaUrl.includes(".m3u8");
+
+
+      // =================================
+      // AVATAR
+      // =================================
+
+      const avatar =
+        getCreatorAvatar(v);
+
+
+      // =================================
+      // DESCRIPTION
+      // =================================
+
+      const description =
+        v.context ||
+        "";
+
+
+      // =================================
+      // COUNTS
+      // =================================
+
+      const understandCount =
+        Number(
+          v.understandCount || 0
+        );
+
+
+      const commentCount =
+        Array.isArray(v.comments)
+          ? v.comments.length
+          : Number(
+              v.commentCount || 0
+            );
+
+
+      // =================================
+      // SAVED
+      // =================================
+
+      const saved =
+        isVideoSaved(
+          v.id
+        );
+
+
+      // =================================
+      // TYPE
+      // =================================
+
+      const isEbook =
+        v.type === "ebook";
+
+
+      const isProduct =
+        v.type === "fashion" ||
+        v.type === "essential";
+
+
+      // =================================
+      // CARD
+      // =================================
+
+      html += `
+
+        <article
+          class="video-card"
+          id="video-${escapeHtml(v.id)}"
+          data-video-id="${escapeHtml(v.id)}"
+        >
+
+          <!-- =================================
+               MEDIA
+          ================================== -->
+
+          ${
+            isVideo
+
+              ? `
+
+                <video
+                  id="video${videoIndex}"
+                  src="${escapeHtml(mediaUrl)}"
+                  class="feed-video"
+                  loop
+                  playsinline
+                  preload="metadata"
+                  onclick="handleVideoTap(${videoIndex}, ${Number(v.id)}, event)"
+                ></video>
+
+              `
+
+              : `
+
+                <img
+                  src="${escapeHtml(mediaUrl)}"
+                  class="feed-image"
+                  alt="${escapeHtml(
+                    v.title ||
+                    "Vindarr content"
+                  )}"
+                  onclick="${
+                    isProduct
+                      ? `openProduct(${Number(v.id)}, event)`
+                      : isEbook
+                        ? `openEbook(${Number(v.id)}, event)`
+                        : ""
+                  }"
+                  onerror="this.style.display='none'"
+                >
+
+              `
+          }
+
+
+          <!-- =================================
+               DARK GRADIENT
+          ================================== -->
+
+          <div
+            class="feed-video-gradient"
+          ></div>
+
+
+          <!-- =================================
+               TOP CONTROLS
+          ================================== -->
+
+          <div class="video-card-top">
+
+            <button
+              type="button"
+              class="glass-circle"
+              onclick="openNotifications(event)"
+              aria-label="Notifications"
+            >
+
+              <i class="bi bi-bell"></i>
+
+            </button>
+
+
+            <button
+              type="button"
+              class="glass-circle"
+              onclick="openFeedMenu(event)"
+              aria-label="Menu"
+            >
+
+              <i class="bi bi-three-dots"></i>
+
+            </button>
+
+          </div>
+
+
+          <!-- =================================
+               RIGHT ACTIONS
+          ================================= -->
+
+          <div class="video-overlay-right">
+
+
+            <!-- UNDERSTAND -->
+
+            <button
+              type="button"
+              class="video-action"
+              onclick="pressUnderstand(${Number(v.id)}, event)"
+            >
+
+              <i class="bi bi-heart"></i>
+
+              <span
+                id="understand-${Number(v.id)}"
+              >
+                ${formatCount(
+                  understandCount
+                )}
+              </span>
+
+            </button>
+
+
+            <!-- COMMENTS -->
+
+            <button
+              type="button"
+              class="video-action"
+              onclick="openCommentsPage(${Number(v.id)}, event)"
+            >
+
+              <i class="bi bi-chat-circle"></i>
+
+              <span>
+                ${formatCount(
+                  commentCount
+                )}
+              </span>
+
+            </button>
+
+
+            <!-- SAVE -->
+
+            <button
+              type="button"
+              id="save-action-${Number(v.id)}"
+              class="video-action ${
+                saved
+                  ? "saved"
+                  : ""
+              }"
+              onclick="toggleSaveVideo(${Number(v.id)}, event)"
+              aria-label="${
+                saved
+                  ? "Remove from saved"
+                  : "Save content"
+              }"
+            >
+
+              <i
+                class="bi ${
+                  saved
+                    ? "bi-bookmark-fill"
+                    : "bi-bookmark"
+                }"
+              ></i>
+
+              <span>
+                Save
+              </span>
+
+            </button>
+
+
+            <!-- SHARE -->
+
+            <button
+              type="button"
+              class="video-action"
+              onclick="shareContent(${Number(v.id)}, event)"
+            >
+
+              <i class="bi bi-send"></i>
+
+              <span>
+                Share
+              </span>
+
+            </button>
+
+
+            <!-- EBOOK -->
+
+            ${
+              isEbook
+
+                ? `
+
+                  <button
+                    type="button"
+                    class="video-action"
+                    onclick="openEbook(${Number(v.id)}, event)"
+                  >
+
+                    <i class="bi bi-book"></i>
+
+                    <span>
+                      Buy
+                    </span>
+
+                  </button>
+
+                `
+
+                : ""
+            }
+
+
+            <!-- PRODUCT -->
+
+            ${
+              isProduct
+
+                ? `
+
+                  <button
+                    type="button"
+                    class="video-action"
+                    onclick="openProduct(${Number(v.id)}, event)"
+                  >
+
+                    <i class="bi bi-bag"></i>
+
+                    <span>
+                      Shop
+                    </span>
+
+                  </button>
+
+                `
+
+                : ""
+            }
+
+          </div>
+
+
+          <!-- =================================
+               CREATOR / DESCRIPTION
+          ================================== -->
+
+          <div class="video-overlay-left">
+
+            <div class="creator-row">
+
+              <img
+                src="${escapeHtml(avatar)}"
+                class="creator-avatar"
+                onclick="openCreatorProfile(
+                  '${escapeHtml(
+                    v.creatorUsername ||
+                    "creator"
+                  )}',
+                  event
+                )"
+                alt="${escapeHtml(
+                  v.creatorUsername ||
+                  "creator"
+                )}"
+                onerror="this.onerror=null;this.src='https://i.pravatar.cc/100';"
+              >
+
+
+              <div class="creator-content">
+
+                <div class="creator-line">
+
+                  <div
+                    class="creator-name"
+                    onclick="openCreatorProfile(
+                      '${escapeHtml(
+                        v.creatorUsername ||
+                        "creator"
+                      )}',
+                      event
+                    )"
+                  >
+
+                    @${escapeHtml(
+                      v.creatorUsername ||
+                      "creator"
+                    )}
+
+                    <i
+                      class="bi bi-patch-check-fill verified-icon"
+                    ></i>
+
+                  </div>
+
+
+                  <!-- FOLLOW -->
+
+                  <button
+                    type="button"
+                    class="follow-btn"
+                    onclick="followCreator(
+                      ${Number(v.creatorId || 0)},
+                      '${escapeHtml(
+                        v.creatorUsername ||
+                        ""
+                      )}',
+                      event
+                    )"
+                  >
+
+                    Follow
+
+                  </button>
+
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                ${
+                  description
+
+                    ? `
+
+                      <div
+                        class="video-caption"
+                        id="caption-${Number(v.id)}"
+                      >
+
+                        ${renderCaption(
+                          description,
+                          Number(v.id)
+                        )}
+
+                      </div>
+
+                    `
+
+                    : ""
+                }
+
+
+                <!-- AUDIO -->
+
+                <div class="audio-pill">
+
+                  <i
+                    class="bi bi-music-note-beamed"
+                  ></i>
+
+                  <span>
+                    Original Audio
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- =================================
+               COMMENT BAR
+          ================================== -->
+
+          <button
+            type="button"
+            class="feed-comment-bar"
+            onclick="openCommentsPage(
+              ${Number(v.id)},
+              event
+            )"
+          >
+
+            <span class="comment-face">
+
+              <i
+                class="bi bi-emoji-smile"
+              ></i>
+
+            </span>
+
+            <span class="comment-placeholder">
+              Add Comment...
+            </span>
+
+          </button>
+
+
+          <!-- =================================
+               SHARE BUTTON
+          ================================== -->
+
+          <button
+            type="button"
+            class="feed-share-button"
+            onclick="shareContent(
+              ${Number(v.id)},
+              event
+            )"
+            aria-label="Share"
+          >
+
+            <i class="bi bi-send-fill"></i>
+
+          </button>
+
+
+        </article>
+
+      `;
+
+    }
+  );
+
+
+  // ===================================
+  // INSERT
+  // ===================================
+
+  if (replace) {
+
+    feed.innerHTML =
+      html;
+
+  }
+
+  else {
+
+    feed.insertAdjacentHTML(
+      "beforeend",
+      html
+    );
+
+  }
+
+
+  // ===================================
+  // VIDEO / PAGINATION
+  // ===================================
+
+  setupVideoObserver();
+
+  setupLoadMore();
+
+  openRequestedVideo();
+
+}
+
+
+// =====================================
+// CAPTION
+// =====================================
+
+function renderCaption(
+  text,
+  id
+) {
+
+  const caption =
+    String(text || "").trim();
+
+
+  if (!caption) {
+
+    return "";
+
+  }
+
+
+  const limit =
+    110;
+
+
+  if (
+    caption.length <= limit
+  ) {
+
+    return `
+      <div
+        class="description-text collapsed"
+        id="description-${id}"
+      >
+        ${escapeHtml(caption)}
+      </div>
+    `;
+
+  }
+
+
+  const shortText =
+    caption
+      .slice(0, limit)
+      .trimEnd();
+
+
+  return `
+    <div
+      class="description-text collapsed"
+      id="description-${id}"
+      onclick="toggleDescription('${id}', event)"
+    >
+
+      <span class="description-short">
+        ${escapeHtml(shortText)}…
+      </span>
+
+      <span
+        class="read-more"
+        id="read-more-${id}"
+      >
+        Read more
+      </span>
+
+    </div>
+  `;
+
+}
+
+
+// =====================================
+// TOGGLE DESCRIPTION
+// =====================================
+
+function toggleDescription(
+  id,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const element =
+    document.getElementById(
+      `description-${id}`
+    );
+
+
+  if (!element) {
+
+    return;
+
+  }
+
+
+  const readMore =
+    document.getElementById(
+      `read-more-${id}`
+    );
+
+
+  const expanded =
+    element.classList.contains(
+      "expanded"
+    );
+
+
+  if (expanded) {
+
+    element.classList.remove(
+      "expanded"
+    );
+
+    element.classList.add(
+      "collapsed"
+    );
+
+
+    if (readMore) {
+
+      readMore.textContent =
+        "Read more";
+
     }
 
-    initialized = true;
+  }
 
-    setupFeedEvents();
+  else {
 
-    setupInfiniteScroll();
+    element.classList.remove(
+      "collapsed"
+    );
 
-    setupSearch();
+    element.classList.add(
+      "expanded"
+    );
 
-    await loadVideos(
+
+    if (readMore) {
+
+      readMore.textContent =
+        "Show less";
+
+    }
+
+  }
+
+}
+
+
+// =====================================
+// ESCAPE HTML
+// =====================================
+
+function escapeHtml(
+  value
+) {
+
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+// =====================================
+// COUNT FORMAT
+// =====================================
+
+function formatCount(
+  number
+) {
+
+  const value =
+    Number(
+      number || 0
+    );
+
+
+  if (
+    value >= 1000000
+  ) {
+
+    return (
+      (value / 1000000)
+        .toFixed(1)
+        .replace(".0", "") +
+      "m"
+    );
+
+  }
+
+
+  if (
+    value >= 1000
+  ) {
+
+    return (
+      (value / 1000)
+        .toFixed(1)
+        .replace(".0", "") +
+      "k"
+    );
+
+  }
+
+
+  return value.toString();
+
+}
+
+
+// =====================================
+// VIDEO AUTOPLAY
+// =====================================
+
+function setupVideoObserver() {
+
+  if (videoObserver) {
+
+    videoObserver.disconnect();
+
+    videoObserver = null;
+
+  }
+
+
+  if (!feed) {
+
+    return;
+
+  }
+
+
+  const videos =
+    feed.querySelectorAll(
+      "video.feed-video"
+    );
+
+
+  if (!videos.length) {
+
+    return;
+
+  }
+
+
+  if (
+    !("IntersectionObserver" in window)
+  ) {
+
+    return;
+
+  }
+
+
+  videoObserver =
+    new IntersectionObserver(
+
+      entries => {
+
+        entries.forEach(
+          entry => {
+
+            const video =
+              entry.target;
+
+
+            if (
+              entry.isIntersecting &&
+              entry.intersectionRatio >= 0.7
+            ) {
+
+              video
+                .play()
+                .catch(
+                  () => {}
+                );
+
+            }
+
+            else {
+
+              video.pause();
+
+            }
+
+          }
+        );
+
+      },
+
+      {
+        threshold: [
+          0,
+          0.7,
+          1
+        ]
+      }
+
+    );
+
+
+  videos.forEach(
+    video => {
+
+      videoObserver.observe(
+        video
+      );
+
+    }
+  );
+
+}
+
+
+// =====================================
+// VIDEO TAP
+// =====================================
+
+function handleVideoTap(
+  index,
+  contentId,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const now =
+    Date.now();
+
+
+  const video =
+    document.getElementById(
+      `video${index}`
+    );
+
+
+  if (!video) {
+
+    return;
+
+  }
+
+
+  // ===================================
+  // DOUBLE TAP
+  // ===================================
+
+  if (
+    now - lastTap < 300
+  ) {
+
+    pressUnderstand(
+      contentId
+    );
+
+  }
+
+  else {
+
+    // =================================
+    // SINGLE TAP
+    // =================================
+
+    if (
+      video.paused
+    ) {
+
+      video
+        .play()
+        .catch(
+          () => {}
+        );
+
+    }
+
+    else {
+
+      video.pause();
+
+    }
+
+  }
+
+
+  lastTap =
+    now;
+
+}
+
+
+// =====================================
+// CREATOR PROFILE
+// =====================================
+
+function openCreatorProfile(
+  username,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  if (!username) {
+
+    return;
+
+  }
+
+
+  window.location.href =
+    `profile.html?user=${encodeURIComponent(
+      username
+    )}`;
+
+}
+
+
+// =====================================
+// FOLLOW CREATOR
+// =====================================
+
+async function followCreator(
+  creatorId,
+  username,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const token =
+    localStorage.getItem(
+      "token"
+    );
+
+
+  if (!token) {
+
+    window.location.href =
+      "login.html";
+
+    return;
+
+  }
+
+
+  if (!creatorId) {
+
+    openCreatorProfile(
+      username
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    const res =
+      await fetch(
+        `${FEED_API_BASE}/purview/${creatorId}`,
+        {
+          method: "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    if (
+      res.status === 401
+    ) {
+
+      logoutUser();
+
+      return;
+
+    }
+
+
+    if (!res.ok) {
+
+      const data =
+        await safeJsonResponse(
+          res
+        );
+
+
+      throw new Error(
+        data?.message ||
+        "Follow request failed."
+      );
+
+    }
+
+
+    const button =
+      event?.currentTarget;
+
+
+    if (button) {
+
+      button.textContent =
+        "Following";
+
+      button.classList.add(
+        "following"
+      );
+
+    }
+
+
+  } catch (err) {
+
+    console.error(
+      "Follow failed:",
+      err
+    );
+
+
+    alert(
+      err?.message ||
+      "Unable to follow creator."
+    );
+
+  }
+
+}
+
+
+// =====================================
+// UNDERSTAND
+// =====================================
+
+async function pressUnderstand(
+  contentId,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const token =
+    localStorage.getItem(
+      "token"
+    );
+
+
+  if (!token) {
+
+    window.location.href =
+      "login.html";
+
+    return;
+
+  }
+
+
+  try {
+
+    const res =
+      await fetch(
+        `${FEED_API_BASE}/videos/${contentId}/understand`,
+        {
+          method: "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    if (
+      res.status === 401
+    ) {
+
+      logoutUser();
+
+      return;
+
+    }
+
+
+    const data =
+      await safeJsonResponse(
+        res
+      );
+
+
+    if (!res.ok) {
+
+      throw new Error(
+        data?.message ||
+        "Unable to update understanding."
+      );
+
+    }
+
+
+    const countEl =
+      document.getElementById(
+        `understand-${contentId}`
+      );
+
+
+    if (countEl) {
+
+      countEl.innerText =
+        formatCount(
+          data?.understandCount ||
+          0
+        );
+
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Understand failed:",
+      err
+    );
+
+  }
+
+}
+
+
+// =====================================
+// COMMENTS
+// =====================================
+
+function openCommentsPage(
+  contentId,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  window.location.href =
+    `comments.html?video=${encodeURIComponent(
+      contentId
+    )}`;
+
+}
+
+
+// =====================================
+// CHECK SAVED
+// =====================================
+
+async function checkSavedContent(
+  contentId
+) {
+
+  const token =
+    localStorage.getItem(
+      "token"
+    );
+
+
+  if (!token) {
+
+    return {
+      saved: false,
+      savedId: null
+    };
+
+  }
+
+
+  try {
+
+    const res =
+      await fetch(
+        `${FEED_API_BASE}/saved/check/${encodeURIComponent(
+          contentId
+        )}`,
+        {
+          method: "GET",
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    if (
+      res.status === 401
+    ) {
+
+      logoutUser();
+
+      return {
+        saved: false,
+        savedId: null
+      };
+
+    }
+
+
+    if (!res.ok) {
+
+      throw new Error(
+        `Saved check failed: ${res.status}`
+      );
+
+    }
+
+
+    const data =
+      await safeJsonResponse(
+        res
+      );
+
+
+    const state = {
+
+      saved:
+        Boolean(
+          data?.saved
+        ),
+
+      savedId:
+        data?.savedId ||
+        null
+
+    };
+
+
+    savedState.set(
+      String(contentId),
+      state
+    );
+
+
+    return state;
+
+
+  } catch (error) {
+
+    console.error(
+      "Check saved state failed:",
+      error
+    );
+
+
+    return {
+
+      saved: false,
+
+      savedId: null
+
+    };
+
+  }
+
+}
+
+
+// =====================================
+// IS SAVED
+// =====================================
+
+function isVideoSaved(
+  contentId
+) {
+
+  const state =
+    savedState.get(
+      String(contentId)
+    );
+
+
+  return Boolean(
+    state?.saved
+  );
+
+}
+
+
+// =====================================
+// LOAD SAVED STATES
+// =====================================
+
+async function loadSavedStates(
+  videos
+) {
+
+  const token =
+    localStorage.getItem(
+      "token"
+    );
+
+
+  if (!token) {
+
+    return;
+
+  }
+
+
+  if (
+    !Array.isArray(videos) ||
+    !videos.length
+  ) {
+
+    return;
+
+  }
+
+
+  await Promise.all(
+    videos.map(
+      video => {
+
+        if (
+          !video ||
+          video.id == null
+        ) {
+
+          return Promise.resolve();
+
+        }
+
+
+        return checkSavedContent(
+          video.id
+        );
+
+      }
+    )
+  );
+
+}
+
+
+// =====================================
+// TOGGLE SAVE
+// =====================================
+
+async function toggleSaveVideo(
+  contentId,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const token =
+    localStorage.getItem(
+      "token"
+    );
+
+
+  if (!token) {
+
+    window.location.href =
+      "login.html";
+
+    return;
+
+  }
+
+
+  const key =
+    String(contentId);
+
+
+  let state =
+    savedState.get(
+      key
+    );
+
+
+  const button =
+    document.getElementById(
+      `save-action-${contentId}`
+    );
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+  }
+
+
+  try {
+
+    if (!state) {
+
+      state =
+        await checkSavedContent(
+          contentId
+        );
+
+    }
+
+
+    // =================================
+    // UNSAVE
+    // =================================
+
+    if (
+      state?.saved
+    ) {
+
+      if (!state.savedId) {
+
+        state =
+          await checkSavedContent(
+            contentId
+          );
+
+      }
+
+
+      if (!state?.savedId) {
+
+        throw new Error(
+          "Saved item ID was not returned by the server."
+        );
+
+      }
+
+
+      const res =
+        await fetch(
+          `${FEED_API_BASE}/saved/${encodeURIComponent(
+            state.savedId
+          )}`,
+          {
+            method: "DELETE",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+
+      if (
+        res.status === 401
+      ) {
+
+        logoutUser();
+
+        return;
+
+      }
+
+
+      const data =
+        await safeJsonResponse(
+          res
+        );
+
+
+      if (!res.ok) {
+
+        throw new Error(
+          data?.message ||
+          "Unable to remove saved content."
+        );
+
+      }
+
+
+      savedState.set(
+        key,
+        {
+          saved: false,
+          savedId: null
+        }
+      );
+
+
+      updateSaveButton(
+        contentId,
+        false
+      );
+
+
+      return;
+
+    }
+
+
+    // =================================
+    // SAVE
+    // =================================
+
+    const res =
+      await fetch(
+        `${FEED_API_BASE}/saved`,
+        {
+          method: "POST",
+
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+              contentId:
+                Number(contentId)
+            })
+
+        }
+      );
+
+
+    if (
+      res.status === 401
+    ) {
+
+      logoutUser();
+
+      return;
+
+    }
+
+
+    const data =
+      await safeJsonResponse(
+        res
+      );
+
+
+    if (!res.ok) {
+
+      throw new Error(
+        data?.message ||
+        "Unable to save content."
+      );
+
+    }
+
+
+    const savedId =
+      data?.data?.id ||
+      data?.id ||
+      data?.savedId ||
+      state?.savedId ||
+      null;
+
+
+    savedState.set(
+      key,
+      {
+        saved: true,
+        savedId
+      }
+    );
+
+
+    updateSaveButton(
+      contentId,
       true
     );
 
-    // The first page is now rendered.
-    // Give the browser one frame before checking
-    // whether the URL points to a specific post.
-    requestAnimationFrame(() => {
-      openRequestedVideo();
-    });
+
+  } catch (error) {
+
+    console.error(
+      "Save content failed:",
+      error
+    );
+
+
+    alert(
+      error?.message ||
+      "Unable to update saved content."
+    );
+
   }
 
-  // ============================================================
-  // START
-  // ============================================================
+  finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+
+}
+
+
+// =====================================
+// UPDATE SAVE BUTTON
+// =====================================
+
+function updateSaveButton(
+  contentId,
+  isSaved
+) {
+
+  const button =
+    document.getElementById(
+      `save-action-${contentId}`
+    );
+
+
+  if (!button) {
+
+    return;
+
+  }
+
+
+  const icon =
+    button.querySelector(
+      "i"
+    );
+
+
+  if (isSaved) {
+
+    button.classList.add(
+      "saved"
+    );
+
+
+    button.setAttribute(
+      "aria-label",
+      "Remove from saved"
+    );
+
+
+    if (icon) {
+
+      icon.className =
+        "bi bi-bookmark-fill";
+
+    }
+
+  }
+
+  else {
+
+    button.classList.remove(
+      "saved"
+    );
+
+
+    button.setAttribute(
+      "aria-label",
+      "Save content"
+    );
+
+
+    if (icon) {
+
+      icon.className =
+        "bi bi-bookmark";
+
+    }
+
+  }
+
+}
+
+
+// =====================================
+// SAFE JSON RESPONSE
+// =====================================
+
+async function safeJsonResponse(
+  response
+) {
+
+  if (!response) {
+
+    return null;
+
+  }
+
+
+  const text =
+    await response.text();
+
+
+  if (!text) {
+
+    return null;
+
+  }
+
+
+  try {
+
+    return JSON.parse(
+      text
+    );
+
+  }
+
+  catch {
+
+    return {
+      message: text
+    };
+
+  }
+
+}
+
+
+// =====================================
+// LOGOUT
+// =====================================
+
+function logoutUser() {
+
+  localStorage.removeItem(
+    "token"
+  );
+
+  localStorage.removeItem(
+    "user"
+  );
+
+
+  window.location.href =
+    "login.html";
+
+}
+
+
+// =====================================
+// OPEN SAVED PAGE
+// =====================================
+
+function openSavedPage() {
+
+  window.location.href =
+    "saved.html";
+
+}
+
+
+// =====================================
+// SHARE
+// =====================================
+
+async function shareContent(
+  id,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const content =
+    posts.find(
+      item =>
+        String(item.id) ===
+        String(id)
+    );
+
+
+  const title =
+    String(
+      content?.title ||
+      "Discover differently with Vindarr"
+    ).trim();
+
+
+  const description =
+    String(
+      content?.context ||
+      ""
+    ).trim();
+
+
+  const contentType =
+    content?.type === "ebook"
+      ? "eBook"
+      : (
+          content?.type === "fashion" ||
+          content?.type === "essential"
+        )
+          ? "product"
+          : "video";
+
+
+  const url =
+    `${window.location.origin}/index.html?video=${encodeURIComponent(
+      id
+    )}`;
+
+
+  let text =
+    `Check out this ${contentType} on Vindarr: ${title}`;
+
+
+  if (description) {
+
+    const snippet =
+      description.length > 180
+        ? `${description.slice(0, 180).trimEnd()}…`
+        : description;
+
+
+    text +=
+      `\n\n${snippet}`;
+
+  }
+
+
+  text +=
+    "\n\nDiscover differently with Vindarr.";
+
 
   if (
-    document.readyState ===
-    "loading"
+    typeof navigator.share === "function"
   ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      initFeed,
-      {
-        once: true,
+
+    try {
+
+      await navigator.share({
+
+        title,
+
+        text,
+
+        url
+
+      });
+
+
+      return;
+
+    }
+
+    catch (error) {
+
+      if (
+        error?.name ===
+        "AbortError"
+      ) {
+
+        return;
+
       }
-    );
-  } else {
-    initFeed();
+
+      console.warn(
+        "Native share failed:",
+        error
+      );
+
+    }
+
   }
 
-})();
+
+  try {
+
+    if (
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText ===
+        "function"
+    ) {
+
+      await navigator.clipboard.writeText(
+        `${title}\n\n${text}\n\n${url}`
+      );
+
+
+      alert(
+        "Vindarr content link copied."
+      );
+
+
+      return;
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.warn(
+      "Clipboard failed:",
+      error
+    );
+
+  }
+
+
+  prompt(
+    "Copy this Vindarr link:",
+    url
+  );
+
+}
+
+
+// =====================================
+// OPEN PRODUCT
+// =====================================
+
+function openProduct(
+  id,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  window.location.href =
+    `product.html?id=${encodeURIComponent(
+      id
+    )}`;
+
+}
+
+
+// =====================================
+// OPEN EBOOK
+// =====================================
+
+function openEbook(
+  id,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  window.location.href =
+    `ebook.html?id=${encodeURIComponent(
+      id
+    )}`;
+
+}
+
+
+// =====================================
+// READ MORE
+// =====================================
+
+function expandCaption(
+  id,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const shortText =
+    document.getElementById(
+      `caption-short-${id}`
+    );
+
+
+  const fullText =
+    document.getElementById(
+      `caption-full-${id}`
+    );
+
+
+  if (shortText) {
+
+    shortText.style.display =
+      "none";
+
+  }
+
+
+  if (fullText) {
+
+    fullText.style.display =
+      "block";
+
+  }
+
+}
+
+
+// =====================================
+// COLLAPSE CAPTION
+// =====================================
+
+function collapseCaption(
+  id,
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const shortText =
+    document.getElementById(
+      `caption-short-${id}`
+    );
+
+
+  const fullText =
+    document.getElementById(
+      `caption-full-${id}`
+    );
+
+
+  if (fullText) {
+
+    fullText.style.display =
+      "none";
+
+  }
+
+
+  if (shortText) {
+
+    shortText.style.display =
+      "block";
+
+  }
+
+}
+
+
+// =====================================
+// OPEN REQUESTED VIDEO
+// =====================================
+
+function openRequestedVideo() {
+
+  if (!videoId) {
+
+    return;
+
+  }
+
+
+  setTimeout(
+    () => {
+
+      const target =
+        document.getElementById(
+          `video-${videoId}`
+        );
+
+
+      if (!target) {
+
+        return;
+
+      }
+
+
+      target.scrollIntoView({
+
+        behavior:
+          "smooth",
+
+        block:
+          "start"
+
+      });
+
+
+      target.classList.add(
+        "highlight-video"
+      );
+
+    },
+    300
+  );
+
+}
+
+
+// =====================================
+// LOAD MORE
+// =====================================
+
+function setupLoadMore() {
+
+  if (!feed) {
+
+    return;
+
+  }
+
+
+  feed.removeEventListener(
+    "scroll",
+    handleInfiniteScroll
+  );
+
+
+  feed.addEventListener(
+    "scroll",
+    handleInfiniteScroll,
+    {
+      passive: true
+    }
+  );
+
+
+  loadTrigger =
+    true;
+
+}
+
+
+// =====================================
+// INFINITE SCROLL
+// =====================================
+
+async function handleInfiniteScroll() {
+
+  if (!feed) {
+
+    return;
+
+  }
+
+
+  if (loadingMore) {
+
+    return;
+
+  }
+
+
+  if (!hasMore) {
+
+    return;
+
+  }
+
+
+  const remaining =
+    feed.scrollHeight -
+    feed.scrollTop -
+    feed.clientHeight;
+
+
+  if (
+    remaining > 600
+  ) {
+
+    return;
+
+  }
+
+
+  loadingMore =
+    true;
+
+
+  const previousPage =
+    page;
+
+
+  page += 1;
+
+
+  console.log(
+    "Loading page:",
+    page
+  );
+
+
+  try {
+
+    const loaded =
+      await loadVideos(
+        false
+      );
+
+
+    if (!loaded) {
+
+      page =
+        previousPage;
+
+    }
+
+  }
+
+  catch (err) {
+
+    console.error(
+      "Infinite scroll failed:",
+      err
+    );
+
+
+    page =
+      previousPage;
+
+  }
+
+  finally {
+
+    loadingMore =
+      false;
+
+  }
+
+}
+
+
+// =====================================
+// NOTIFICATIONS
+// =====================================
+
+function openNotifications(
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  const panel =
+    document.getElementById(
+      "notifDropdown"
+    );
+
+
+  if (!panel) {
+
+    window.location.href =
+      "notifications.html";
+
+    return;
+
+  }
+
+
+  panel.classList.toggle(
+    "active"
+  );
+
+}
+
+
+// =====================================
+// CLOSE NOTIFICATIONS
+// =====================================
+
+function closeNotifications() {
+
+  const panel =
+    document.getElementById(
+      "notifDropdown"
+    );
+
+
+  if (panel) {
+
+    panel.classList.remove(
+      "active"
+    );
+
+  }
+
+}
+
+
+// =====================================
+// FEED MENU
+// =====================================
+
+function openFeedMenu(
+  event
+) {
+
+  if (event) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+  }
+
+
+  window.location.href =
+    "menu.html";
+
+}
+
+
+// =====================================
+// INITIAL LOAD
+// =====================================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    try {
+
+      await loadVideos(
+        true
+      );
+
+      setupLoadMore();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Initial feed load failed:",
+        error
+      );
+
+    }
+
+  }
+);
