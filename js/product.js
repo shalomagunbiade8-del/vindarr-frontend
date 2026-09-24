@@ -485,48 +485,51 @@ function renderProduct(product) {
 
         <div class="product-actions">
 
-          <button
-            class="buy-btn"
-            onclick="buyNow()"
-          >
+  <button
+    class="buy-btn"
+    onclick="buyNow()"
+  >
+    <i class="bi bi-bag-check"></i>
 
-            <i class="bi bi-bag-check"></i>
-
-            ${
-              isEbook
-              ? "Buy Ebook"
-              : "Buy Now"
-            }
-
-          </button>
+    ${
+      isEbook
+      ? "Buy Ebook"
+      : "Buy Now"
+    }
+  </button>
 
 
-          <button
-            class="chat-btn"
-            onclick="chatSeller()"
-          >
+  <button
+    class="email-order-btn"
+    onclick="orderByMail()"
+  >
+    <i class="bi bi-envelope"></i>
 
-            <i class="bi bi-chat-dots"></i>
-
-            Chat Seller
-
-          </button>
+    Order by Mail
+  </button>
 
 
-          <button
-            class="share-btn"
-            onclick="shareProduct()"
-            aria-label="Share"
-          >
+  <button
+    class="chat-btn"
+    onclick="chatSeller()"
+  >
+    <i class="bi bi-chat-dots"></i>
 
-            <i class="bi bi-share"></i>
+    Chat Seller
+  </button>
 
-            Share
 
-          </button>
+  <button
+    class="share-btn"
+    onclick="shareProduct()"
+    aria-label="Share"
+  >
+    <i class="bi bi-share"></i>
 
-        </div>
+    Share
+  </button>
 
+</div>
 
         <!-- REVIEWS -->
 
@@ -714,6 +717,75 @@ function buyNow() {
 
   window.location.href =
     `checkout.html?id=${productId}`;
+
+}
+
+// ======================================================
+// ORDER BY MAIL
+// ======================================================
+
+function orderByMail() {
+
+  if (!currentProduct) {
+    return;
+  }
+
+
+  const email =
+    currentProduct.creatorEmail;
+
+
+  if (!email) {
+
+    alert(
+      "This seller has not provided an email address for orders."
+    );
+
+    return;
+
+  }
+
+
+  const productTitle =
+    currentProduct.title ||
+    "your product";
+
+
+  const productUrl =
+    `${window.location.origin}/product.html?id=${encodeURIComponent(productId)}`;
+
+
+  const subject =
+    `Inquiry about ${productTitle} on Vindarr`;
+
+
+  const body = `
+
+Hello,
+
+I am interested in the following item on Vindarr:
+
+Product:
+${productTitle}
+
+Vindarr Product:
+${productUrl}
+
+I would like to place an order and would appreciate more details about availability, delivery, payment, and any other relevant information.
+
+Thank you.
+
+`;
+
+
+  const mailto =
+    `mailto:${encodeURIComponent(email)}` +
+    `?subject=${encodeURIComponent(subject)}` +
+    `&body=${encodeURIComponent(body)}`;
+
+
+  window.location.href =
+    mailto;
 
 }
 
