@@ -2492,9 +2492,7 @@ async function shareContent(
 
 
   const url =
-    `${window.location.origin}/index.html?video=${encodeURIComponent(
-      id
-    )}`;
+  `${window.location.origin}/video.html?id=${encodeURIComponent(id)}`;
 
 
   let text =
