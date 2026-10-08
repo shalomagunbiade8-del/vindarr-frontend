@@ -1000,7 +1000,7 @@ function openProfilePost(
 
 
   window.location.href =
-    `index.html?video=${encodeURIComponent(id)}`;
+    `video.html?video=${encodeURIComponent(id)}`;
 
 }
 
