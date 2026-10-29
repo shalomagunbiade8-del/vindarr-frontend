@@ -2646,7 +2646,7 @@ function openEbook(
 
 
   window.location.href =
-    `ebook.html?id=${encodeURIComponent(
+    `product.html?id=${encodeURIComponent(
       id
     )}`;
 
