@@ -1,319 +1,383 @@
-<!-- login.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <link
-    rel="icon"
-    href="./VLOGO.jpg"
-    type="image/jpg"
-  >
-
+  <link rel="icon" href="./VLOGO.jpg" type="image/jpg">
   <title>Login • Vindarr</title>
 
-  <link
-    rel="stylesheet"
-    href="css/global.css"
-  >
-
-  <link
-    rel="stylesheet"
-    href="css/auth.css"
-  >
-
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-  >
-
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 
 <body>
-
 <div class="vindarr-auth-page">
 
-  <!-- =========================================
-       HERO
-  ========================================== -->
-
-  <section class="auth-hero">
-
-    <div class="auth-brand">
-
-      <img
-        src="VLOGO.jpg"
-        alt="Vindarr"
-        class="auth-logo"
-      >
-
+  <!-- TOP BAR -->
+  <header class="auth-topbar">
+    <a href="login.html" class="auth-brand">
+      <img src="VLOGO.jpg" alt="Vindarr" class="auth-logo">
       <span>Vindarr</span>
+    </a>
 
+    <button
+      class="menu-trigger"
+      id="menuTrigger"
+      type="button"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      onclick="toggleResourceMenu()"
+    >
+      <i class="bi bi-three-dots"></i>
+    </button>
+  </header>
+
+  <!-- FULL-SCREEN MENU -->
+  <div class="resource-menu" id="resourceMenu" aria-hidden="true">
+
+    <div class="resource-menu-header">
+      <div class="auth-brand">
+        <img src="VLOGO.jpg" alt="Vindarr">
+        <span>Vindarr</span>
+      </div>
+      
+      <button
+        class="menu-close"
+        type="button"
+        aria-label="Close menu"
+        onclick="toggleResourceMenu(false)"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
 
+    <div class="resource-menu-content">
+
+      <span class="resource-eyebrow">WELCOME TO VINDARR</span>
+      <h2>Your next discovery starts here.</h2>
+
+      <div class="menu-auth-actions">
+        <a href="login.html" class="menu-login">
+          <i class="bi bi-box-arrow-in-right"></i>
+          Login
+        </a>
+
+        <a href="register.html" class="menu-register">
+          <i class="bi bi-person-plus"></i>
+          Create an account
+        </a>
+      </div>
+
+      <div class="resource-divider"></div>
+
+      <span class="resource-eyebrow">USEFUL RESOURCES</span>
+
+      <div class="resource-links">
+
+        <a
+          href="https://www.cac.gov.ng/services/company-search"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="resource-link"
+        >
+          <span class="resource-icon"><i class="bi bi-building-check"></i></span>
+          <span>
+            <strong>Check and register businesses in Nigeria</strong>
+            <small>Search company records and access CAC registration services.</small>
+          </span>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+        <a
+          href="https://icrp.cac.gov.ng/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="resource-link"
+        >
+          <span class="resource-icon"><i class="bi bi-file-earmark-text"></i></span>
+          <span>
+            <strong>CAC registration portal</strong>
+            <small>Register and manage a business or company.</small>
+          </span>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+        <a
+          href="https://www.jobberman.com/jobs"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="resource-link"
+        >
+          <span class="resource-icon"><i class="bi bi-briefcase"></i></span>
+          <span>
+            <strong>Jobs</strong>
+            <small>Explore job vacancies and career opportunities in Nigeria.</small>
+          </span>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+        <a
+          href="https://www.linkedin.com/jobs/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="resource-link"
+        >
+          <span class="resource-icon"><i class="bi bi-linkedin"></i></span>
+          <span>
+            <strong>Professional opportunities</strong>
+            <small>Discover jobs, employers and professional connections.</small>
+          </span>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+        <a
+          href="https://smedan.gov.ng/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="resource-link"
+        >
+          <span class="resource-icon"><i class="bi bi-shop"></i></span>
+          <span>
+            <strong>Small business support</strong>
+            <small>Explore resources for micro, small and medium businesses.</small>
+          </span>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+        <a
+          href="https://www.nafdac.gov.ng/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="resource-link"
+        >
+          <span class="resource-icon"><i class="bi bi-shield-check"></i></span>
+          <span>
+            <strong>Product and food regulation</strong>
+            <small>Visit NAFDAC for regulatory information and services.</small>
+          </span>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+        <a
+          href="https://www.boi.ng/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="resource-link"
+        >
+          <span class="resource-icon"><i class="bi bi-cash-coin"></i></span>
+          <span>
+            <strong>Business financing</strong>
+            <small>Explore Bank of Industry financing and business support.</small>
+          </span>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+      </div>
+
+      <p class="resource-menu-note">
+        Vindarr connects discovery with useful opportunities.
+        Always verify requirements directly with the relevant organisation.
+      </p>
+
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="auth-hero">
 
     <div class="hero-content">
 
       <span class="hero-eyebrow">
         <i class="bi bi-play-circle-fill"></i>
-        VIDEO-FIRST COMMERCE
+        AFRICA'S VIDEO-FIRST COMMERCIAL DISCOVERY NETWORK
       </span>
 
       <h1>
         Discover.
-        <span>Watch.</span>
-        Shop.
+        <span>Understand.</span>
+        Connect.
       </h1>
 
       <p class="hero-description">
-        Vindarr brings shopping, entertainment,
-        authentic reviews and real stories together
-        in one video-first marketplace.
+        Vindarr makes businesses, products and commercial opportunities
+        across Africa easier to discover, understand and connect with.
+
+        Explore real experiences, watch demonstrations, hear from customers
+        and discover what businesses actually offer.
       </p>
 
       <p class="vindarring-question">
-        What are you Vindarring today?
+        What are you Vindarring?
       </p>
 
-    </div>
+      <div class="hero-highlights">
+        <span><i class="bi bi-play-fill"></i> Watch</span>
+        <span><i class="bi bi-star-fill"></i> Review</span>
+        <span><i class="bi bi-compass-fill"></i> Discover</span>
+        <span><i class="bi bi-chat-dots-fill"></i> Connect</span>
+      </div>
 
+    </div>
   </section>
 
-
-  <!-- =========================================
-       EXPERIENCE
-  ========================================== -->
-
+  <!-- VIDEO DISCOVERY SLIDES -->
   <section class="experience-section">
 
     <div class="section-heading">
-
-      <span>THE VINDARR EXPERIENCE</span>
-
-      <h2>
-        Shopping should feel like entertainment.
-      </h2>
-
+      <span>EXPLORE THE VINDARR WORLD</span>
+      <h2>See what the world has to offer.</h2>
+      <p>
+        From everyday discoveries to extraordinary businesses,
+        explore through the experiences of real people.
+      </p>
     </div>
-
 
     <div class="experience-videos">
 
-
-      <!-- SHOPPERTAINMENT -->
-
+      <!-- FOOD -->
       <article class="experience-card">
-
         <div class="experience-video">
-
-          <video
-            autoplay
-            muted
-            loop
-            playsinline
-            preload="auto"
-          >
-
-            <source
-              src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
-              type="video/mp4"
-            >
-
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media/food-discovery.mp4" type="video/mp4">
           </video>
-
           <div class="video-overlay"></div>
-
           <div class="video-label">
-
-            <i class="bi bi-bag-heart-fill"></i>
-
-            <span>Shoppertainment</span>
-
+            <i class="bi bi-cup-hot-fill"></i>
+            <span>Food & Restaurants</span>
           </div>
-
         </div>
 
         <div class="experience-info">
-
-          <h3>
-            Shoppertainment
-          </h3>
-
+          <h3>Discover something delicious.</h3>
           <p>
-            Discover products through videos,
-            stories and experiences instead of
-            endless product lists.
+            Explore food businesses, restaurant tours, cooking,
+            food reviews and real dining experiences.
           </p>
-
         </div>
-
       </article>
 
+      <!-- FASHION -->
+      <article class="experience-card">
+        <div class="experience-video">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media/fashion-discovery.mp4" type="video/mp4">
+          </video>
+          <div class="video-overlay"></div>
+          <div class="video-label">
+            <i class="bi bi-bag-heart-fill"></i>
+            <span>Fashion & Lifestyle</span>
+          </div>
+        </div>
+
+        <div class="experience-info">
+          <h3>See it. Style it. Discover it.</h3>
+          <p>
+            Watch clothing hauls, styling ideas, product demonstrations
+            and fashion business stories.
+          </p>
+        </div>
+      </article>
+
+      <!-- TECHNOLOGY -->
+      <article class="experience-card">
+        <div class="experience-video">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media/technology-discovery.mp4" type="video/mp4">
+          </video>
+          <div class="video-overlay"></div>
+          <div class="video-label">
+            <i class="bi bi-cpu-fill"></i>
+            <span>Technology</span>
+          </div>
+        </div>
+
+        <div class="experience-info">
+          <h3>Know what you're buying.</h3>
+          <p>
+            Explore gadgets, product reviews, unboxing videos,
+            comparisons and technology demonstrations.
+          </p>
+        </div>
+      </article>
+
+      <!-- SERVICES -->
+      <article class="experience-card">
+        <div class="experience-video">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media/services-discovery.mp4" type="video/mp4">
+          </video>
+          <div class="video-overlay"></div>
+          <div class="video-label">
+            <i class="bi bi-tools"></i>
+            <span>Services & Businesses</span>
+          </div>
+        </div>
+
+        <div class="experience-info">
+          <h3>Meet the people behind the service.</h3>
+          <p>
+            Discover professional services, business tours,
+            customer experiences and what companies can do for you.
+          </p>
+        </div>
+      </article>
+
+      <!-- BUSINESS STORIES -->
+      <article class="experience-card">
+        <div class="experience-video">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media/business-stories.mp4" type="video/mp4">
+          </video>
+          <div class="video-overlay"></div>
+          <div class="video-label">
+            <i class="bi bi-shop-window"></i>
+            <span>Business Stories</span>
+          </div>
+        </div>
+
+        <div class="experience-info">
+          <h3>Discover the story behind the brand.</h3>
+          <p>
+            See how businesses work, meet their founders,
+            explore their products and learn what makes them different.
+          </p>
+        </div>
+      </article>
 
       <!-- REVIEWS -->
-
       <article class="experience-card">
-
         <div class="experience-video">
-
-          <video
-            autoplay
-            muted
-            loop
-            playsinline
-            preload="auto"
-          >
-
-            <source
-              src="https://www.w3schools.com/html/mov_bbb.mp4"
-              type="video/mp4"
-            >
-
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media/customer-reviews.mp4" type="video/mp4">
           </video>
-
           <div class="video-overlay"></div>
-
           <div class="video-label">
-
             <i class="bi bi-chat-heart-fill"></i>
-
-            <span>Real Reviews</span>
-
+            <span>Reviews & Recommendations</span>
           </div>
-
         </div>
 
         <div class="experience-info">
-
-          <h3>
-            Reviews worth watching.
-          </h3>
-
+          <h3>Experiences worth sharing.</h3>
           <p>
-            See what people actually think,
-            share your experience and help
-            others discover better products.
+            Watch honest reviews, recommendations and first-hand
+            experiences before deciding what to buy or where to go.
           </p>
-
         </div>
-
       </article>
 
+    </div>
 
-      <!-- DISCOVERY -->
-
-      <article class="experience-card">
-
-        <div class="experience-video">
-
-          <video
-            autoplay
-            muted
-            loop
-            playsinline
-            preload="auto"
-          >
-
-            <source
-              src="https://media.w3.org/2010/05/sintel/trailer.mp4"
-              type="video/mp4"
-            >
-
-          </video>
-
-          <div class="video-overlay"></div>
-
-          <div class="video-label">
-
-            <i class="bi bi-compass-fill"></i>
-
-            <span>Discover</span>
-
-          </div>
-
-        </div>
-
-        <div class="experience-info">
-
-          <h3>
-            Find your next obsession.
-          </h3>
-
-          <p>
-            From hidden gems to books,
-            fashion and everyday essentials,
-            there is always something new to discover.
-          </p>
-
-        </div>
-
-      </article>
-
-
-      <!-- STORIES -->
-
-      <article class="experience-card">
-
-        <div class="experience-video">
-
-          <video
-            autoplay
-            muted
-            loop
-            playsinline
-            preload="auto"
-          >
-
-            <source
-              src="https://media.w3.org/2010/05/bunny/trailer.mp4"
-              type="video/mp4"
-            >
-
-          </video>
-
-          <div class="video-overlay"></div>
-
-          <div class="video-label">
-
-            <i class="bi bi-camera-video-fill"></i>
-
-            <span>Your Story</span>
-
-          </div>
-
-        </div>
-
-        <div class="experience-info">
-
-          <h3>
-            Your experience matters.
-          </h3>
-
-          <p>
-            Share what you bought,
-            what you loved and what others
-            should know.
-          </p>
-
-        </div>
-
-      </article>
-
+    <div class="video-section-footer">
+      <span>Real people. Real businesses. Real discoveries.</span>
     </div>
 
   </section>
 
-
-  <!-- =========================================
-       LOGIN
-  ========================================== -->
-
+  <!-- LOGIN -->
   <section class="login-section">
 
     <div class="login-card">
@@ -321,64 +385,35 @@
       <div class="login-card-header">
 
         <div class="login-icon">
-
           <i class="bi bi-person-fill"></i>
-
         </div>
 
-        <h2>
-          Welcome back.
-        </h2>
+        <h2>Welcome back.</h2>
 
-        <p>
-          Continue your Vindarr experience.
-        </p>
+        <p>Continue your Vindarr experience.</p>
 
       </div>
 
-
-      <!-- =====================================
-           GOOGLE LOGIN
-      ====================================== -->
-
+      <!-- GOOGLE LOGIN -->
       <button
         class="google-auth-btn"
         type="button"
         onclick="continueWithGoogle()"
       >
-
-        <span class="google-logo">
-          G
-        </span>
-
-        <span>
-          Continue with Google
-        </span>
-
+        <span class="google-logo">G</span>
+        <span>Continue with Google</span>
       </button>
 
-
       <div class="auth-divider">
-
-        <span>
-          OR CONTINUE WITH EMAIL
-        </span>
-
+        <span>OR CONTINUE WITH EMAIL</span>
       </div>
 
-
-      <!-- =====================================
-           EMAIL LOGIN
-      ====================================== -->
-
+      <!-- EMAIL LOGIN -->
       <div class="login-form">
 
-        <label for="loginEmail">
-          Email
-        </label>
+        <label for="loginEmail">Email</label>
 
         <div class="input-wrapper">
-
           <i class="bi bi-envelope"></i>
 
           <input
@@ -388,16 +423,11 @@
             class="auth-input"
             autocomplete="email"
           >
-
         </div>
 
-
-        <label for="loginPassword">
-          Password
-        </label>
+        <label for="loginPassword">Password</label>
 
         <div class="password-wrapper">
-
           <i class="bi bi-lock"></i>
 
           <input
@@ -416,24 +446,16 @@
               'loginTogglePassword'
             )"
           ></i>
-
         </div>
-
 
         <button
           class="auth-btn"
           onclick="login()"
           type="button"
         >
-
-          <span>
-            Login
-          </span>
-
+          <span>Login</span>
           <i class="bi bi-arrow-right"></i>
-
         </button>
-
 
         <div
           id="authError"
@@ -444,29 +466,19 @@
 
       </div>
 
-
       <div class="login-footer">
-
-        <span>
-          New to Vindarr?
-        </span>
+        <span>New to Vindarr?</span>
 
         <a href="register.html">
           Create an account
           <i class="bi bi-arrow-up-right"></i>
         </a>
-
       </div>
 
     </div>
-
   </section>
 
-
-  <!-- =========================================
-       VINDARRING
-  ========================================== -->
-
+  <!-- BRAND MESSAGE -->
   <section class="vindarring-section">
 
     <div class="vindarring-inner">
@@ -480,104 +492,105 @@
         <span>Vindarring?</span>
       </h2>
 
+      <p class="closing-description">
+        Discover businesses. Understand products.
+        Share experiences. Find opportunities.
+        Connect with the people and ideas moving Africa forward.
+      </p>
+
       <div class="vindarring-items">
 
         <div>
+          <i class="bi bi-shop"></i>
+          <span>Businesses</span>
+        </div>
+
+        <div>
           <i class="bi bi-bag-heart-fill"></i>
-          <span>Shopping</span>
+          <span>Products</span>
         </div>
 
         <div>
-          <i class="bi bi-book-fill"></i>
-          <span>Reading</span>
+          <i class="bi bi-star-fill"></i>
+          <span>Reviews</span>
         </div>
 
         <div>
-          <i class="bi bi-stars"></i>
-          <span>Discovering</span>
-        </div>
-
-        <div>
-          <i class="bi bi-camera-video-fill"></i>
-          <span>Sharing</span>
+          <i class="bi bi-briefcase-fill"></i>
+          <span>Opportunities</span>
         </div>
 
       </div>
 
     </div>
-
   </section>
 
-
+  <!-- FOOTER -->
   <footer class="auth-footer">
 
     <div class="auth-brand">
-
-      <img
-        src="VLOGO.jpg"
-        alt="Vindarr"
-        class="footer-logo"
-      >
-
+      <img src="VLOGO.jpg" alt="Vindarr" class="footer-logo">
       <span>Vindarr</span>
-
     </div>
 
-    <p>
-      Discover differently.
-    </p>
+    <p>What are you Vindarring?</p>
 
   </footer>
 
 </div>
 
-
 <script src="js/config.js"></script>
-
 <script src="js/auth.js"></script>
 
-
 <script>
+  // Existing logged-in redirect
+  if (localStorage.getItem("token")) {
+    window.location.href = "index.html";
+  }
 
-if (localStorage.getItem("token")) {
+  // Full-screen resource menu
+  function toggleResourceMenu(forceState) {
+    const menu = document.getElementById("resourceMenu");
+    const trigger = document.getElementById("menuTrigger");
 
-  window.location.href = "index.html";
+    if (!menu) return;
 
-}
+    const isOpen =
+      typeof forceState === "boolean"
+        ? forceState
+        : !menu.classList.contains("active");
 
+    menu.classList.toggle("active", isOpen);
+    menu.setAttribute("aria-hidden", String(!isOpen));
 
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
-
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const googleError =
-      params.get("googleError");
-
-    if (!googleError) {
-      return;
+    if (trigger) {
+      trigger.setAttribute("aria-expanded", String(isOpen));
     }
 
+    document.body.classList.toggle("resource-menu-open", isOpen);
+  }
 
-    const errorBox =
-      document.getElementById(
-        "authError"
-      );
+  // Close with Escape
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+      toggleResourceMenu(false);
+    }
+  });
+
+  // Existing Google error handling
+  document.addEventListener("DOMContentLoaded", function() {
+
+    const params = new URLSearchParams(window.location.search);
+    const googleError = params.get("googleError");
+
+    if (!googleError) return;
+
+    const errorBox = document.getElementById("authError");
 
     if (errorBox) {
-
-      errorBox.textContent =
-        googleError;
-
-      errorBox.style.display =
-        "block";
-
+      errorBox.textContent = googleError;
+      errorBox.style.display = "block";
     }
-
 
     window.history.replaceState(
       {},
@@ -585,9 +598,18 @@ document.addEventListener(
       window.location.pathname
     );
 
-  }
-);
+  });
 
+  // Pause videos when the page is not visible
+  document.addEventListener("visibilitychange", function() {
+    document.querySelectorAll(".experience-video video").forEach(video => {
+      if (document.hidden) {
+        video.pause();
+      } else {
+        video.play().catch(() => {});
+      }
+    });
+  });
 </script>
 
 </body>
