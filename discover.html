@@ -1,111 +1,54 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#090909">
-  <meta name="description" content="Discover jobs, scholarships, funding, businesses, stores, restaurants and useful services with Vindarr.">
+  <meta name="description" content="Discover opportunities, businesses, stores, restaurants and useful services with Vindarr.">
   <title>Discover | Vindarr</title>
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/discover.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-<body class="discover-page">
+<body class="discover-page home-discover">
   <header class="discover-header">
     <a class="discover-logo" href="index.html" aria-label="Vindarr home">vindarr<span>.</span></a>
-
     <nav class="discover-nav" aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a class="active" href="discover.html">Discover</a>
       <a href="profile.html">Profile</a>
     </nav>
-
     <div class="discover-header-actions">
-      <button class="icon-btn" id="savedToggle" type="button" aria-label="Show saved listings">
-        <i class="bi bi-bookmark"></i>
-      </button>
-      <a class="profile-link" href="profile.html">
-        <i class="bi bi-person-circle"></i>
-        <span>My Vindarr</span>
-      </a>
+      <a class="profile-link" href="profile.html"><i class="bi bi-person-circle"></i><span>My Vindarr</span></a>
     </div>
   </header>
 
   <main>
-    <section class="discover-hero">
-      <div class="hero-copy">
-        <span class="eyebrow">
-          <i class="bi bi-compass"></i> VINDARR DISCOVER
-        </span>
-
-        <h1>Find what moves<br><span>you forward.</span></h1>
-
-        <p>
-          Explore opportunities, businesses and useful services from across
-          the web — all through one gateway.
-        </p>
-
-        <div class="hero-trust">
-          <span><i class="bi bi-globe2"></i> Across the internet</span>
-          <span><i class="bi bi-box-arrow-up-right"></i> Go to original providers</span>
-        </div>
-      </div>
-
-      <div class="hero-art" aria-hidden="true">
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-
-        <div class="orbit-core">
-          <i class="bi bi-compass-fill"></i>
-        </div>
-
-        <span class="orbit-chip chip-jobs">
-          <i class="bi bi-briefcase"></i> Jobs
-        </span>
-
-        <span class="orbit-chip chip-study">
-          <i class="bi bi-mortarboard"></i> Study
-        </span>
-
-        <span class="orbit-chip chip-funding">
-          <i class="bi bi-cash-coin"></i> Funding
-        </span>
-
-        <span class="orbit-chip chip-local">
-          <i class="bi bi-geo-alt"></i> Places
-        </span>
+    <section class="home-intro">
+      <span class="eyebrow"><i class="bi bi-compass"></i> VINDARR DISCOVER</span>
+      <h1>Find your next <span>opportunity.</span></h1>
+      <p>From your next job to a place to eat, a business to work with or funding to grow — start exploring here.</p>
+      <div class="intro-proof">
+        <span><i class="bi bi-globe2"></i> Discover across the web</span>
+        <span><i class="bi bi-geo-alt"></i> Explore locally or globally</span>
+        <span><i class="bi bi-box-arrow-up-right"></i> Visit original providers</span>
       </div>
     </section>
 
-    <section class="search-panel" aria-label="Search Vindarr Discover">
-      <form id="discoverSearchForm" class="search-form">
-        <label class="search-field">
+    <section class="home-search-wrap" aria-label="Search Vindarr Discover">
+      <form id="discoverSearchForm" class="home-search">
+        <label class="home-query">
           <i class="bi bi-search"></i>
-          <input
-            id="discoverQuery"
-            type="search"
-            placeholder="Search jobs, grants, restaurants, stores, services..."
-            autocomplete="off"
-          >
+          <input id="discoverQuery" type="search" placeholder="What are you looking for today?" autocomplete="off" required>
         </label>
-
-        <label class="location-field">
+        <label class="home-location">
           <i class="bi bi-geo-alt"></i>
-          <input
-            id="discoverLocation"
-            type="text"
-            placeholder="Location (e.g. Lagos)"
-          >
+          <input id="discoverLocation" type="text" placeholder="Location (e.g. Port Harcourt)">
         </label>
-
-        <button class="search-submit" type="submit">
-          Search <i class="bi bi-arrow-right"></i>
-        </button>
+        <button class="search-submit" type="submit">Search <i class="bi bi-arrow-right"></i></button>
       </form>
-
       <div class="search-hints">
-        <span>Popular:</span>
+        <span>Try:</span>
         <button type="button" data-query="remote jobs">Remote jobs</button>
         <button type="button" data-query="scholarships for Nigerians">Scholarships</button>
         <button type="button" data-query="small business grants Nigeria">Business grants</button>
@@ -113,167 +56,44 @@
       </div>
     </section>
 
-    <section class="category-section section-wrap">
+    <section class="section-wrap category-section">
       <div class="section-heading">
-        <div>
-          <span class="eyebrow">EXPLORE BY INTEREST</span>
-          <h2>What are you looking for?</h2>
-        </div>
-
-        <button class="text-button" id="clearCategory" type="button">
-          View all <i class="bi bi-arrow-right"></i>
-        </button>
+        <div><span class="eyebrow">EXPLORE YOUR INTERESTS</span><h2>Where would you like to start?</h2></div>
       </div>
-
       <div class="category-grid" id="categoryGrid">
-        <button class="category-tile selected" data-category="all">
-          <span class="category-icon"><i class="bi bi-grid"></i></span>
-          <b>Everything</b>
-          <small>Explore it all</small>
-        </button>
-
-        <button class="category-tile" data-category="jobs">
-          <span class="category-icon"><i class="bi bi-briefcase"></i></span>
-          <b>Jobs & Careers</b>
-          <small>Work and internships</small>
-        </button>
-
-        <button class="category-tile" data-category="scholarships">
-          <span class="category-icon"><i class="bi bi-mortarboard"></i></span>
-          <b>Scholarships</b>
-          <small>Study opportunities</small>
-        </button>
-
-        <button class="category-tile" data-category="funding">
-          <span class="category-icon"><i class="bi bi-cash-stack"></i></span>
-          <b>Funding</b>
-          <small>Grants and finance</small>
-        </button>
-
-        <button class="category-tile" data-category="business">
-          <span class="category-icon"><i class="bi bi-buildings"></i></span>
-          <b>Business Services</b>
-          <small>Build and grow</small>
-        </button>
-
-        <button class="category-tile" data-category="stores">
-          <span class="category-icon"><i class="bi bi-shop"></i></span>
-          <b>Stores</b>
-          <small>Shop online</small>
-        </button>
-
-        <button class="category-tile" data-category="restaurants">
-          <span class="category-icon"><i class="bi bi-cup-hot"></i></span>
-          <b>Food & Dining</b>
-          <small>Places to eat</small>
-        </button>
-
-        <button class="category-tile" data-category="services">
-          <span class="category-icon"><i class="bi bi-tools"></i></span>
-          <b>Other Services</b>
-          <small>Everyday essentials</small>
-        </button>
+        <button class="category-tile" data-category="jobs" data-query="jobs"><span class="category-icon"><i class="bi bi-briefcase"></i></span><b>Jobs & Careers</b><small>Work and internships</small></button>
+        <button class="category-tile" data-category="scholarships" data-query="scholarships"><span class="category-icon"><i class="bi bi-mortarboard"></i></span><b>Scholarships</b><small>Study opportunities</small></button>
+        <button class="category-tile" data-category="funding" data-query="business grants funding"><span class="category-icon"><i class="bi bi-cash-stack"></i></span><b>Funding</b><small>Grants and finance</small></button>
+        <button class="category-tile" data-category="business" data-query="business services"><span class="category-icon"><i class="bi bi-buildings"></i></span><b>Business Services</b><small>Build and grow</small></button>
+        <button class="category-tile" data-category="stores" data-query="online stores"><span class="category-icon"><i class="bi bi-shop"></i></span><b>Stores</b><small>Shop online</small></button>
+        <button class="category-tile" data-category="restaurants" data-query="restaurants"><span class="category-icon"><i class="bi bi-cup-hot"></i></span><b>Food & Dining</b><small>Places to eat</small></button>
+        <button class="category-tile" data-category="services" data-query="professional services"><span class="category-icon"><i class="bi bi-tools"></i></span><b>Other Services</b><small>Everyday essentials</small></button>
+        <button class="category-tile category-all" data-category="all" data-query="useful opportunities and services"><span class="category-icon"><i class="bi bi-grid"></i></span><b>Explore Everything</b><small>See what's out there</small></button>
       </div>
     </section>
 
-    <section class="results-section section-wrap" id="resultsSection">
-      <div class="section-heading results-heading">
-        <div>
-          <span class="eyebrow">A GOOD PLACE TO START</span>
-          <h2 id="resultsTitle">Explore useful places</h2>
-          <p id="resultsSubtitle">
-            A starter collection of useful websites and services.
-          </p>
-        </div>
-
-        <div class="results-controls">
-          <label class="sort-control">
-            <span>Sort</span>
-            <select id="sortSelect">
-              <option value="featured">Featured</option>
-              <option value="name">Name A–Z</option>
-            </select>
-          </label>
-
-          <button class="filter-toggle" id="filterToggle" type="button">
-            <i class="bi bi-sliders"></i> Filters
-          </button>
-        </div>
+    <section class="section-wrap featured-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">A GOOD PLACE TO START</span><h2>Popular places to explore</h2><p>Useful starting points selected for the Vindarr community.</p></div>
+        <a class="text-button" href="discover-results.html?q=opportunities&category=all">Explore more <i class="bi bi-arrow-right"></i></a>
       </div>
-
-      <div class="filter-row" id="filterRow">
-        <label>
-          <input type="checkbox" id="officialOnly">
-          Official provider websites only
-        </label>
-
-        <label>
-          <input type="checkbox" id="savedOnly">
-          Saved by me
-        </label>
-
-        <span id="resultCount" aria-live="polite"></span>
-      </div>
-
-      <div class="results-grid" id="resultsGrid" aria-live="polite"></div>
-
-      <div class="empty-state" id="emptyState" hidden>
-        <i class="bi bi-search"></i>
-        <h3>No matching listings yet</h3>
-        <p>
-          Try another keyword, choose a different category or search the wider
-          web when live search is connected.
-        </p>
-      </div>
-
-      <div class="load-more-wrap">
-        <button class="secondary-button" id="loadMoreBtn" type="button" hidden>
-          Load more <i class="bi bi-arrow-down"></i>
-        </button>
+      <div class="featured-grid">
+        <a class="featured-card" href="https://www.jobberman.com/jobs" target="_blank" rel="noopener noreferrer"><span class="featured-icon"><i class="bi bi-briefcase"></i></span><span class="featured-type">JOBS & CAREERS</span><strong>Jobberman Nigeria</strong><p>Explore vacancies, internships and career resources.</p><span class="featured-link">Visit website <i class="bi bi-arrow-up-right"></i></span></a>
+        <a class="featured-card" href="https://erasmus-plus.ec.europa.eu/opportunities/opportunities-for-individuals/students/erasmus-mundus-joint-masters" target="_blank" rel="noopener noreferrer"><span class="featured-icon"><i class="bi bi-mortarboard"></i></span><span class="featured-type">SCHOLARSHIPS</span><strong>Erasmus Mundus</strong><p>Explore international joint master's programmes.</p><span class="featured-link">Visit website <i class="bi bi-arrow-up-right"></i></span></a>
+        <a class="featured-card" href="https://smedan.gov.ng/" target="_blank" rel="noopener noreferrer"><span class="featured-icon"><i class="bi bi-graph-up-arrow"></i></span><span class="featured-type">BUSINESS SUPPORT</span><strong>SMEDAN</strong><p>Find enterprise support and business resources.</p><span class="featured-link">Visit website <i class="bi bi-arrow-up-right"></i></span></a>
+        <a class="featured-card" href="https://www.google.com/maps/search/restaurants/" target="_blank" rel="noopener noreferrer"><span class="featured-icon"><i class="bi bi-geo-alt"></i></span><span class="featured-type">FOOD & DINING</span><strong>Restaurants near you</strong><p>Explore places to eat and check local details.</p><span class="featured-link">Explore places <i class="bi bi-arrow-up-right"></i></span></a>
       </div>
     </section>
 
     <section class="discover-cta section-wrap">
-      <div>
-        <span class="eyebrow">GROW WITH VINDARR</span>
-        <h2>Know a useful business or opportunity?</h2>
-        <p>
-          Help others discover it. Share a website or recommend a service to
-          the Vindarr community.
-        </p>
-      </div>
-
-      <a href="index.html#upload" class="primary-button">
-        Share on Vindarr <i class="bi bi-arrow-up-right"></i>
-      </a>
+      <div><span class="eyebrow">GROW WITH VINDARR</span><h2>Know somewhere worth discovering?</h2><p>Help others find useful businesses, services and opportunities.</p></div>
+      <a href="index.html#upload" class="primary-button">Share on Vindarr <i class="bi bi-arrow-up-right"></i></a>
     </section>
-
-    <p class="disclaimer section-wrap">
-      <i class="bi bi-info-circle"></i>
-      Vindarr Discover is a discovery gateway. Listings link to external
-      websites; providers control their own offers, eligibility, prices and
-      application processes. Always confirm details on the provider’s official
-      website. Listings are not endorsements unless explicitly stated.
-    </p>
+    <p class="disclaimer section-wrap"><i class="bi bi-info-circle"></i> Vindarr Discover links to external websites. Providers control their own offers, eligibility, prices and application processes. Always confirm details on the provider's website.</p>
   </main>
 
-  <footer class="discover-footer">
-    <a class="discover-logo" href="index.html">vindarr<span>.</span></a>
-    <span>Discover more. Connect better.</span>
-    <a href="index.html">
-      Back to Vindarr <i class="bi bi-arrow-up-right"></i>
-    </a>
-  </footer>
-
+  <footer class="discover-footer"><a class="discover-logo" href="index.html">vindarr<span>.</span></a><span>Discover more. Connect better.</span><a href="index.html">Back to Vindarr <i class="bi bi-arrow-up-right"></i></a></footer>
   <script src="js/config.js"></script>
-
-<script>
-  window.VINDARR_DISCOVER_SEARCH_URL =
-    "https://vindarr-backend.onrender.com/discover/search";
-</script>
-
-<script src="js/discover.js"></script>
-
-
+  <script src="js/discover.js"></script>
 </body>
 </html>

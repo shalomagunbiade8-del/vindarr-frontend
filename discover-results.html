@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090909">
+  <meta name="description" content="Search results from Vindarr Discover.">
+  <title>Search results | Vindarr Discover</title>
+  <link rel="stylesheet" href="css/discover.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="discover-page results-discover">
+  <header class="discover-header">
+    <a class="discover-logo" href="index.html">vindarr<span>.</span></a>
+    <nav class="discover-nav"><a href="index.html">Home</a><a class="active" 
+        href="discover.html">Discover</a>
+        <a href="profile.html">Profile</a></nav>
+    <div class="discover-header-actions"><a class="profile-link" href="profile.html"><i class="bi bi-person-circle"></i><span>My Vindarr</span></a></div>
+  </header>
+
+  <main class="results-main">
+    <section class="results-search-area">
+      <a class="back-discover" href="discover.html"><i class="bi bi-arrow-left"></i> Discover home</a>
+      <form id="resultsSearchForm" class="results-search-form">
+        <label class="results-query"><i class="bi bi-search"></i>
+            <input id="resultsQuery" type="search" placeholder="Search Vindarr Discover" autocomplete="off" required></label>
+        <label class="results-location"><i class="bi bi-geo-alt"></i>
+            <input id="resultsLocation" type="text" placeholder="Location"></label>
+        <button class="search-submit" type="submit" aria-label="Search"><i class="bi bi-search"></i><span>Search</span></button>
+      </form>
+      <div class="results-search-note">
+        <i class="bi bi-globe2"></i> Search opportunities, businesses and
+         useful services across the web.</div>
+    </section>
+
+    <section class="results-layout section-wrap">
+      <aside class="results-sidebar">
+        <div class="sidebar-heading">Explore categories</div>
+        <button class="side-category" data-category="all"> <i class="bi bi-grid"></i> All results</button>
+        <button class="side-category" data-category="jobs"><i class="bi bi-briefcase"></i> Jobs & Careers</button>
+        <button class="side-category" data-category="scholarships"><i class="bi bi-mortarboard"></i> Scholarships</button>
+        <button class="side-category" data-category="funding"><i class="bi bi-cash-stack"></i> Funding</button>
+        <button class="side-category" data-category="business"><i class="bi bi-buildings"></i> Business Services</button>
+        <button class="side-category" data-category="stores"><i class="bi bi-shop"></i> Stores</button>
+        <button class="side-category" data-category="restaurants"><i class="bi bi-cup-hot"></i> Food & Dining</button>
+        <button class="side-category" data-category="services"><i class="bi bi-tools"></i> Other Services</button>
+        <div class="sidebar-tip"><i class="bi bi-shield-check"></i><p>Check important details on the original provider's website before applying, paying or sharing personal information.</p></div>
+      </aside>
+
+      <section class="results-content">
+        <div class="results-title-row">
+          <div><span class="eyebrow">VINDARR SEARCH</span><h1 id="resultsTitle">Search results</h1><p id="resultsSubtitle">Searching across the web for useful places and opportunities.</p></div>
+          <button class="saved-page-toggle" id="savedToggle" type="button"><i class="bi bi-bookmark"></i> Saved</button>
+        </div>
+        <div class="results-toolbar">
+          <span id="resultCount" aria-live="polite">Preparing results…</span>
+          <div class="toolbar-actions">
+            <label class="sort-control"><span>Sort</span><select id="sortSelect"><option value="relevance">Relevance</option><option value="name">Name A–Z</option></select></label>
+            <button class="filter-toggle" id="filterToggle" type="button"><i class="bi bi-sliders"></i> Filters</button>
+          </div>
+        </div>
+        <div class="filter-row" id="filterRow">
+          <label><input type="checkbox" id="officialOnly"> Official provider websites only</label>
+          <label><input type="checkbox" id="savedOnly"> Saved by me</label>
+        </div>
+        <div class="results-grid" id="resultsGrid" aria-live="polite"></div>
+        <div class="loading-state" id="loadingState"><span class="loading-spinner"></span><p>Finding useful results for you…</p></div>
+        <div class="empty-state" id="emptyState" hidden><i class="bi bi-search"></i><h3>No matching results</h3><p>Try a different keyword, location or category.</p><a href="discover.html" class="secondary-button">Back to Discover</a></div>
+        <div class="load-more-wrap"><button class="secondary-button" id="loadMoreBtn" type="button" hidden>Load more <i class="bi bi-arrow-down"></i></button></div>
+        <p class="disclaimer"><i class="bi bi-info-circle"></i> Search results are provided for discovery. Vindarr does not guarantee that external listings are current, available or verified. Confirm important details with the provider.</p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="discover-footer"><a class="discover-logo" href="index.html">vindarr<span>.</span></a><span>Discover more. Connect better.</span><a href="discover.html">Discover home <i class="bi bi-arrow-up-right"></i></a></footer>
+  <script src="js/config.js"></script>
+  <script>
+    window.VINDARR_DISCOVER_SEARCH_URL = "https://vindarr-backend.onrender.com/discover/search";
+  </script>
+  <script src="js/discover-results.js"></script>
+</body>
+</html>
