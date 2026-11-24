@@ -1,114 +1,151 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0d0d">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <link
-    rel="icon"
-    href="./VLOGO.jpg"
-    type="image/jpg"
-  >
+  <link rel="icon" href="./VLOGO.jpg" type="image/jpg">
 
   <title>Menu · Vindarr</title>
 
-  <link
-    rel="stylesheet"
-    href="css/global.css"
-  >
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/menu.css">
 
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
   >
-
 </head>
-
 
 <body class="vindarr-menu-page">
 
-
 <div class="menu-page">
 
-
   <!-- HEADER -->
-
   <header class="menu-page-header">
 
     <button
       class="menu-back"
       onclick="history.back()"
+      aria-label="Go back"
     >
-
       <i class="bi bi-arrow-left"></i>
-
     </button>
 
+    <div class="menu-header-title">
+      <span class="menu-header-eyebrow">YOUR SPACE</span>
+      <h1>Menu</h1>
+    </div>
 
-    <h1>
-      Menu
-    </h1>
-
-
-    <div style="width:42px"></div>
+    <a href="index.html" class="menu-home-button" aria-label="Home">
+      <i class="bi bi-house"></i>
+    </a>
 
   </header>
 
 
-
-  <!-- PROFILE -->
-
+  <!-- PROFILE HERO -->
   <section class="menu-profile">
 
-    <img
-      src="https://i.pravatar.cc/100"
-      id="menuAvatar"
-      class="menu-profile-avatar"
-      alt="Profile"
-    >
+    <div class="profile-glow"></div>
+
+    <div class="menu-profile-main">
+
+      <div class="menu-avatar-wrap">
+        <img
+          src="https://i.pravatar.cc/100"
+          id="menuAvatar"
+          class="menu-profile-avatar"
+          alt="Profile"
+        >
+
+        <span class="menu-online-indicator"></span>
+      </div>
+
+      <div class="menu-profile-details">
+
+        <span class="profile-welcome">WELCOME BACK</span>
+
+        <strong id="menuUsername">
+          Vindarr
+        </strong>
+
+        <span class="profile-subtitle">
+          Explore your Vindarr
+        </span>
+
+      </div>
+
+    </div>
+
+    <a href="profile.html" class="profile-view-button">
+      View profile
+      <i class="bi bi-arrow-up-right"></i>
+    </a>
+
+  </section>
 
 
-    <div>
+  <!-- DISCOVER -->
+  <section class="menu-feature">
 
-      <strong id="menuUsername">
-        Vindarr
-      </strong>
+    <div class="feature-content">
 
-      <span>
-        Explore your Vindarr
+      <span class="feature-label">
+        <i class="bi bi-stars"></i>
+        EXPLORE VINDARR
       </span>
 
+      <h2>
+        Discover more.<br>
+        <span>Connect better.</span>
+      </h2>
+
+      <p>
+        Find businesses, opportunities, products and interesting content.
+      </p>
+
+      <a href="discover.html" class="feature-button">
+        Start exploring
+        <i class="bi bi-arrow-up-right"></i>
+      </a>
+
+    </div>
+
+    <div class="feature-art">
+      <div class="feature-circle circle-one"></div>
+      <div class="feature-circle circle-two"></div>
+      <i class="bi bi-compass"></i>
     </div>
 
   </section>
 
 
-
   <!-- MAIN MENU -->
-
   <section class="menu-section">
 
+    <div class="menu-section-heading">
+      <div>
+        <span class="section-eyebrow">YOUR VINDARR</span>
+        <h2>Explore</h2>
+      </div>
 
-     <!-- HOME -->
+      <span class="section-count">01</span>
+    </div>
 
-    <a
-      href="index.html"
-      class="menu-item"
-    >
 
-      <div class="menu-icon">
+    <!-- HOME -->
+    <a href="index.html" class="menu-item">
+
+      <div class="menu-icon icon-home">
         <i class="bi bi-house"></i>
       </div>
 
-      <div class="menu-text">
+      <div class="menu-item-text">
         <strong>Home</strong>
-        <span>Vindarr For You</span>
+        <small>Vindarr For You</small>
       </div>
 
       <i class="bi bi-chevron-right menu-arrow"></i>
@@ -117,19 +154,15 @@
 
 
     <!-- MALL -->
+    <a href="market.html" class="menu-item">
 
-    <a
-      href="market.html"
-      class="menu-item"
-    >
-
-      <div class="menu-icon">
+      <div class="menu-icon icon-market">
         <i class="bi bi-bag"></i>
       </div>
 
-      <div class="menu-text">
+      <div class="menu-item-text">
         <strong>Mall</strong>
-        <span>Shop products and fashion</span>
+        <small>Shop products and fashion</small>
       </div>
 
       <i class="bi bi-chevron-right menu-arrow"></i>
@@ -138,19 +171,15 @@
 
 
     <!-- MESSAGES -->
+    <a href="messages.html" class="menu-item">
 
-    <a
-      href="messages.html"
-      class="menu-item"
-    >
-
-      <div class="menu-icon">
-        <i class="bi bi-chat"></i>
+      <div class="menu-icon icon-messages">
+        <i class="bi bi-chat-dots"></i>
       </div>
 
-      <div class="menu-text">
+      <div class="menu-item-text">
         <strong>Messages</strong>
-        <span>Your conversations</span>
+        <small>Your conversations</small>
       </div>
 
       <i class="bi bi-chevron-right menu-arrow"></i>
@@ -159,19 +188,15 @@
 
 
     <!-- PROFILE -->
+    <a href="profile.html" class="menu-item">
 
-    <a
-      href="profile.html"
-      class="menu-item"
-    >
-
-      <div class="menu-icon">
+      <div class="menu-icon icon-profile">
         <i class="bi bi-person"></i>
       </div>
 
-      <div class="menu-text">
+      <div class="menu-item-text">
         <strong>Profile</strong>
-        <span>View your profile</span>
+        <small>View your profile</small>
       </div>
 
       <i class="bi bi-chevron-right menu-arrow"></i>
@@ -180,19 +205,15 @@
 
 
     <!-- PURVIEW -->
+    <a href="purview.html" class="menu-item">
 
-    <a
-      href="purview.html"
-      class="menu-item"
-    >
-
-      <div class="menu-icon">
+      <div class="menu-icon icon-purview">
         <i class="bi bi-person-plus"></i>
       </div>
 
-      <div class="menu-text">
+      <div class="menu-item-text">
         <strong>Purview</strong>
-        <span>Creators you follow</span>
+        <small>Creators you follow</small>
       </div>
 
       <i class="bi bi-chevron-right menu-arrow"></i>
@@ -201,402 +222,307 @@
 
 
     <!-- SAVED -->
-
     <button
       class="menu-item"
+      type="button"
       onclick="openSavedPage()"
     >
 
-      <span class="menu-icon">
-
+      <span class="menu-icon icon-saved">
         <i class="bi bi-bookmark-fill"></i>
-
       </span>
 
       <span class="menu-item-text">
-
-        <strong>
-          Saved
-        </strong>
-
-        <small>
-          Videos and content you've saved
-        </small>
-
+        <strong>Saved</strong>
+        <small>Videos and content you've saved</small>
       </span>
 
-      <i class="bi bi-chevron-right"></i>
+      <i class="bi bi-chevron-right menu-arrow"></i>
 
     </button>
-
 
 
     <!-- NOTIFICATIONS -->
-
     <button
       class="menu-item"
+      type="button"
       onclick="openNotificationsPage()"
     >
 
-      <span class="menu-icon">
-
+      <span class="menu-icon icon-notifications">
         <i class="bi bi-bell"></i>
-
       </span>
 
       <span class="menu-item-text">
-
-        <strong>
-          Notifications
-        </strong>
-
-        <small>
-          Updates and activity
-        </small>
-
+        <strong>Notifications</strong>
+        <small>Updates and activity</small>
       </span>
 
-      <i class="bi bi-chevron-right"></i>
+      <i class="bi bi-chevron-right menu-arrow"></i>
 
     </button>
-
-    <!-- DISCOVER THROUGH VINDARR -->
-     <a
-      class="menu-item"
-      href="discover.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-circle-play"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Vindarr Xplore
-        </strong>
-
-        <small>
-        Explore the commercial world with Vindarr
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-
-    <!-- STORIES -->
-
-    <a
-      class="menu-item"
-      href="stories.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-circle-play"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Stories
-        </strong>
-
-        <small>
-          Discover real stories
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-     <!-- STORIES -->
-
-    <a
-      class="menu-item"
-      href="poll.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-circle-play"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Polls
-        </strong>
-
-        <small>
-        Browse & discover polls you love
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-
-    <a
-      class="menu-item"
-      href="find.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-circle-play"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Finds
-        </strong>
-
-        <small>
-        Record to find, browse market gist through video
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-
-
-    <!-- LIBRARY -->
-
-    <a
-      class="menu-item"
-      href="library.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-book"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Library
-        </strong>
-
-        <small>
-          Your books and purchases
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-
-
-    <!-- PUBLISH -->
-
-    <a
-      class="menu-item"
-      href="publish.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-plus-square"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Publish
-        </strong>
-
-        <small>
-          Publish your content
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-
-
-    <!-- CREATOR DASHBOARD -->
-
-    <a
-      class="menu-item"
-      href="dashboard.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-grid"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Creator Dashboard
-        </strong>
-
-        <small>
-          Manage your content
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-
-
-    <!-- EARNINGS -->
-
-    <a
-      class="menu-item"
-      href="earnings.html"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-wallet2"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Earnings
-        </strong>
-
-        <small>
-          Track your earnings
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
-
-    </a>
-
-
 
   </section>
 
 
-
-  <!-- ACCOUNT -->
-
+  <!-- CONTENT AND COMMUNITY -->
   <section class="menu-section">
 
-
-    <button
-      class="menu-item logout-item"
-      onclick="logoutFromMenu()"
-    >
-
-      <span class="menu-icon">
-
-        <i class="bi bi-box-arrow-right"></i>
-
-      </span>
-
-      <span class="menu-item-text">
-
-        <strong>
-          Login
-        </strong>
-
-        <small>
-          Sign in to Vindarr
-        </small>
-
-      </span>
-
-    </button>
-
-
-     <a
-      href="admin-withdrawals.html"
-      class="menu-item"
-    >
-
-      <div class="menu-icon">
-        <i class="bi bi-person-plus"></i>
+    <div class="menu-section-heading">
+      <div>
+        <span class="section-eyebrow">CONTENT & COMMUNITY</span>
+        <h2>Discover</h2>
       </div>
 
-      <div class="menu-text">
-        <strong>Admin Dashboard</strong>
-        <span>Admin Only</span>
+      <span class="section-count">02</span>
+    </div>
+
+
+    <!-- VINDARR XPLORE -->
+    <a href="discover.html" class="menu-item">
+
+      <div class="menu-icon icon-discover">
+        <i class="bi bi-compass"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Vindarr Xplore</strong>
+        <small>Explore the commercial world with Vindarr</small>
       </div>
 
       <i class="bi bi-chevron-right menu-arrow"></i>
 
     </a>
 
-    <!-- Help Desk -->
-     <a
-      class="menu-item"
-      href="help.html"
-    >
 
-      <span class="menu-icon">
+    <!-- STORIES -->
+    <a href="stories.html" class="menu-item">
 
-        <i class="bi bi-circle-play"></i>
+      <div class="menu-icon icon-stories">
+        <i class="bi bi-play-circle"></i>
+      </div>
 
-      </span>
+      <div class="menu-item-text">
+        <strong>Stories</strong>
+        <small>Discover real stories</small>
+      </div>
 
-      <span class="menu-item-text">
-
-        <strong>
-          Vindarr Help Desk
-        </strong>
-
-        <small>
-        Get acquainted with Vindarr
-        </small>
-
-      </span>
-
-      <i class="bi bi-chevron-right"></i>
+      <i class="bi bi-chevron-right menu-arrow"></i>
 
     </a>
 
 
-    
+    <!-- POLLS -->
+    <a href="poll.html" class="menu-item">
+
+      <div class="menu-icon icon-polls">
+        <i class="bi bi-bar-chart"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Polls</strong>
+        <small>Browse and discover polls you love</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- FINDS -->
+    <a href="find.html" class="menu-item">
+
+      <div class="menu-icon icon-finds">
+        <i class="bi bi-search"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Finds</strong>
+        <small>Record, discover and browse market gist through video</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- LIBRARY -->
+    <a href="library.html" class="menu-item">
+
+      <div class="menu-icon icon-library">
+        <i class="bi bi-book"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Library</strong>
+        <small>Your books and purchases</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
 
   </section>
 
 
+  <!-- CREATOR TOOLS -->
+  <section class="menu-section">
+
+    <div class="menu-section-heading">
+      <div>
+        <span class="section-eyebrow">CREATE & GROW</span>
+        <h2>Creator tools</h2>
+      </div>
+
+      <span class="section-count">03</span>
+    </div>
+
+
+    <!-- PUBLISH -->
+    <a href="publish.html" class="menu-item">
+
+      <div class="menu-icon icon-publish">
+        <i class="bi bi-plus-square"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Publish</strong>
+        <small>Publish your content</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- CREATOR DASHBOARD -->
+    <a href="dashboard.html" class="menu-item">
+
+      <div class="menu-icon icon-dashboard">
+        <i class="bi bi-grid"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Creator Dashboard</strong>
+        <small>Manage your content</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- EARNINGS -->
+    <a href="earnings.html" class="menu-item">
+
+      <div class="menu-icon icon-earnings">
+        <i class="bi bi-wallet2"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Earnings</strong>
+        <small>Track your earnings</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+  </section>
+
+
+  <!-- ACCOUNT -->
+  <section class="menu-section">
+
+    <div class="menu-section-heading">
+      <div>
+        <span class="section-eyebrow">ACCOUNT & SUPPORT</span>
+        <h2>More</h2>
+      </div>
+
+      <span class="section-count">04</span>
+    </div>
+
+
+    <!-- ADMIN DASHBOARD -->
+    <a href="admin-withdrawals.html" class="menu-item">
+
+      <div class="menu-icon icon-admin">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Admin Dashboard</strong>
+        <small>Admin only</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- HELP DESK -->
+    <a href="help.html" class="menu-item">
+
+      <div class="menu-icon icon-help">
+        <i class="bi bi-headset"></i>
+      </div>
+
+      <div class="menu-item-text">
+        <strong>Vindarr Help Desk</strong>
+        <small>Get acquainted with Vindarr</small>
+      </div>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </a>
+
+
+    <!-- LOGOUT -->
+    <button
+      class="menu-item logout-item"
+      type="button"
+      onclick="logoutFromMenu()"
+    >
+
+      <span class="menu-icon">
+        <i class="bi bi-box-arrow-right"></i>
+      </span>
+
+      <span class="menu-item-text">
+        <strong>Log out</strong>
+        <small>Sign out of Vindarr</small>
+      </span>
+
+      <i class="bi bi-chevron-right menu-arrow"></i>
+
+    </button>
+
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer class="menu-footer">
+
+    <div class="menu-footer-logo">
+      vindarr<span>.</span>
+    </div>
+
+    <p>What are you Vindarring?</p>
+
+    <span>Discover more. Connect better.</span>
+
+  </footer>
+
 </div>
 
 
-
+<!-- EXISTING SCRIPTS -->
 <script src="js/config.js"></script>
-
 <script src="js/auth.js"></script>
 
 
+<!-- EXISTING MENU LOGIC -->
 <script>
 
 function openSavedPage(){
@@ -640,5 +566,4 @@ function logoutFromMenu(){
 
 
 </body>
-
 </html>
