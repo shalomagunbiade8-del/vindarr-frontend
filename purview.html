@@ -1,170 +1,95 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
-
->
-
-<link
-    rel="icon"
-    href="./VLOGO.jpg"
-    type="image/jpg"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080808">
+  <link rel="icon" href="./VLOGO.jpg" type="image/jpg">
   <title>Purview • Vindarr</title>
-
-  <link
-    rel="stylesheet"
-    href="css/global.css"
-  >
-
-  <link
-    rel="stylesheet"
-    href="css/purview.css"
-  >
-
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-  >
-
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/purview.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-
 <body>
-
   <main class="purview-page">
+    <header class="purview-header">
+      <a class="purview-header-brand" href="index.html" aria-label="Vindarr home">
+        <img src="interfacelog.png" alt="Vindarr" class="purview-logo">
+        <span class="brand-copy">
+          <span class="purview-eyebrow">VINDARR</span>
+          <span class="purview-brand-title">Purview</span>
+        </span>
+      </a>
+      <div class="header-actions">
+        <span class="header-caption">Your creator universe</span>
+        <span class="purview-header-icon" aria-hidden="true"><i class="bi bi-eye"></i></span>
+      </div>
+    </header>
 
+    <section class="purview-intro">
+      <div>
+        <span class="section-kicker">A FEED THAT GETS YOU</span>
+        <h1>Your people.<br><span>Your point of view.</span></h1>
+        <p>Fresh videos, finds and reads from the creators you’ve chosen to clock.</p>
+      </div>
+      <div class="intro-art" aria-hidden="true">
+        <span class="intro-orbit orbit-one"></span><span class="intro-orbit orbit-two"></span>
+        <i class="bi bi-play-fill"></i>
+      </div>
+    </section>
 
-<!-- =====================================
-     HEADER
-====================================== -->
+    <section class="purview-section creators-section">
+      <div class="purview-section-heading">
+        <div><span class="section-kicker">YOUR PURVIEW</span><h2>Creators to catch up with</h2></div>
+        <button type="button" class="text-action" id="seeAllCreatorsBtn">See more <i class="bi bi-arrow-up-right"></i></button>
+      </div>
+      <div id="purviewCreators" class="purview-creators" aria-live="polite">
+        <div class="creator-skeleton"></div><div class="creator-skeleton"></div>
+        <div class="creator-skeleton"></div><div class="creator-skeleton"></div>
+      </div>
+    </section>
 
-<header class="purview-header">
-
-  <div class="purview-header-brand">
-
-    <img
-      src="interfacelog.png"
-      alt="Vindarr"
-      class="purview-logo"
-    >
-
-    <div>
-
-      <span class="purview-eyebrow">
-        VINDARR
-      </span>
-
-      <h1>
-        Purview
-      </h1>
-
-    </div>
-
-  </div>
-
-  <div class="purview-header-icon">
-    <i class="bi bi-eye"></i>
-  </div>
-
-</header>
-
-
-<!-- =====================================
-     INTRO
-====================================== -->
-
-<section class="purview-intro">
-
-  <p>
-    Keep up with the creators and content
-    you have chosen to watch.
-  </p>
-
-</section>
-
-
-<!-- =====================================
-     CREATORS
-====================================== -->
-
-<section class="purview-section">
-
-  <div class="purview-section-heading">
-
-    <div>
-
-      <span class="section-kicker">
-        YOUR PURVIEW
-      </span>
-
-      <h2>
-        Creators
-      </h2>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="purviewCreators"
-    class="purview-creators"
-  ></div>
-
-</section>
-
-
-<!-- =====================================
-     RECENT POSTS
-====================================== -->
-
-<section class="purview-section purview-posts-section">
-
-  <div class="purview-section-heading">
-
-    <div>
-
-      <span class="section-kicker">
-        FROM YOUR CREATORS
-      </span>
-
-      <h2>
-        Recent Posts
-      </h2>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="purviewFeed"
-    class="purview-feed"
-  ></div>
-
-</section>
-
-
+    <section class="purview-section purview-posts-section">
+      <div class="purview-section-heading feed-heading">
+        <div>
+          <span class="section-kicker">HANDPICKED BY YOUR CLOCKS</span>
+          <h2>Made by your creators</h2>
+          <p class="feed-subtitle">A little inspiration, a little discovery, all in one place.</p>
+        </div>
+        <span class="feed-live-label"><span></span> YOUR FEED</span>
+      </div>
+      <div id="purviewFeed" class="purview-feed" aria-live="polite">
+        <div class="feed-skeleton"></div><div class="feed-skeleton"></div>
+        <div class="feed-skeleton"></div><div class="feed-skeleton"></div>
+      </div>
+      <div id="purviewFeedSentinel" class="feed-sentinel" aria-hidden="true"></div>
+      <p id="purviewFeedStatus" class="feed-status" aria-live="polite"></p>
+    </section>
   </main>
 
+  <div class="purview-modal" id="creatorsModal" aria-hidden="true">
+    <button class="modal-backdrop" type="button" data-close-creators aria-label="Close creators list"></button>
+    <section class="creators-modal-panel" role="dialog" aria-modal="true" aria-labelledby="creatorsModalTitle">
+      <div class="modal-topline">
+        <div><span class="section-kicker">YOUR CREATOR LIST</span><h2 id="creatorsModalTitle">Everyone you clock</h2><p>Jump straight to a creator’s profile.</p></div>
+        <button type="button" class="modal-close" data-close-creators aria-label="Close"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="creator-modal-search"><i class="bi bi-search"></i><input id="creatorModalSearch" type="search" placeholder="Find a creator..." autocomplete="off"></div>
+      <div id="allCreatorsList" class="all-creators-list"></div>
+    </section>
+  </div>
+
+  <div class="purview-modal" id="purviewExpandModal" aria-hidden="true">
+    <button class="modal-backdrop" type="button" data-close-expand aria-label="Close expanded post"></button>
+    <section class="expand-panel" role="dialog" aria-modal="true" aria-label="Expanded content">
+      <button type="button" class="modal-close expand-close" data-close-expand aria-label="Close"><i class="bi bi-x-lg"></i></button>
+      <div id="expandedContent" class="expanded-content"></div>
+    </section>
+  </div>
+
   <script src="js/config.js"></script>
-
   <script src="js/auth.js"></script>
-
   <script src="js/purview.js"></script>
-
-  <script>
-    checkAuth();
-  </script>
-
+  <script>if (typeof checkAuth === "function") checkAuth();</script>
 </body>
-
 </html>
