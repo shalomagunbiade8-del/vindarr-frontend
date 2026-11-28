@@ -1890,3 +1890,221 @@
   }
 }
 
+
+/* =========================================================
+   TOP NAVIGATION LOGIN ICON
+========================================================= */
+
+.auth-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-login-trigger {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 15px;
+
+  background: rgba(209,0,0,.12);
+  color: #ff4545;
+
+  font-size: 23px;
+  cursor: pointer;
+
+  transition: .25s ease;
+}
+
+.top-login-trigger:hover {
+  background: var(--auth-red);
+  color: white;
+  border-color: var(--auth-red);
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   LOGIN MODAL
+========================================================= */
+
+.login-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+  box-sizing: border-box;
+
+  background: rgba(0,0,0,.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition:
+    opacity .3s ease,
+    visibility .3s ease;
+}
+
+.login-modal.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.login-modal-content {
+  position: relative;
+
+  width: 100%;
+  max-width: 490px;
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  transform: translateY(25px) scale(.97);
+
+  transition: transform .3s ease;
+}
+
+.login-modal.active .login-modal-content {
+  transform: translateY(0) scale(1);
+}
+
+/* =========================================================
+   MODAL CLOSE BUTTON
+========================================================= */
+
+.login-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+
+  background: rgba(255,255,255,.06);
+  color: white;
+
+  font-size: 15px;
+  cursor: pointer;
+
+  transition: .2s ease;
+}
+
+.login-modal-close:hover {
+  background: var(--auth-red);
+  border-color: var(--auth-red);
+  transform: rotate(90deg);
+}
+
+/* =========================================================
+   LOGIN CARD INSIDE MODAL
+========================================================= */
+
+.login-modal .login-section {
+  display: block;
+  padding: 0;
+}
+
+.login-modal .login-card {
+  max-width: 100%;
+  margin: 0;
+
+  padding: 38px 32px;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(209,0,0,.13),
+      transparent 45%
+    ),
+    linear-gradient(
+      145deg,
+      #181818,
+      #0d0d0d
+    );
+
+  border: 1px solid rgba(255,255,255,.12);
+
+  box-shadow:
+    0 30px 100px rgba(0,0,0,.8);
+}
+
+/* =========================================================
+   PREVENT BACKGROUND SCROLL
+========================================================= */
+
+body.login-modal-open {
+  overflow: hidden;
+}
+
+/* =========================================================
+   MOBILE MODAL
+========================================================= */
+
+@media(max-width:600px) {
+
+  .auth-topbar-actions {
+    gap: 9px;
+  }
+
+  .top-login-trigger,
+  .menu-trigger {
+    width: 42px;
+    height: 42px;
+  }
+
+  .login-modal {
+    padding: 15px;
+  }
+
+  .login-modal-content {
+    max-height: 92vh;
+  }
+
+  .login-modal .login-card {
+    padding: 30px 22px;
+    border-radius: 23px;
+  }
+
+  .login-modal-close {
+    top: 10px;
+    right: 10px;
+  }
+
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media(prefers-reduced-motion:reduce) {
+
+  .login-modal,
+  .login-modal-content,
+  .top-login-trigger,
+  .login-modal-close {
+    transition: none !important;
+  }
+
+}
+

@@ -17,12 +17,28 @@
 <div class="vindarr-auth-page">
 
   <!-- TOP BAR -->
-  <header class="auth-topbar">
-    <a href="login.html" class="auth-brand">
-      <img src="VLOGO.jpg" alt="Vindarr" class="auth-logo">
-      <span>Vindarr</span>
-    </a>
+  <!-- TOP BAR -->
+<header class="auth-topbar">
 
+  <a href="login.html" class="auth-brand">
+    <img src="VLOGO.jpg" alt="Vindarr" class="auth-logo">
+    <span>Vindarr</span>
+  </a>
+
+  <div class="auth-topbar-actions">
+
+    <!-- LOGIN ICON -->
+    <button
+      class="top-login-trigger"
+      type="button"
+      aria-label="Open login"
+      title="Login"
+      onclick="openLoginModal()"
+    >
+      <i class="bi bi-person-circle"></i>
+    </button>
+
+    <!-- THREE-DOT MENU -->
     <button
       class="menu-trigger"
       id="menuTrigger"
@@ -33,7 +49,10 @@
     >
       <i class="bi bi-three-dots"></i>
     </button>
-  </header>
+
+  </div>
+
+</header>
 
   <!-- FULL-SCREEN MENU -->
   <div class="resource-menu" id="resourceMenu" aria-hidden="true">
@@ -60,10 +79,14 @@
       <h2>Your next discovery starts here.</h2>
 
       <div class="menu-auth-actions">
-        <a href="login.html" class="menu-login">
-          <i class="bi bi-box-arrow-in-right"></i>
-          Login
-        </a>
+        <button
+  type="button"
+  class="menu-login"
+  onclick="toggleResourceMenu(false); openLoginModal();"
+>
+  <i class="bi bi-box-arrow-in-right"></i>
+  Login
+</button>
 
         <a href="register.html" class="menu-register">
           <i class="bi bi-person-plus"></i>
@@ -392,105 +415,135 @@
 </section>
 
   <!-- LOGIN -->
-  <section class="login-section">
+  <!-- LOGIN MODAL -->
+<div
+  class="login-modal"
+  id="loginModal"
+  aria-hidden="true"
+  onclick="handleLoginModalBackdrop(event)"
+>
 
-    <div class="login-card">
+  <div
+    class="login-modal-content"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="loginModalTitle"
+  >
 
-      <div class="login-card-header">
+    <button
+      type="button"
+      class="login-modal-close"
+      aria-label="Close login"
+      onclick="closeLoginModal()"
+    >
+      <i class="bi bi-x-lg"></i>
+    </button>
 
-        <div class="login-icon">
-          <i class="bi bi-person-fill"></i>
+    <!-- EXISTING LOGIN FORM -->
+    <section class="login-section">
+
+      <div class="login-card">
+
+        <div class="login-card-header">
+
+          <div class="login-icon">
+            <i class="bi bi-person-fill"></i>
+          </div>
+
+          <h2 id="loginModalTitle">Welcome back.</h2>
+
+          <p>Continue your Vindarr experience.</p>
+
         </div>
 
-        <h2>Welcome back.</h2>
-
-        <p>Continue your Vindarr experience.</p>
-
-      </div>
-
-      <!-- GOOGLE LOGIN -->
-      <button
-        class="google-auth-btn"
-        type="button"
-        onclick="continueWithGoogle()"
-      >
-        <span class="google-logo">G</span>
-        <span>Continue with Google</span>
-      </button>
-
-      <div class="auth-divider">
-        <span>OR CONTINUE WITH EMAIL</span>
-      </div>
-
-      <!-- EMAIL LOGIN -->
-      <div class="login-form">
-
-        <label for="loginEmail">Email</label>
-
-        <div class="input-wrapper">
-          <i class="bi bi-envelope"></i>
-
-          <input
-            id="loginEmail"
-            type="email"
-            placeholder="you@example.com"
-            class="auth-input"
-            autocomplete="email"
-          >
-        </div>
-
-        <label for="loginPassword">Password</label>
-
-        <div class="password-wrapper">
-          <i class="bi bi-lock"></i>
-
-          <input
-            id="loginPassword"
-            type="password"
-            placeholder="Your password"
-            class="auth-input"
-            autocomplete="current-password"
-          >
-
-          <i
-            class="bi bi-eye-slash password-toggle"
-            id="loginTogglePassword"
-            onclick="togglePassword(
-              'loginPassword',
-              'loginTogglePassword'
-            )"
-          ></i>
-        </div>
-
+        <!-- GOOGLE LOGIN -->
         <button
-          class="auth-btn"
-          onclick="login()"
+          class="google-auth-btn"
           type="button"
+          onclick="continueWithGoogle()"
         >
-          <span>Login</span>
-          <i class="bi bi-arrow-right"></i>
+          <span class="google-logo">G</span>
+          <span>Continue with Google</span>
         </button>
 
-        <div
-          id="authError"
-          class="auth-message error-message"
-          role="alert"
-          aria-live="polite"
-        ></div>
+        <div class="auth-divider">
+          <span>OR CONTINUE WITH EMAIL</span>
+        </div>
+
+        <!-- EMAIL LOGIN -->
+        <div class="login-form">
+
+          <label for="loginEmail">Email</label>
+
+          <div class="input-wrapper">
+            <i class="bi bi-envelope"></i>
+
+            <input
+              id="loginEmail"
+              type="email"
+              placeholder="you@example.com"
+              class="auth-input"
+              autocomplete="email"
+            >
+          </div>
+
+          <label for="loginPassword">Password</label>
+
+          <div class="password-wrapper">
+            <i class="bi bi-lock"></i>
+
+            <input
+              id="loginPassword"
+              type="password"
+              placeholder="Your password"
+              class="auth-input"
+              autocomplete="current-password"
+            >
+
+            <i
+              class="bi bi-eye-slash password-toggle"
+              id="loginTogglePassword"
+              onclick="togglePassword(
+                'loginPassword',
+                'loginTogglePassword'
+              )"
+            ></i>
+          </div>
+
+          <button
+            class="auth-btn"
+            onclick="login()"
+            type="button"
+          >
+            <span>Login</span>
+            <i class="bi bi-arrow-right"></i>
+          </button>
+
+          <div
+            id="authError"
+            class="auth-message error-message"
+            role="alert"
+            aria-live="polite"
+          ></div>
+
+        </div>
+
+        <div class="login-footer">
+          <span>New to Vindarr?</span>
+
+          <a href="register.html">
+            Create an account
+            <i class="bi bi-arrow-up-right"></i>
+          </a>
+        </div>
 
       </div>
 
-      <div class="login-footer">
-        <span>New to Vindarr?</span>
+    </section>
 
-        <a href="register.html">
-          Create an account
-          <i class="bi bi-arrow-up-right"></i>
-        </a>
-      </div>
+  </div>
 
-    </div>
-  </section>
+</div>
 
   <!-- BRAND MESSAGE -->
   <section class="vindarring-section">
@@ -612,6 +665,8 @@
       window.location.pathname
     );
 
+    openLoginModal();
+
   });
 
   // Pause videos when the page is not visible
@@ -624,6 +679,58 @@
       }
     });
   });
+
+
+  // =========================================================
+// LOGIN MODAL
+// =========================================================
+
+function openLoginModal() {
+
+  const modal = document.getElementById("loginModal");
+
+  if (!modal) return;
+
+  // Close the resource menu if it is open.
+  toggleResourceMenu(false);
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+
+  document.body.classList.add("login-modal-open");
+
+  // Focus the email field after the modal opens.
+  setTimeout(() => {
+
+    document.getElementById("loginEmail")?.focus();
+
+  }, 250);
+
+}
+
+function closeLoginModal() {
+
+  const modal = document.getElementById("loginModal");
+
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+
+  document.body.classList.remove("login-modal-open");
+
+}
+
+function handleLoginModalBackdrop(event) {
+
+  if (event.target.id === "loginModal") {
+
+    closeLoginModal();
+
+  }
+
+}
+
 </script>
 
 </body>
